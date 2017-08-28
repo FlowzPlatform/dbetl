@@ -1,14 +1,16 @@
 {
-  "name": "procurement",
+  "name": "Flowz-DBETL",
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "set NODE_ENV=production && set API_URL=http://localhost:3030 && set INSTANCE=http://localhost:3000/api && node ./bin/www",
-    "dev": "set NODE_ENV=developement && set API_URL=http://localhost:3030 && set INSTANCE=http://localhost:3000/api && node ./bin/www"
+    "start:window": "set NODE_ENV=production && set API_URL=http://localhost:3030 && set INSTANCE=http://localhost:3000/api && node ./bin/www",
+    "start:linux": "export NODE_ENV=production && export API_URL=http://localhost:3030 && export INSTANCE=http://localhost:3000/api && node ./bin/www",
+    "dev:window": "set NODE_ENV=developement && set API_URL=http://localhost:3030 && set INSTANCE=http://localhost:3000/api && node ./bin/www",
+    "dev:linux": "export NODE_ENV=developement && export API_URL=http://localhost:3030 && export INSTANCE=http://localhost:3000/api && node ./bin/www"
   },
-  "description": "Procurement",
+  "description": "Data Base Extract, Transform & Load ",
   "author": {
-    "name": "Rohit Bajaniya"
+    "name": "FlowzPlatform"
   },
   "dependencies": {
     "asyncawait": "^1.0.6",
