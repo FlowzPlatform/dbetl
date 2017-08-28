@@ -37,15 +37,40 @@ block content
                                                 tbody
                                                         td!= item.template
                                         else
+                                            //- table.table
+                                            //-     thead
+                                            //-         each ent in item.entity
+                                            //-             th #{ent.name}
+                                            //-     tbody
+                                            //-         each option in item.data.options
+                                            //-             tr
+                                            //-                 each ent in item.entity
+                                            //-                     td #{option[ent.name]}
                                             table.table
                                                 thead
                                                     each ent in item.entity
+                                                        //- if ent.type == 'number' || ent.type == 'boolean' || ent.type == 'date' || ent.type == 'text' || ent.type == 'email' || ent.type == 'phone' || ent.type == 'array'
+                                                        //-     th #{ent.name}
+                                                        //- else
+                                                        //-     for e in ent.entity.entity
                                                         th #{ent.name}
                                                 tbody
                                                     each option in item.data.options
                                                         tr
                                                             each ent in item.entity
-                                                                td #{option[ent.name]}
+                                                                if ent.type == 'number' || ent.type == 'boolean' || ent.type == 'date' || ent.type == 'text' || ent.type == 'email' || ent.type == 'phone' || ent.type == 'array'
+                                                                    td #{option[ent.name]}
+                                                                else
+                                                                    td
+                                                                        table.table
+                                                                            thead
+                                                                                each e in ent.entity.entity
+                                                                                    th #{e.name}
+                                                                            tbody
+                                                                               tr
+                                                                                for op in option[ent.name]
+                                                                                    for e in ent.entity.entity
+                                                                                        td #{op[e.name]}
                 div
                     ul(style="padding-left: 0px;")#pagin
                         p.pull-right(style="color:#1bbae1") Total=#{data1.length}

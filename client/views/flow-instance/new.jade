@@ -151,7 +151,7 @@ block content
                 ///////
             }
 
-            if(instance_data.template.length == 0){
+            if(instance_data.template.length == 0 && $("#hdnId").val() == 'undefined'){
                 $('#lnkAddnew').click();
             }
             
@@ -314,9 +314,38 @@ block content
                         $input.val(val.property.defaultValue)
                     }
                 }
+                else {
+                    let $foreignField = [];
+                    $(val.entity.entity).each(function(index,value){
+                        $input = $('<input/>').attr({
+                            id : value.name,
+                            type : (value.type == 'boolean')?'checkbox' : value.type,
+                            placeholder: value.name,
+                            title:value.name
+                        }); //.css({width: '100%',border: 0})
+                        if((value.type != 'boolean')){
+                            $input.addClass('form-control')
+                        }
+                        if(value.hasOwnProperty('property') && value.property.defaultValue != ""){
+                            $input.val(value.property.defaultValue)
+                        }
+                        $foreignField.push($input[0]);
+                    })
+                    $input = $foreignField;
+                }
                 // console.log('input',$input)
                 let r_str = new RegExp("{{"+val.name+"}}","g");
-                $template = $template.replace(r_str,$input[0].outerHTML)
+                if($input.length > 1)
+                {
+                    var createField = '';
+                    for(var i= 0; i < $input.length ;i++){
+                        createField += $input[i].outerHTML;
+                    }
+                    $template = $template.replace(r_str,createField)    
+                } 
+                else {
+                    $template = $template.replace(r_str,$input[0].outerHTML)
+                }    
 
             })
             //$html.find('.grid_cell_text').append($template);
@@ -345,6 +374,7 @@ block content
                 let $html = $($('#addnewtext-template').html());
                 $html.find('.grid_cell_remove_handle').before('<td class="grid_cell_edit_handle"><i style="cursor:pointer;color:#1bbae1;width:0px;" class="glyphicon glyphicon-edit" onclick="openTemplateDialog(this)"></i></td>')
                 $(instance_data.entity).each(function(){
+                    console.log(this);
                     if(this.type=='boolean'){
                         $html.find('#'+this.name).val($('#schemaModal-template').find('#'+this.name).prop('checked'))
                     }else{
@@ -356,6 +386,7 @@ block content
                 $("#lnkAddnew").closest('tr').before($html);
             }else{
                 $(instance_data.entity).each(function(){
+                    // console.log('$activeRow',$activeRow);
                     $activeRow.find('#'+this.name).val($('#schemaModal-template').find('#'+this.name).val())
                 });
                 //let $html = $($activeRow.html())
