@@ -42,7 +42,12 @@ $ wget https://github.com/FlowzPlatform/DBETL.zip -O DBETL.zip; unzip DBETL.zip;
 	Now go to client folder. Run below command
 
 	$ npm install
-	$ npm start
+	
+	for windows
+	$ npm run start:windows
+	
+	for Linux/ubantu
+	$ npm run start:linux
 
 	Your application should run on port 3000 with the development environment configuration, so in your browser navigate to http://localhost:3000
 
