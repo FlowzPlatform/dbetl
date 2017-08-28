@@ -1,4 +1,4 @@
-# Flowz Schema Editor
+# Flowz DBETL
 
 A starter node js, jade and feathers application which provides master data creation based on schema with custom validation, custom template and can merge one schema with another.Multiple database selection (mongo,rethink,elastic etc) is available also .User can configure its own database. All CRUD operation can be done based on rest API. It also provides custom APIs where user can filter data by field names or field types.
 
@@ -23,13 +23,13 @@ The recommended way to get application is to use git to directly clone the Flowz
 $ git clone https://github.com/FlowzPlatform/FlowzSchemaEditor.git
 ```
 
-This will clone the latest version of the Flowz Schema Editor repository to the local folder.
+This will clone the latest version of the Flowz-DBETL  repository to the local folder.
 
 ### Downloading The Repository Zip File
-Another way to use the Flowz Schema Editor boilerplate is to download a zip copy from the [master branch on GitHub](https://github.com/FlowzPlatform/FlowzSchemaEditor.zip). You can also do this using the `wget` command:
+Another way to use the Flowz-DBETL boilerplate is to download a zip copy from the [master branch on GitHub](https://github.com/FlowzPlatform/DBETL.zip). You can also do this using the `wget` command:
 
 ```bash
-$ wget https://github.com/FlowzPlatform/FlowzSchemaEditor.zip -O FlowzSchemaEditor.zip; unzip FlowzSchemaEditor.zip; rm FlowzSchemaEditor.zip
+$ wget https://github.com/FlowzPlatform/DBETL.zip -O DBETL.zip; unzip DBETL.zip; rm FlowzSchemaEditor.zip
 ```
 
 ### Running Your Application
