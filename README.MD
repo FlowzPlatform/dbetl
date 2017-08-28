@@ -9,10 +9,11 @@ Make sure you have installed all of the following prerequisites on your developm
 
 * Node.js - [Download & Install Node.js](https://nodejs.org/en/download/) and the npm package manager. If you encounter any problems, you can also use this [GitHub Gist](https://gist.github.com/isaacs/579814) to install Node.js.
 
-* MongoDB - [Download & Install MongoDB](http://www.mongodb.org/downloads), and make sure it's running on the default port (27017).
+## Optional
 
-* RethinkDB - [Download & Install RethinkDB](https://rethinkdb.com/docs/install/), and make sure it's running on the default port (28015).
+* MongoDB - [Download & Install MongoDB](http://www.mongodb.org/downloads)
 
+* RethinkDB - [Download & Install RethinkDB](https://rethinkdb.com/docs/install/)
 
 ### Cloning The GitHub Repository
 The recommended way to get application is to use git to directly clone the Flowz-DBETL repository:
@@ -60,7 +61,10 @@ $ wget https://github.com/FlowzPlatform/DBETL.zip -O DBETL.zip; unzip DBETL.zip;
 
 ### Set your data base
 	
-	You can set your db after login. Also you can change your default database anytime from settings . 
+	You can set your db after login. Also you can change your default database anytime from settings. Currently it support below databases
+	1. Rethinkdb
+	2. Mongodb
+	3. Elasticdb
 
 ### Custom API
 
