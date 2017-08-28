@@ -70,22 +70,41 @@ $ wget https://github.com/FlowzPlatform/DBETL.zip -O DBETL.zip; unzip DBETL.zip;
 
 ### Custom API
 
-	create schema
-	update schema
-	delete schema
+	GET : 
+		1. Get all schema
+			http://localhost:3030/schema
+		2. Get schema by id
+			http://localhost:3030/schema/:id
+		3. Get schme by title or name
+			http://localhost:3030/schema?name=......
+		4. Get perticular schema entities based on types
+			http://localhost:3030/schema/:id?type=.....
+			types = [text , email, boolean, array, phone, number, date]
+		5. Get perticular schema entities based on fieldname
+			http://localhost:3030/schema/:id?fieldname=....
+		6. get all instance 
+			http://localhost:3030/instance
+		7. Get instance by id
+			http://localhost:3030/instance/:id
+	POST :
+		1. post schema
+			http://localhost:3030/schema
+		2. post instance
+			http://localhost:3030/instance
 
-	get all schema
-	get schema by name
-	get schema by id
-	get schema field by name
-	get schema field by type
+	PUT :
+		1. put schema
+			http://localhost:3030/schema/:id
 
-	create schemainsance
-	update schemainstance
-	delete schemainstance
-	getschema instance by id
+		2. put instance
+			http://localhost:3030/instance/:id
+
+	DELETE :
+		1. delete schema
+			http://localhost:3030/schema/:id
+		2. delete instance
+			http://localhost:3030/instance/:id
 	
-
 ### License
 Under the MIT license. See LICENSE file for more details.
 
