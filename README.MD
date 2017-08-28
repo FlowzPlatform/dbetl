@@ -29,7 +29,7 @@ This will clone the latest version of the Flowz-DBETL  repository to the local f
 Another way to use the Flowz-DBETL boilerplate is to download a zip copy from the [master branch on GitHub](https://github.com/FlowzPlatform/DBETL.zip). You can also do this using the `wget` command:
 
 ```bash
-$ wget https://github.com/FlowzPlatform/DBETL.zip -O DBETL.zip; unzip DBETL.zip; rm FlowzSchemaEditor.zip
+$ wget https://github.com/FlowzPlatform/DBETL.zip -O DBETL.zip; unzip DBETL.zip; rm DBETL.zip
 ```
 
 ### Running Your Application
