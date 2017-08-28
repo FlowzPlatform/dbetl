@@ -17,7 +17,7 @@ Make sure you have installed all of the following prerequisites on your developm
 
 
 ### Cloning The GitHub Repository
-The recommended way to get application is to use git to directly clone the Flowz Schema Editor repository:
+The recommended way to get application is to use git to directly clone the Flowz-DBETL repository:
 
 ```bash
 $ git clone https://github.com/FlowzPlatform/DBETL.git
