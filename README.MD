@@ -20,7 +20,7 @@ Make sure you have installed all of the following prerequisites on your developm
 The recommended way to get application is to use git to directly clone the Flowz Schema Editor repository:
 
 ```bash
-$ git clone https://github.com/FlowzPlatform/FlowzSchemaEditor.git
+$ git clone https://github.com/FlowzPlatform/DBETL.git
 ```
 
 This will clone the latest version of the Flowz-DBETL  repository to the local folder.
