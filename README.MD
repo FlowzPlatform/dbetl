@@ -60,6 +60,7 @@ $ wget https://github.com/FlowzPlatform/FlowzSchemaEditor.zip -O FlowzSchemaEdit
 	create schema
 	update schema
 	delete schema
+	
 
 	get all schema
 	get schema by name
