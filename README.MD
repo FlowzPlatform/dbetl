@@ -1,8 +1,6 @@
-# Flowz Schema Editor
+# Flowz DBETL
 
 A starter node js, jade and feathers application which provides master data creation based on schema with custom validation, custom template and can merge one schema with another.Multiple database selection (mongo,rethink,elastic etc) is available also .User can configure its own database. All CRUD operation can be done based on rest API. It also provides custom APIs where user can filter data by field names or field types.
-
-
 
 
 ## Prerequisites
@@ -17,31 +15,33 @@ Make sure you have installed all of the following prerequisites on your developm
 
 
 ### Cloning The GitHub Repository
-The recommended way to get application is to use git to directly clone the Flowz Schema Editor repository:
+The recommended way to get application is to use git to directly clone the Flowz-DBETL repository:
 
 ```bash
-$ git clone https://github.com/FlowzPlatform/FlowzSchemaEditor.git
+$ git clone https://github.com/FlowzPlatform/DBETL.git
 ```
 
-This will clone the latest version of the Flowz Schema Editor repository to the local folder.
+This will clone the latest version of the Flowz-DBETL  repository to the local folder.
 
 ### Downloading The Repository Zip File
-Another way to use the Flowz Schema Editor boilerplate is to download a zip copy from the [master branch on GitHub](https://github.com/FlowzPlatform/FlowzSchemaEditor.zip). You can also do this using the `wget` command:
+Another way to use the Flowz-DBETL boilerplate is to download a zip copy from the [master branch on GitHub](https://github.com/FlowzPlatform/DBETL.zip). You can also do this using the `wget` command:
 
 ```bash
-$ wget https://github.com/FlowzPlatform/FlowzSchemaEditor.zip -O FlowzSchemaEditor.zip; unzip FlowzSchemaEditor.zip; rm FlowzSchemaEditor.zip
+$ wget https://github.com/FlowzPlatform/DBETL.zip -O DBETL.zip; unzip DBETL.zip; rm DBETL.zip
 ```
 
 ### Running Your Application
 
 	First go to server folder. Run below command
-
+	
+	$ npm install
 	$ npm start
 	
 	Your api should run on port 3030 with the development environment configuration
 
 	Now go to client folder. Run below command
 
+	$ npm install
 	$ npm start
 
 	Your application should run on port 3000 with the development environment configuration, so in your browser navigate to http://localhost:3000
