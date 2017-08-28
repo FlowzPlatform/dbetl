@@ -32,7 +32,7 @@ $ wget https://github.com/FlowzPlatform/DBETL.zip -O DBETL.zip; unzip DBETL.zip;
 
 ### Running Your Application
 
-	First go to server folder. Run below command
+	First go to service folder. Run below command
 	
 	$ npm install
 	$ npm start
