@@ -55,9 +55,11 @@ $ wget https://github.com/FlowzPlatform/DBETL.zip -O DBETL.zip; unzip DBETL.zip;
 	That's it! Your application should be running. To proceed with your development, check the other sections in this documentation.
 
 	Notes :
- 		You can login through google account while starting application
-		Default username : admin@admin.com
+		Login Options
+		1) static credential
+			username : admin@admin.com
 		        Password : admin
+		2) Through google authentication
 
 ### Set your data base
 	
