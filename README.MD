@@ -35,13 +35,15 @@ $ wget https://github.com/FlowzPlatform/DBETL.zip -O DBETL.zip; unzip DBETL.zip;
 ### Running Your Application
 
 	First go to server folder. Run below command
-
+	
+	$ npm install
 	$ npm start
 	
 	Your api should run on port 3030 with the development environment configuration
 
 	Now go to client folder. Run below command
 
+	$ npm install
 	$ npm start
 
 	Your application should run on port 3000 with the development environment configuration, so in your browser navigate to http://localhost:3000
