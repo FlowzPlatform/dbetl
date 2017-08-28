@@ -1,0 +1,69 @@
+doctype html
+html
+  head
+    meta(charset='utf-8')
+    title= title
+    // CSS
+    link(rel='stylesheet', href='/node_modules/bootstrap/dist/css/bootstrap.min.css')
+    link(rel='stylesheet', href='/stylesheets/main.css')
+    script(src="/node_modules/jquery/dist/jquery.min.js")
+    script(src="/node_modules/jquery-ui-dist/jquery-ui.min.js")
+    script(src="/node_modules/bootstrap/dist/js/bootstrap.min.js")
+
+  body
+
+    //- main body of our application
+    .content-part
+      include ../partials/flash
+      article.row
+        .col-xs-12
+          // START Registration form
+          .panel.panel-form(style="box-shadow: 10px 10px 10px rgba(0,0,0,0.05);")
+            // Form header
+            .panel-heading
+              h2.title Registration
+              p
+                | Already have an account?
+                a(href='/auth/login')  Sign in.
+            .panel-body
+              form(action='/auth/register',method='post')
+                // Name
+                .form-group
+                  label.control-label(for='Name')
+                    | Name
+                    span.required-field *
+                  .has-feedback
+                    input.form-control(type='text', name='name', required="true")
+                    span.fa.fa-user.form-control-feedback(aria-hidden='true')
+
+                // Email
+                .form-group
+                  label.control-label(for='email')
+                    | Email
+                    span.required-field *
+                  .has-feedback
+                    input.form-control(type="email", name="email", required="true")
+                    span.fa.fa-envelope.form-control-feedback(aria-hidden='true')
+
+                // Passwords
+                .row
+                  .col-sm-6.form-group
+                    label.control-label(for='password1')
+                      | Password
+                      span.required-field *
+                    .has-feedback
+                      input.form-control(type="password", name="password", required="true")
+                      span.fa.fa-lock.form-control-feedback(aria-hidden='true')
+
+                  .col-sm-6.form-group
+                    label.control-label(for='password2')
+                      | Re-enter password
+                      span.required-field *
+                    .has-feedback
+                      input.form-control(type="password", name="cpassword", required="true")
+                      span.fa.fa-lock.form-control-feedback(aria-hidden='true')
+
+                // Create button
+                .form-group.text-center
+                  button.btn.btn-primary(type="submit", style="margin-top:10px") Create Account
+          // END Registration form

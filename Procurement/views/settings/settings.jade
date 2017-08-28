@@ -1,0 +1,275 @@
+extends ../layout
+
+block content
+    div.row
+        .block
+            .block-title(style="background-color:#394263;color:#fff;")
+                .block-options.pull-right
+                h2 Select Database
+
+            div
+                table#tblView.table.table-bordered.table-striped
+                    tbody
+                        h4 Configure Database
+                        .row
+                            .col-md-6
+                                .style_radio
+                                    .style_radio-danger
+                                        input#radio1(type='radio', name='SelectDb', value='MongoDB',data-target='#mongo', data-toggle='collapse')
+                                        label(for='radio1') MongoDB
+                                        // a.btn.btn-info(href='#demo', data-toggle='collapse') Simple collapsible
+                                        .row#mongo.collapse
+                                          .col-md-6
+                                            .input-group(style="margin-bottom: 5px;")
+                                              span.input-group-addon.btn-danger(style="") Host
+                                              input#hostMongoDB.form-control(type='text', name='host', placeholder='127:0:0:1')
+                                            .input-group
+                                              span.input-group-addon.btn-danger(style="") 
+                                                i.glyphicon.glyphicon-user
+                                              input#userMongoDB.form-control(type='text', name='user', placeholder='Username*')
+                                          .col-md-6
+                                            .input-group(style="margin-bottom: 5px;")
+                                              span.input-group-addon.btn-danger(style="margin-bottom: 5px;") Port
+                                              input#portMongoDB.form-control(type='number', name='port', placeholder='27017')
+                                            .input-group
+                                              span.input-group-addon.btn-danger(style="") 
+                                                i.glyphicon.glyphicon-lock
+                                              input#passMongoDB.form-control(type='password', name='pass', placeholder='Password*')
+                                          .col-md-12
+                                            .input-group(style="margin-top: 5px;")
+                                              span.input-group-addon.btn-danger(style="margin-bottom: 5px;") DBName
+                                              input#dbnameMongoDB.form-control(type='text', name='port', placeholder='schema_builder')
+                                .style_radio
+                                    .style_radio-success
+                                        input#radio2(type='radio', name='SelectDb', value='ElasticSearch',data-target='#elastic', data-toggle='collapse')
+                                        label(for='radio2') Elastic Search
+                                        .row#elastic.collapse
+                                          .col-md-6
+                                            .input-group(style="margin-bottom: 5px;")
+                                              span.input-group-addon.btn-success(style="") Host
+                                              input#hostElasticSearch.form-control(type='text', name='host', placeholder='127:0:0:1')
+                                            .input-group
+                                              span.input-group-addon.btn-success(style="") 
+                                                i.glyphicon.glyphicon-user
+                                              input#userElasticSearch.form-control(type='text', name='user', placeholder='Username*')
+                                          .col-md-6
+                                            .input-group(style="margin-bottom: 5px;")
+                                              span.input-group-addon.btn-success Port
+                                              input#portElasticSearch.form-control(type='number', name='port', placeholder='27017')
+                                            .input-group
+                                              span.input-group-addon.btn-success(style="") 
+                                                i.glyphicon.glyphicon-lock
+                                              input#passElasticSearch.form-control(type='password', name='pass', placeholder='Password*')
+                                          .col-md-12
+                                            .input-group(style="margin-top: 5px;")
+                                              span.input-group-addon.btn-success(style="margin-bottom: 5px;") DBName
+                                              input#dbnameElasticSearch.form-control(type='text', name='port', placeholder='schema_builder')
+
+                            .col-md-6
+                                .style_radio
+                                    .style_radio-primary
+                                        input#radio3(type='radio', name='SelectDb', value='RethinkDB',data-target='#rethink', data-toggle='collapse')
+                                        label(for='radio3') RethinkDB 
+                                        .row#rethink.collapse
+                                          .col-md-6
+                                            .input-group(style="margin-bottom: 5px;")
+                                              span.input-group-addon.btn-info(style="") Host
+                                              input#hostRethinkDB.form-control(type='text', name='host', placeholder='127:0:0:1')
+                                            .input-group
+                                              span.input-group-addon.btn-info(style="") 
+                                                i.glyphicon.glyphicon-user
+                                              input#userMongoDB.form-control(type='text', name='user', placeholder='Username*')
+                                          .col-md-6
+                                            .input-group(style="margin-bottom: 5px;")
+                                              span.input-group-addon.btn-info Port
+                                              input#portRethinkDB.form-control(type='number', name='port', placeholder='27017')
+                                            .input-group
+                                              span.input-group-addon.btn-info(style="") 
+                                                i.glyphicon.glyphicon-lock
+                                              input#passRethinkDB.form-control(type='password', name='pass', placeholder='Password*')
+                                          .col-md-12
+                                            .input-group(style="margin-top: 5px;")
+                                              span.input-group-addon.btn-info(style="margin-bottom: 5px;") DBName
+                                              input#dbnameRethinkDB.form-control(type='text', name='port', placeholder='schema_builder')
+                            //- .col-md-6
+                            //-     .style_radio
+                            //-         .style_radio-success
+                            //-             input#radio3(type='radio', name='SelectDb', value='ElasticSearch',data-target='#elastic', data-toggle='collapse')
+                            //-             label(for='radio3') Elastic Search
+                            //-             .row#elastic.collapse
+                            //-               .col-md-6
+                            //-                 .input-group(style="margin-bottom: 5px;")
+                            //-                   span.input-group-addon.btn-success(style="") Host
+                            //-                   input#hostRethinkDB.form-control(type='text', name='host', placeholder='127:0:0:1')
+                            //-                 .input-group
+                            //-                   span.input-group-addon.btn-success(style="") 
+                            //-                     i.glyphicon.glyphicon-user
+                            //-                   input#userMongoDB.form-control(type='text', name='user', placeholder='Username*')
+                            //-               .col-md-6
+                            //-                 .input-group(style="margin-bottom: 5px;")
+                            //-                   span.input-group-addon.btn-success Port
+                            //-                   input#portRethinkDB.form-control(type='number', name='port', placeholder='27017')
+                            //-                 .input-group
+                            //-                   span.input-group-addon.btn-success(style="") 
+                            //-                     i.glyphicon.glyphicon-lock
+                            //-                   input#passRethinkDB.form-control(type='password', name='pass', placeholder='Password*')
+                            //-               .col-md-12
+                            //-                 .input-group(style="margin-top: 5px;")
+                            //-                   span.input-group-addon.btn-success(style="margin-bottom: 5px;") DBName
+                            //-                   input#dbnameRethinkDB.form-control(type='text', name='port', placeholder='schema_builder')
+                        button#btnSubmit.btn.btn-info(type="submit",onclick='save()',style="margin-top:20px;")
+                            | Change Settings
+                        button#btnSubmit.btn.btn-warning(type="submit",onclick='cancel()',style="margin-top:20px;margin-left:10px;")
+                            | Cancel
+        script.
+            $(document).ready(function(){
+              // console.log('--------------',dbhost);
+              $.ajax({
+                url: dbhost + 'Settings/',
+                type: 'GET',
+                success: function (result) {
+                  if (!result.error) {
+                    //- // alert('mongo:'+result.mongo.isdefault+' rethink:'+result.rethink.isdefault+' elastic:'+result.elastic.isdefault);
+                    if(result.mongo.isdefault == 'true'){
+                      $('input:radio[name=SelectDb]:nth(0)').attr('checked',true);
+                    }
+                    if(result.elastic.isdefault == 'true'){
+                      $('input:radio[name=SelectDb]:nth(1)').attr('checked',true);
+                    }
+                    if(result.rethink.isdefault == 'true'){
+                      $('input:radio[name=SelectDb]:nth(2)').attr('checked',true);
+                    }
+                    $('#hostMongoDB').val(result.mongo.host);
+                    $('#portMongoDB').val(result.mongo.port);
+                    $('#hostRethinkDB').val(result.rethink.host);
+                    $('#portRethinkDB').val(result.rethink.port);
+                    $('#hostElasticSearch').val(result.elastic.host);
+                    $('#portElasticSearch').val(result.elastic.port);
+                  }
+                }
+              });
+            });
+
+            var save = function() {
+                var selected_db = $("input[type=radio]:checked").val();
+                var host = $('#host'+selected_db).val();
+                var port = $('#port'+selected_db).val();
+                var username = $('#user'+selected_db).val();
+                var password = $('#pass'+selected_db).val();
+                var dbname = $('#dbname'+selected_db).val();
+                //- // alert(selected_db+' host: '+host+' port: '+port);
+                var _data = {'database':selected_db , 'host': host ,'port':port ,'username':username ,'password':password, 'dbname':dbname};
+                $.ajax({
+                  url: dbhost + 'settings/',
+                  type: 'POST',
+                  data: _data,
+                  success: function (result) {
+                    //- // alert('Success!!'+JSON.stringify(result));
+                    toastr.success('Data Inserted','Suceess!!');
+                    setTimeout(function() {
+                      window.location.href = '/';
+                    },750);
+                  },
+                  error:function() {
+                     toastr.error('Data Not Saved...','Error!!');
+                     setTimeout(function() {
+                      window.location.href = '/settings';
+                    },750);
+                  }
+                });
+            }
+            var cancel = function() {
+                window.location.href = '/';
+            }
+
+        style.
+            .style_radio label {
+              width: 100%;
+              border-radius: 3px;
+              border: 1px solid #D1D3D4;
+              font-weight: normal;
+            }
+
+            .style_radio input[type="radio"]:empty {
+              display: none;
+            }
+
+            .style_radio input[type="radio"]:empty ~ label {
+              position: relative;
+              line-height: 2.5em;
+              text-indent: 3.25em;
+              margin-top: 2em;
+              cursor: pointer;
+              -webkit-user-select: none;
+                 -moz-user-select: none;
+                  -ms-user-select: none;
+                      user-select: none;
+            }
+
+            .style_radio input[type="radio"]:empty ~ label:before {
+              position: absolute;
+              display: block;
+              top: 0;
+              bottom: 0;
+              left: 0;
+              content: '';
+              width: 2.5em;
+              background: #D1D3D4;
+              border-radius: 3px 0 0 3px;
+            }
+
+            .style_radio input[type="radio"]:hover:not(:checked) ~ label{
+              color: #888;
+            }
+
+            .style_radio input[type="radio"]:hover:not(:checked) ~ label:before {
+              content: '\2714';
+              text-indent: .9em;
+              color: #C2C2C2;
+            }
+
+            .style_radio input[type="radio"]:checked ~ label {
+              color: #777;
+            }
+
+            .style_radio input[type="radio"]:checked ~ label:before{
+              content: '\2714';
+              text-indent: .9em;
+              color: #333;
+              background-color: #ccc;
+            }
+
+            .style_radio input[type="radio"]:focus ~ label:before {
+              box-shadow: 0 0 0 3px #999;
+            }
+
+            .style_radio-default input[type="radio"]:checked ~ label:before {
+              color: #333;
+              background-color: #ccc;
+            }
+
+            .style_radio-primary input[type="radio"]:checked ~ label:before {
+              color: #fff;
+              background-color: #337ab7;
+            }
+
+            .style_radio-success input[type="radio"]:checked ~ label:before {
+              color: #fff;
+              background-color: #5cb85c;
+            }
+
+            .style_radio-danger input[type="radio"]:checked ~ label:before {
+              color: #fff;
+              background-color: #d9534f;
+            }
+
+            .style_radio-warning input[type="radio"]:checked ~ label:before {
+              color: #fff;
+              background-color: #f0ad4e;
+            }
+
+            .style_radio-info input[type="radio"]:checked ~ label:before {
+              color: #fff;
+              background-color: #5bc0de;
+            }
+

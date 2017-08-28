@@ -1,0 +1,124 @@
+* {
+    box-sizing: border-box;
+}
+
+div {
+    display: block;
+}
+
+.panel {
+    margin-bottom: 20px;
+    background-color: rgb(255, 255, 255);
+}
+
+.panel.panel-form {
+    border-width: 1px;
+    border-style: solid;
+    border-color: rgb(230, 230, 230);
+    border-image: initial;
+    border-radius: 0px;
+}
+
+.panel-heading {
+    border-top-left-radius: 3px;
+    border-top-right-radius: 3px;
+    padding: 10px 15px;
+    border-bottom: 1px solid transparent;
+}
+
+.panel.panel-form .panel-heading {
+    text-align: center;
+    color: rgb(255, 255, 255);
+    border-bottom: 7px solid rgb(238, 238, 238);
+    background: rgb(17, 55, 95);
+}
+
+.content-part {
+    max-width: 500px;
+    width: 100%;
+    margin: 7% auto;
+}
+
+.btn-primary,
+.btn-primary:hover {
+    border-color: rgb(46, 109, 164);
+}
+
+.btn-primary,
+.btn-primary:hover {
+    background: #fff;
+    color: rgb(17, 55, 95);
+}
+
+.btn-primary {
+    color: rgb(255, 255, 255);
+    background-color: rgb(17, 55, 95);
+    border-color: rgb(46, 109, 164);
+}
+
+.btn {
+    display: inline-block;
+    margin-bottom: 0px;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.42857;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: middle;
+    touch-action: manipulation;
+    cursor: pointer;
+    user-select: none;
+    background-image: none;
+    padding: 6px 12px;
+    border-width: 1px;
+    border-style: solid;
+    border-color: transparent;
+    border-image: initial;
+    border-radius: 4px;
+}
+
+/* Shared */
+.loginBtn {
+  cursor: pointer;
+  box-sizing: border-box;
+  position: relative;
+  /* width: 13em;  - apply for fixed size */
+  margin: 0.2em;
+  padding: 0 15px 0 46px;
+  border: none;
+  text-align: left;
+  line-height: 34px;
+  white-space: nowrap;
+  border-radius: 0.2em;
+  font-size: 16px;
+  color: #FFF;
+}
+.loginBtn:before {
+  content: "";
+  box-sizing: border-box;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 34px;
+  height: 100%;
+}
+.loginBtn:focus {
+  outline: none;
+}
+.loginBtn:active {
+  box-shadow: inset 0 0 0 32px rgba(0,0,0,0.1);
+}
+
+/* Google */
+.loginBtn--google {
+  /*font-family: "Roboto", Roboto, arial, sans-serif;*/
+  background: #DD4B39;
+}
+.loginBtn--google:before {
+  border-right: #BB3F30 1px solid;
+  background: url('https://s3-us-west-2.amazonaws.com/s.cdpn.io/14082/icon_google.png') 6px 6px no-repeat;
+}
+.loginBtn--google:hover,
+.loginBtn--google:focus {
+  background: #E74B37;
+}

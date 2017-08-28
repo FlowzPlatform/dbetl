@@ -1,0 +1,83 @@
+extends ../layout
+
+block content
+    div.row
+        .block
+            .block-title
+                .block-options.pull-right
+                    a.btn.btn-alt.btn-sm.btn-primary.enable-tooltip(href='/schema/new', title='', data-original-title='Add new')
+                        i.fa.fa-plus
+                        | &nbsp;New
+                h2 Schema Definations
+
+            div
+                table#tblView.table.table-bordered.table-striped
+                    thead
+                        tr
+                            th Name
+                            th(style='text-align:center;') Action
+                                
+                    tbody
+                        if data.length == 0
+                            tr  
+                                td(colspan="2")
+                                    div.text-danger.text-center
+                                        | No record found
+
+                        each item in data
+                            tr(data-id="#{item._id}").line-content
+                                td #{item.title}
+                                td(style='width:200px;text-align:center;')
+                                    a(href='/schema/edit/#{item._id}',title='Edit',style='font-size: 15px;') 
+                                        i.glyphicon.glyphicon-edit
+                                    a(title="View",style="font-size: 15px;margin-left:8px;",role="button",data-toggle="collapse",href="##{item._id}",aria-expanded="false",aria-controls="#{item._id}") 
+                                        i.glyphicon.glyphicon-eye-open
+                                     //- a.text-danger(onclick='deleteSchema(this,"#{item._id}")', title='Delete',style="font-size: 15px; margin-left:8px;")
+                                             //- i.glyphicon.glyphicon-trash
+                                           
+                            tr.panel-collapse.collapse(id="#{item._id}",role="tabpanel",aria-labelledby="headingOne",data-id="#{item._id}")
+                                td(colspan='2')
+                                    div.col-md-12
+                                        if item.template != ''
+                                            table.table
+                                                tbody
+                                                        td!= item.template
+                                        else
+                                            table.table
+                                                thead
+                                                        th Name
+                                                        th Type
+                                                        th Notes
+                                                tbody
+                                                    each ent in item.entity
+                                                        tr
+                                                            td #{ent.name}
+                                                            td #{ent.type}
+                                                            td #{ent.notes}  
+                div
+                    ul(style="padding-left: 0px;")#pagin
+                        p.pull-right(style="color:#1bbae1") Total=#{data.length}
+    
+    
+
+    script(src="/js/Schema/list.js")
+    script(src="/js/pagination.js")
+    script.
+        // var deleteSchema = function(self,id) {
+        //     let url = dbhost + 'schema/' + id;
+        //     if (confirm("Are you sure you want to delete?") == true) {
+        //         $(self).progressbarStart();
+        //         $.ajax({
+        //             url: url,
+        //             type: 'DELETE',
+        //             success: function(result) {
+        //                 if (!result.error) {
+        //                     $(self).closest('tr').remove()
+        //                 }
+        //             },
+        //             complete: function () {
+        //                 $(self).progressbarEnd();
+        //             }
+        //         });
+        //     }
+        // }

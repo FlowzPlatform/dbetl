@@ -1,0 +1,440 @@
+extends ../layout
+
+block content 
+
+    mixin entity(obj,d)
+        for e in obj
+            td
+                if e.type == 'array'
+                    select.form-control(id="#{e.name}", title='#{e.name}')
+                        option(value="")  -- Select #{e.name}--
+                        for p in JSON.parse(e.property.array)
+                            if e.property.defaultValue == p 
+                                option(value="#{p}" selected="selected") #{p}
+                            else
+                                option(value="#{p}") #{p}
+                else if e.type == 'number' || e.type == 'boolean' || e.type == 'date' || e.type == 'text' || e.type == 'email' || e.type == 'phone'
+                    input.form-control(id="#{e.name}",type="#{e.type}",value="#{d[e.name]}" placeholder='#{e.name}',title='#{e.name}')
+                else
+                    - var gid = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g,function(x){var r=16*Math.random()|0,n="x"===x?r:3&r|8;return n.toString(16)})
+                    a(data-toggle='collapse', data-target='##{e.entity._id}#{gid}') #{e.name}
+                    table(id='#{e.entity._id}#{gid}' class="collapse")
+                        tbody
+                            tr  
+                                td
+                            for data in d[e.name]
+                                +row(e.entity.entity,data)
+                            
+                            tr  
+                                td(colspan='3', onclick='addnewtext(this)', data-entity='#{JSON.stringify(e.entity).replace(/"/g,"\'")}')
+                                  span.click-event(style='cursor:pointer;')  Add new option 
+
+
+
+    mixin row(obj,d)
+        tr
+            td.grid_cell_drag_handle
+                i.glyphicon.glyphicon-option-vertical
+                i.glyphicon.glyphicon-option-vertical
+            td.grid_cell_text
+                table.table.table-flow-instance-mutltichoice
+                    tbody
+                        tr 
+                            +entity(obj,d)
+            td.grid_cell_remove_handle(onclick='removeOption(this)')
+                i.glyphicon.glyphicon-remove-circle
+
+    input#hdnId(type="hidden",value="#{id1}")
+    #events.row
+        .col-sm-12
+            .panel.panel-default
+                .panel-heading(style="background: #394263;color: #fff;")
+                    | #{currentdata.title}
+                .panel-body
+                    div.col-lg-12
+                        div
+                            label Name
+                            input#instance_name.form-control
+                
+                        div 
+                            label Options
+                        div.table-responsive
+                            table#usertable.table.table-vcenter.table-bordered
+                                tbody
+                                    if currentdata.data
+                                        for d in currentdata.data.options
+                                            +row(currentdata.entity,d)
+                                    tr.ui-state-disabled
+                                        td#lnkAddnew(colspan='3',onclick='addnewtext(this)')
+                                            span.click-event(style='cursor:pointer;') Add new option
+                                                        
+                        button#btnSubmit.btn.btn-primary(type="submit",onclick='save()')
+                            | Submit
+
+                        button.btn.btn-warning(type="button",onclick='cancel()',style="margin-left:5px;")
+                            | Cancel
+
+
+    script#addnewtext-template(type="text/html")
+        tr
+            td.grid_cell_drag_handle
+                i.glyphicon.glyphicon-option-vertical
+                i.glyphicon.glyphicon-option-vertical
+            td.grid_cell_text
+                table.table.table-flow-instance-mutltichoice
+                    tbody
+                        tr  
+                            
+                            //- for e in currentdata.entity
+                            //-     td
+                            //-         if e.type == 'array'
+                            //-             select(id="#{e.name}", title='#{e.name}',style='width: 100%;border: 0;')
+                            //-                 option(value="")  -- Select #{e.name}--
+                            //-                 for p in JSON.parse(e.property.array)
+                            //-                     if e.property.defaultValue == p 
+                            //-                         option(value="#{p}" selected="selected") #{p}
+                            //-                     else
+                            //-                         option(value="#{p}") #{p}
+                            //-         else if e.type == 'number' || e.type == 'boolean' || e.type == 'date' || e.type == 'text' || e.type == 'email' || e.type == 'phone'
+                            //-             if e.hasOwnProperty('property')
+                            //-                 input(id="#{e.name}",type="#{e.type}", placeholder='#{e.name}',title='#{e.name}',style='width: 100%;border: 0;')
+                            //-             else
+                            //-                 input(id="#{e.name}",type="#{e.type}", placeholder='#{e.name}',title='#{e.name}',style='width: 100%;border: 0;')
+                                    
+
+            td.grid_cell_remove_handle(onclick='removeOption(this)')
+                i.glyphicon.glyphicon-remove-circle
+    #schemaModal-template.modal.fade(tabindex='-1', role='dialog', aria-labelledby='myModalLabel')
+                .modal-dialog(role='document')
+                    .modal-content
+                        .modal-header
+                            button.close(type='button', data-dismiss='modal', aria-label='Close')
+                                span(aria-hidden='true') ×
+                            h4#myModalLabel.modal-title Options
+                        .modal-body
+                            
+                        .modal-footer
+                            button.btn.btn-default(type='button', data-dismiss='modal') Close
+                            button#btnAddOption.btn.btn-primary(type='button', onclick="addOption()") Add
+
+    //- script(src="/js/flow-instance/new.js")
+    script.
+        let instance_data = !{JSON.stringify(currentdata)}
+        console.log('instance_data',instance_data)
+        $(function(){
+            $( "#usertable > tbody" ).sortable({
+                items: "tr:not(.ui-state-disabled)",
+            }).disableSelection();
+            if ($("#hdnId").val() !== 'undefined') {
+                ///////
+                    $('#instance_name').val(instance_data.name)
+                    //- instance_data.data.options.forEach(function (option) {
+                        
+                    //-     let $html = $($('#addnewtext-template').html())
+
+                    //-     if (instance_data.template.length == 0) {
+                    //-         $.each(option, function (k, v) {
+                    //-             $html.find('#' + k).attr('value', v);
+                    //-         });
+                    //-         //return $html;
+                    //-     } else {
+                    //-         $.each(option, function (k, v) {
+                    //-             $html.find('#' + k).attr('value', v).css({ 'pointer-events': 'none' });
+                    //-             // $html.find('#'+k).css('pointer-events': 'none');
+                    //-         });
+                    //-         //$html.find('.grid_cell_remove_handle').before('<td class="grid_cell_edit_handle"><i class="fa fa-edit" onclick="openTemplateDialog(this)"></i></td>');
+                    //-         $html.find('.grid_cell_remove_handle').before('<td class="grid_cell_edit_handle"><i style="cursor:pointer;color:#1bbae1;width:0px;" class="glyphicon glyphicon-edit" onclick="openTemplateDialog(this)"></i></td>')
+                    //-         //return $html;
+                    //-     }
+                    //-     $('#usertable > tbody > tr:last-child').before($html);
+                    //- });
+                ///////
+            }
+
+            if(instance_data.template.length == 0){
+                $('#lnkAddnew').click();
+            }
+            
+            $('#schemaModal-template').on('hidden.bs.modal', function () {
+                $("#usertable > tbody > tr.active").removeClass('active')
+            })
+        });
+        
+        var addnewtext = function(self) {
+            //if (commitAllData()) {
+                if($(self).attr('data-entity') == undefined){
+                    entity = instance_data
+                }else{
+                    entity = JSON.parse($(self).data().entity.replace(/'/g,"\"")) 
+                }
+                if(entity.template.length > 0){
+                    openTemplateDialog()
+                    //$html.find('.grid_cell_remove_handle').before('<td><i class="fa fa-edit" onclick="openTemplateDialog(this)"></i></td>')
+                }else{
+                    let $html = $($('#addnewtext-template').html());
+                    
+                    //////
+                        $html.find('.grid_cell_text > .table-flow-instance-mutltichoice > tbody > tr').html(generateRow(entity.entity));
+                        //- $(instance_data.entity).each(function(inx,val){
+                        //-     $input = null
+                        //-     if(val.type == "array"){
+                        //-         $input = $('<select/>').attr({
+                        //-             id : val.name,
+                        //-             title:val.name
+                        //-         }).addClass('form-control');//.css({width: '100%',border: 0})
+                        //-         $input.append('<option value="">-- Select '+val.name+' --</option>')  
+                        //-         if(val.hasOwnProperty('property')){
+                        //-             $(JSON.parse(val.property.array)).each(function(){
+                        //-                 $input.append('<option value="'+this+'">'+this+'</option>')  
+                        //-             })
+
+                        //-             if(val.property.defaultValue != ""){
+                        //-                 $input.find("option[value='"+val.property.defaultValue+"']").attr('selected', 'selected');
+                        //-             }
+                        //-         }
+                        //-     }else if ($.inArray(val.type.toLowerCase(), ['number', 'boolean', 'date', 'text', 'email', 'phone']) > -1) {
+                        //-         $input = $('<input/>').attr({
+                        //-             id : val.name,
+                        //-             type : (val.type == 'boolean')?'checkbox' : val.type,
+                        //-             placeholder: val.name,
+                        //-             title:val.name
+                        //-         }); //.css({width: '100%',border: 0})
+                        //-         if((val.type != 'boolean')){
+                        //-             $input.addClass('form-control')
+                        //-         }
+                        //-         if(val.hasOwnProperty('property') && val.property.defaultValue != ""){
+                        //-             $input.val(val.property.defaultValue)
+                        //-         }
+                        //-     }
+                            
+                        //-     if($input != null){
+                        //-         $html.find('.grid_cell_text > .table-flow-instance-mutltichoice > tbody > tr').append('<td>'+$input[0].outerHTML+'</td>')
+                        //-     }else{
+                        //-         $html.find('.grid_cell_text > .table-flow-instance-mutltichoice > tbody > tr').append('<td>'+val.entity.title+'</td>')
+                        //-     }
+                            
+                        //- })
+                        //- console.log($html)
+                        
+                    //////
+                    $(self).closest('tr').before($html);
+                }
+                
+                //$('#txtedit').focus().closest('tr').addClass('active');
+            //}
+        };
+
+        let generateRow = function(entity){
+            let $html = ''
+            $(entity).each(function(inx,val){
+                let $input = null
+                if(val.type == "array"){
+                    $input = $('<select/>').attr({
+                        id : val.name,
+                        title:val.name
+                    }).addClass('form-control');//.css({width: '100%',border: 0})
+                    $input.append('<option value="">-- Select '+val.name+' --</option>')  
+                    if(val.hasOwnProperty('property')){
+                        $(JSON.parse(val.property.array)).each(function(){
+                            $input.append('<option value="'+this+'">'+this+'</option>')  
+                        })
+
+                        if(val.property.defaultValue != ""){
+                            $input.find("option[value='"+val.property.defaultValue+"']").attr('selected', 'selected');
+                        }
+                    }
+                }else if ($.inArray(val.type.toLowerCase(), ['number', 'boolean', 'date', 'text', 'email', 'phone']) > -1) {
+                    $input = $('<input/>').attr({
+                        id : val.name,
+                        type : (val.type == 'boolean')?'checkbox' : val.type,
+                        placeholder: val.name,
+                        title:val.name
+                    }); //.css({width: '100%',border: 0})
+                    if((val.type != 'boolean')){
+                        $input.addClass('form-control')
+                    }
+                    if(val.hasOwnProperty('property') && val.property.defaultValue != ""){
+                        $input.val(val.property.defaultValue)
+                    }
+                }
+                
+                if($input != null){
+                    $html += '<td>'+$input[0].outerHTML+'</td>'
+                }else{
+                    let $htmlChild = $($('#addnewtext-template').html());
+                    
+                    let guid = createGuid()
+
+                    if(val.hasOwnProperty('property') && val.property.IsArray == 'true'){
+                        //console.log('generateRow(val.entity.entity)',generateRow(val.entity.entity))
+                        //console.log('htmlChild',$htmlChild.html())
+                        $htmlChild.find('.grid_cell_text .table-flow-instance-mutltichoice > tbody > tr ').html(generateRow(val.entity.entity))
+                        
+                        let $addLink = $('<tr class="ui-state-disabled"><td id="lnkAddnew" colspan="3" onclick="addnewtext(this)" data-entity="'+ JSON.stringify(val.entity).replace(/"/g,"\'") +'"><span class="click-event" style="cursor:pointer;"> Add new option </span></td></tr>').data({'name':'abc'})
+                        $html += '<td><a data-toggle="collapse" data-target="#'+(val.entity._id + guid)+'">'+val.name+'</a><table id="'+(val.entity._id + guid)+'" class="collapse"><tr><td>'+ $htmlChild[0].outerHTML +'</td></tr>' +$addLink.html()+ ' </tbody></table></td>'
+                    }else{
+                        $html += '<td><a data-toggle="collapse" data-target="#'+(val.entity._id + guid)+'">'+val.name+'</a><table id="'+(val.entity._id + guid)+'" class="collapse"><tr>'+ generateRow(val.entity.entity) +'</tr><tbody></table></td>'
+                    }
+                }
+            })
+            //console.log('$html',$html)
+            return $html;
+        }
+
+        var openTemplateDialog = function(self){
+            let $template = instance_data.template;
+            $(instance_data.entity).each(function(inx,val){
+                $input = null
+                if(val.type == "array"){
+                    $input = $('<select/>').attr({
+                        id : val.name,
+                        title:val.name
+                    }).addClass('form-control');//.css({width: '100%',border: 0})
+                    $input.append('<option value="">-- Select '+val.name+' --</option>')  
+                    if(val.hasOwnProperty('property')){
+                        $(JSON.parse(val.property.array)).each(function(){
+                            $input.append('<option value="'+this+'">'+this+'</option>')  
+                        })
+
+                        if(val.property.defaultValue != ""){
+                            $input.find("option[value='"+val.property.defaultValue+"']").attr('selected', 'selected');
+                        }
+                    }
+                }else if ($.inArray(val.type.toLowerCase(), ['number', 'boolean', 'date', 'text', 'email', 'phone']) > -1) {
+                    $input = $('<input/>').attr({
+                        id : val.name,
+                        type : (val.type == 'boolean')?'checkbox' : val.type,
+                        placeholder: val.name,
+                        title:val.name
+                    }); //.css({width: '100%',border: 0})
+                    if((val.type != 'boolean')){
+                        $input.addClass('form-control')
+                    }
+                    if(val.hasOwnProperty('property') && val.property.defaultValue != ""){
+                        $input.val(val.property.defaultValue)
+                    }
+                }
+                // console.log('input',$input)
+                let r_str = new RegExp("{{"+val.name+"}}","g");
+                $template = $template.replace(r_str,$input[0].outerHTML)
+
+            })
+            //$html.find('.grid_cell_text').append($template);
+            $("#schemaModal-template").find('.modal-body').empty().append($template);
+            if(self){
+                $(self).closest('tr').addClass('active');
+                $(instance_data.entity).each(function(){
+                    if(this.type=='boolean'){
+                        $('#schemaModal-template').find('#'+this.name).prop('checked',$(self).closest('tr').find('#'+this.name).val())
+                    }else{
+                        $('#schemaModal-template').find('#'+this.name).val($(self).closest('tr').find('#'+this.name).val())
+                    }
+                })
+                $("#schemaModal-template").find('#btnAddOption').text('Update');
+            }else{
+                $(self).closest('tr').removeClass('active');
+                $("#schemaModal-template").find('#btnAddOption').text('Add');
+            }
+            $('#schemaModal-template').modal('show');
+        }
+
+        var addOption = function(){
+            let $activeRow = $("#usertable > tbody > tr.active")
+
+            if($activeRow.length === 0){
+                let $html = $($('#addnewtext-template').html());
+                $html.find('.grid_cell_remove_handle').before('<td class="grid_cell_edit_handle"><i style="cursor:pointer;color:#1bbae1;width:0px;" class="glyphicon glyphicon-edit" onclick="openTemplateDialog(this)"></i></td>')
+                $(instance_data.entity).each(function(){
+                    if(this.type=='boolean'){
+                        $html.find('#'+this.name).val($('#schemaModal-template').find('#'+this.name).prop('checked'))
+                    }else{
+                        $html.find('#'+this.name).val($('#schemaModal-template').find('#'+this.name).val())
+                    }
+                });
+                $html.find('.grid_cell_text').css({'pointer-events' : 'none'}).find('td:gt(2)').hide()
+
+                $("#lnkAddnew").closest('tr').before($html);
+            }else{
+                $(instance_data.entity).each(function(){
+                    $activeRow.find('#'+this.name).val($('#schemaModal-template').find('#'+this.name).val())
+                });
+                //let $html = $($activeRow.html())
+            }
+            
+            $('#schemaModal-template').modal('hide');
+        }
+        var getData = function($domOBJ, entity) {
+            var options = [];
+            $domOBJ.each(function(k, v) {
+                var obj = {}
+                obj['id'] = createGuid();
+                $(entity).each(function(){
+                    if($.inArray(this.type.toLowerCase(), ['array','number', 'boolean', 'date', 'text', 'email', 'phone']) > -1){
+                        obj[this.name] = $(v).find("[id='"+this.name+"']").val()
+                    }else{
+                        if(this.hasOwnProperty('property') && this.property.IsArray == 'true'){
+                            obj[this.name]  = getData($(v).find("[id^='"+this.entity._id+"'] > tbody").children('tr:not(:last-child):not(:first-child)'),this.entity.entity)
+                        }else{
+                            obj[this.name]  = getData($(v).find("[id^='"+this.entity._id+"'] > tbody").children('tr'),this.entity.entity)
+                        }
+                    }
+                })
+                options.push(obj)
+            });
+            return options;
+        };
+
+        var save = function() {
+            var flowinstance_id = $('#hdnId').val();
+
+            var _data = {
+                // options : getData()
+                options : getData($('#usertable > .ui-sortable').children('tr:not(:last-child)'),instance_data.entity)
+            };
+
+            instance_data.name = $('#instance_name').val();
+            if(flowinstance_id != 'undefined'){
+                var schema_id = instance_data.Schemaid;
+                delete instance_data.Schemaid;
+                instance_data.Schemaid = schema_id;
+            }
+            else{
+                instance_data.Schemaid = instance_data._id;
+            }
+            delete instance_data._id;
+            delete instance_data.id;
+            instance_data.data = _data;
+            instance_data.createdBy = "#{session.userdetails.fullname}";
+            
+            $("#btnSubmit").progressbarStart();
+            
+            $.ajax({
+                url: host + 'Instance' + ((flowinstance_id != 'undefined')?'/'+flowinstance_id:''),
+                type: (flowinstance_id != 'undefined')?'PUT':'POST',
+                data: instance_data,
+                success: function (response) {
+                    if (!response.error) {
+                        // alert('success'+JSON.stringify(response));
+                        toastr.success('Data Saved!', 'Successfully');
+                        setTimeout(function() {
+                            window.location.href = "/";
+                        },2000);
+                        
+                        // alert("/flowsInstance/"+currentdata._id);
+                    }
+                },
+                error: function(){
+                    $("#btnSubmit").progressbarEnd();
+                    toastr.error('Data not Saved!', 'Error');
+                }
+            });
+            return true;
+        };
+
+        var removeOption = function(self) {
+            $(self).closest('tr').remove();
+        };
+
+        let cancel = function(){
+            window.location.href = '/schema'
+        }

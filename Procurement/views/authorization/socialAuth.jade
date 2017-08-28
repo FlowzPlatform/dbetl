@@ -1,0 +1,42 @@
+doctype html
+html
+  head
+    meta(charset='utf-8')
+    title= title
+    // CSS
+    link(rel='stylesheet', href='/node_modules/bootstrap/dist/css/bootstrap.min.css')
+    link(rel='stylesheet', href='/stylesheets/main.css')
+
+  body
+    //- main body of our application
+    
+    .content-part
+      include ../partials/flash
+      .row
+        .col-xs-12
+
+          .panel.panel-form(style="box-shadow: 10px 10px 10px rgba(0,0,0,0.05);")
+            // Form header
+            .panel-heading(style="border-top-left-radius: 3px; border-top-right-radius: 3px; padding: 10px 15px; border-bottom: 1px solid transparent;text-align: center;color: rgb(255, 255, 255); border-bottom: 7px solid rgb(238, 238, 238); background: rgb(17, 55, 95);")
+              h2.title Registration Process
+            .panel-body
+                form(method='post' action='/auth/signin')
+                    // user email
+                    .form-group
+                      label.control-label(for='email') Email
+                      .has-feedback
+                        input.form-control(type="email", name="email", required="true")
+                        span.form-control-feedback(aria-hidden='true')
+
+                    //- .form-group
+                    //-   label.control-label(for='about me') About me
+                    //-   .has-feedback
+                    //-     textarea.form-control(name="aboutme", required="true")
+                    //-     span.form-control-feedback(area-hidden='true')
+
+                    .form-group
+                      input.form-control(type="hidden" name="id" value="#{id}")
+
+                    // Login button
+                    .form-group.text-center
+                        button.btn.btn-primary(type="submit", style="margin-top:10px") Register
