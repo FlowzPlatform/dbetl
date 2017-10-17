@@ -5,5 +5,17 @@
   "paginate": {
     "default": 10,
     "max": 50
-  }
+  },
+  "rethinkdb": {
+    "db": "FlowzEngine",
+    "servers": [{
+      "host": "localhost",
+      "port": "28015"
+    }]
+  },
+  "scheduler_table": "scheduler",
+  "qJobTimeout": 3600000,
+  "qJobRetryMax": 0,
+  "instance_table": "flowzinstance",
+  "approvar_table": "approvalClass"
 }

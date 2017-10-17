@@ -1,0 +1,779 @@
+<template>
+    <div id="app">
+      <h3>Add New Connection</h3>
+      <Steps :current="currentStep">
+            <Step title="1"></Step>
+            <Step title="2"></Step>
+        </Steps>
+      <template  v-if="currentStep == 1">
+    
+            <Form  ref="frmSettings" :model="frmSettings" :rules="frmRule" class="form">
+            <Row :gutter="20">
+            <Col span="12">
+                <FormItem label="Connection Name" prop="connection_name">
+                    <Input placeholder="Connection Name" v-model.trim="frmSettings.connection_name"></Input>
+                </FormItem>
+                <FormItem label="Host" prop="host">
+                    <Input placeholder="localhost" v-model.trim="frmSettings.host"></Input>
+                </FormItem>
+                <FormItem label="username">
+                    <Input placeholder="Username" v-model.trim="frmSettings.username"></Input>
+                </FormItem>
+                <FormItem label="Select Database">
+                    <Select v-model="frmSettings.selectedDb" @on-change="clearIcon">
+                        <Option value="mongo" key="mdb">Mongo DB</Option>
+                        <Option value="rethink" key="rdb">Rethink DB</Option>
+                        <Option value="elastic" key="edb">ElasticSearch DB</Option>
+                        <Option value="nedb" key="ndb">Ne DB</Option>
+                        <Option value="mysql" key="mysql">MySQL DB</Option>
+                    </Select>
+                </FormItem>
+            <!--
+                <FormItem label="Notes">
+                    <Input type="textarea" v-model="frmSettings.notes"></Input>
+                </FormItem> -->
+
+
+                <FormItem label="Icon" v-if="frmSettings.selectedDb">
+                    <div class="demo-upload-list">
+                        <template>
+                            <img v-if="frmSettings.upldIcn" :src="frmSettings.upldIcn">
+                            <div v-else>
+                                <img v-if="frmSettings.selectedDb === 'mongo'" :src="mongo">
+                                <img v-if="frmSettings.selectedDb === 'rethink'" :src="rethink">
+                                <img v-if="frmSettings.selectedDb === 'elastic'" :src="elastic">
+                                <img v-if="frmSettings.selectedDb === 'nedb'" :src="nedb">
+                            </div>
+                        </template>
+                     </div>
+                     <Col v-if="loading" class="demo-spin-col" span="1">
+                        <Spin fix>
+                            <Icon type="load-c" size=18 class="demo-spin-icon-load"></Icon>
+                        </Spin>
+                    </Col>
+                    <div class="upload-btn-wrapper">
+                        <button class="btn"><Icon type="ios-cloud-upload-outline"></Icon> Upload Icon</button>
+                        <input type="file" id="upldIcn" title="Upload icon" accept="image/*">
+                    </div>
+                </FormItem>
+
+                <FormItem>
+                    <Checkbox v-model="frmSettings.isenable" label="enable">Enable</Checkbox>
+                    <Checkbox v-model="frmSettings.isdefault" label="default">is Default</Checkbox>
+                </FormItem>
+            </Col>
+            <Col span="12">
+                <FormItem label="Database Name" prop="dbname">
+                    <Input placeholder="Flowz" v-model.trim="frmSettings.dbname"></Input>
+                </FormItem>
+                <FormItem label="Port" prop="port">
+                    <Input placeholder="8080" v-model.trim="frmSettings.port"></Input>
+                </FormItem>
+                <FormItem label="Password">
+                    <Input type="password" placeholder="Password" v-model.trim="frmSettings.password"></Input>
+                </FormItem>
+
+                <FormItem label="Notes">
+                    <Input type="textarea" v-model.trim="frmSettings.notes"></Input>
+                </FormItem>
+
+                <Button type="primary" v-on:click="goToStep(2, 'frmSettings')">Continue</Button>
+                </Col>
+                </Row>
+                </Form>
+      </template>
+      <template  v-if="currentStep == 2">
+        <Form ref="frmSettings" :model="frmSettings" :rules="frmRule" class="form">
+          <Row :gutter="20">
+            <Col span="12">
+                <FormItem prop="rdoCrt">
+                    <RadioGroup v-model="frmSettings.rdoCrt" @on-change="getSchemaAll(frmSettings.rdoCrt)">
+                        <Radio label="rbtCSV"><span>CSV Upload</span></Radio>
+                        <Radio label="rbtDB"><span>By Database</span></Radio>
+                    </RadioGroup>
+                </FormItem> 
+                <FormItem>
+                  <Row>
+                       <Col span="6">
+                          <FormItem prop="rdosync">
+                              <RadioGroup v-model="frmSettings.rdosync" v-if="frmSettings.rdoCrt == 'rbtDB'">
+                                  <Radio label="rbtsync"><span>Keep Sync</span></Radio>
+                              </RadioGroup>
+                          </FormItem>
+                        </Col>
+                        <Col span="6">
+                          <FormItem prop="keep_sync" v-if="frmSettings.rdosync == 'rbtsync' && frmSettings.rdoCrt == 'rbtDB'">
+                              <Input placeholder="Everyday/Everyhour" v-model.trim="frmSettings.keep_sync"></Input>
+                          </FormItem>
+                        </Col>
+                  </Row>
+                </FormItem>
+                <FormItem prop="rdodb">
+                    <RadioGroup v-model="frmSettings.rdodb" v-if="frmSettings.rdoCrt == 'rbtDB'" @on-change="getTableAll()">
+                        <Radio label="rbtCrnt"><span>Current Database</span></Radio>
+                        <Radio label="rbtExstng"><span>Existing Database</span></Radio>
+                    </RadioGroup>
+                </FormItem>
+                <FormItem label="Create with" v-if="frmSettings.rdoCrt == 'rbtDB' && frmSettings.rdodb == 'rbtExstng'" >
+                    <Select v-model="frmSettings.optCrt" @on-change="getsettingsAll(frmSettings.optCrt)">
+                        <Option value="schema" key="schema">Only Schema</Option>
+                        <Option value="schemaData" key="schemaData">Both Schema & Data</Option>
+                    </Select>
+                </FormItem>
+                <FormItem>
+                    <Row>
+                        <Col span="10" v-if="frmSettings.rdoCrt == 'rbtCSV'">
+                            <h4>CSV File Upload</h4>
+                            <div class="upload-btn-wrapper">
+                                <button class="btn"><Icon type="ios-cloud-upload-outline"></Icon> Upload CSV</button>
+                                <input type="file" id="upldCSV" title="Upload CSV">
+                            </div>
+                        </Col>
+                       <!--  <FormItem v-if="frmSettings.rdoCrt == 'rbtDB'" style="display:none;">
+                            <h4>Select Database</h4>
+                            <ul>
+                            <li>
+                                <input type="checkbox"  value="mongo" v-model="frmSettings.Database" @change="enable()"/>
+                                Mongo DB
+                            </li>
+                            <li>
+                                <input type="checkbox"  value="rethink" v-model="frmSettings.Database" @change="enable()"/>
+                                Rethink DB
+                            </li>
+                            <li>
+                                <input type="checkbox"  value="elastic" v-model="frmSettings.Database" @change="enable()"/>
+                                ElasticSearch DB
+                            </li>
+                            <li>
+                                <input type="checkbox"  value="ne" v-model="frmSettings.Database" @change="enable()"/>
+                                Ne DB
+                            </li>
+                            </ul>
+                        </FormItem> -->
+                         
+                        <Col span="10" v-if="frmSettings.rdoCrt == 'rbtDB'">
+                            <h4>Database Settings</h4>
+                            <div class="upload-btn-wrapper">
+                                <button class="btn"><Icon type="ios-cloud-upload-outline"></Icon> Upload</button>
+                                <input type="file" id="upload" title="Upload">
+                            </div>
+                        </Col>
+                    </Row>
+                </FormItem> 
+            </Col>
+
+            
+        <div v-if="frmSettings.optCrt && frmSettings.rdoCrt == 'rbtDB' && frmSettings.rdodb == 'rbtExstng'">
+            <Tabs type="card" style="width: 100%;">
+                <TabPane label="mongo">
+                    <Table border :columns="tabsData.mongoCols" :data="tabsData.mongoDt"></Table>
+                </TabPane>
+                <TabPane label="rethink"> 
+                    <Table border :columns="tabsData.rethinkCols" :data="tabsData.rethinkDt"></Table>
+                </TabPane>
+                <TabPane label="elastic" > 
+                    <Table border :columns="tabsData.elasticCols" :data="tabsData.elasticDt"></Table>
+                </TabPane>
+                <TabPane label="nedb"> 
+                    <Table border :columns="tabsData.nedbCols" :data="tabsData.nedbDt"></Table>
+                </TabPane>
+                <TabPane label="mysqldb"> 
+                    <Table border :columns="tabsData.mysqlCols" :data="tabsData.mysqlDt"></Table>
+                </TabPane>
+            </Tabs>
+        </div>
+        </Row>
+        <Row v-if="frmSettings.upldCSV">
+            <FormItem>
+            <div class="schema-form ivu-table-wrapper">
+            <div class="ivu-table ivu-table-border">
+                <div class="ivu-table-body">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th width="200" v-for="(item, index) in frmSettings.upldCSV[0]">
+                                    <div>
+                                        <span>{{item}}</span>
+                                    </div>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody class="ivu-table-tbody">
+                            <tr class="ivu-table-row" v-for="(item, index) in frmSettings.upldCSV">
+                                <td class="" v-if="index != 0 && index <= frmSettings.upldCSV.length-2" v-for="data in item">{{data}}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+          </div>
+          </FormItem>
+
+          <FormItem>
+            <div class="schema-form ivu-table-wrapper">
+            <div class="ivu-table ivu-table-border">
+                <div class="ivu-table-body">
+                    <table>
+                        <colgroup>
+                            <col width="300">
+                                <col width="300">
+                                    <col width="200">
+                                        <col width="70">
+                                            <col width="300">
+                                                <col width="100">
+                        </colgroup>
+                        <thead>
+                            <tr>
+                                <th class="">Header</th>
+                                <th class="">Edit header</th>
+                                <th class="">Type</th>
+                                <th class="">Property</th>
+                                <th class="">Notes</th>
+                                <th class="">Transform</th>
+                            </tr>
+                        </thead>
+                        <tbody class="ivu-table-tbody">
+                            <tr class="ivu-table-row" v-for="(item, index) in frmSettings.upldCSV[0]">
+                                <th>
+                                    <div class="ivu-table-cell">
+                                        <span>{{item}}</span>
+                                    </div>
+                                </th>
+                                <td><Input type="text" :value="item" :placeholder="item" size="small" class="schema-form-input"></Input></td>
+                                <td class="">
+                                    <div class="ivu-table-cell">
+                                      <Select v-model="optType" size="small" class="schema-form-input">
+                                          <Option v-for="t in optType" :value="t.value" :key="t.value">{{t.label}}</Option>
+                                          <!-- <Option value="email" key="email">Email</Option>
+                                          <Option value="number" key="number">Number</Option>
+                                          <Option value="boolean" key="boolean">Boolean</Option>
+                                          <Option value="phone" key="phone">Phone</Option>
+                                          <Option value="date" key="date">Date</Option> -->
+                                      </Select>
+                                    </div>
+                                </td>
+                                <td class="">
+                                    <div class="ivu-table-cell">
+                                      <Poptip placement="left" width="300">
+                                        <a><Icon type="edit"></Icon></a>
+                                        <div slot="title"><h3>Property</h3></div>
+                                        <div slot="content">
+                                          <Form-item v-if="activatedProperty('min')" label="Min" :label-width="80" class="no-margin">
+                                            <Input-number size="small"></Input-number>
+                                          </Form-item>
+                                          <Form-item v-if="activatedProperty('max')" label="Max" :label-width="80" class="no-margin">
+                                            <Input-number size="small"></Input-number>
+                                          </Form-item>
+                                          <Form-item v-if="activatedProperty('allowedValue')" label="Allowed Value" class="no-margin">
+                                            <input-tag style="margin-left:80px;width:200px"></input-tag>
+                                          </Form-item>
+                                          <Form-item v-if="activatedProperty('defaultValue')" label="Default Value" :label-width="80" class="no-margin">
+                                            <Input size="small"></Input>
+                                          </Form-item>
+                                          <Form-item v-if="activatedProperty('regEx')" label="regEx" :label-width="80" class="no-margin">
+                                            <Input></Input>
+                                          </Form-item>
+                                          <Form-item v-if="activatedProperty('placeholder')" label="Placeholder" :label-width="80" class="no-margin">
+                                            <Input size="small"></Input>
+                                          </Form-item>
+                                          <Form-item v-if="activatedProperty('IsArray')" label="" :label-width="80" class="no-margin">
+                                            <Checkbox>Is Array</Checkbox>
+                                          </Form-item>
+                                          <Form-item v-if="activatedProperty('optional')" label="" :label-width="80" class="no-margin">
+                                            <Checkbox style="margin-left:80px;">Optional</Checkbox>
+                                          </Form-item>
+                                        </div>
+                                      </Poptip>
+                                    </div>
+                                </td>
+                                <td class="">
+                                    <div class="ivu-table-cell">
+                                        <Input type="textarea" placeholder="Notes..." size="small" class="schema-form-input"></Input>
+                                    </div>
+                                </td>
+                                <td class="">
+                                    <div class="ivu-table-cell">
+                                        <a @click="model = true"><Icon type="compose"></Icon></a>
+                                        <Modal v-model="model" title="Transform" @on-ok="handleModalOk" width="900px">
+                                            <Row>
+                                                <Col span="20">Script</Col>
+                                                <Col span="4">Opration</Col>
+                                            </Row>
+                                        </Modal>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+          </div>
+          </FormItem>
+        </Row>
+        <Row>
+            <FormItem>
+                <Button type="primary" @click="handleSubmit('frmSettings')">Create Connection</Button>
+            </FormItem>
+        </Row>
+        <!-- <div>{{frmSettings}}</div> -->
+        </Form>
+
+        </template>
+    </div>
+</template>
+<script>
+/*eslint-disable*/
+const $ = require('jquery')
+import Papa from 'papaparse'
+import api from '../api'
+import schema from '../api/schema'
+import InputTag from 'vue-input-tag'
+import mongo from '../assets/images/mongo.png'
+import rethink from '../assets/images/rethink.png'
+import elastic from '../assets/images/elasticsearch.png'
+import nedb from '../assets/images/nedb.png'
+import Tab from './Tab'
+let _ = require('lodash')
+import expandRow from './table-expand.vue'
+import Emitter from '@/mixins/emitter'
+export default{
+    name: 'Settings',
+    mixins: [ Emitter ],
+    components: {'input-tag': InputTag, 'f-tab': Tab,  expandRow },
+    props: { 
+        checked: {
+            type: Boolean,
+            default: true
+        }
+    },
+    data() {
+        return {
+          currentStep: 1,
+          check: this.checked,
+          frmSettings: {
+              isenable: true,
+              connection_name: '',
+              host: '',
+              port: '',
+              dbname: '',
+              username: '',
+              password: '',
+              selectedDb: '',
+              upldIcn: '',
+              optCrt: '',
+              rdoCrt: '',
+              rdodb: '',
+              rdosync: '',
+              keep_sync: '',
+              notes: '',
+              Database: [],
+              isdefault: false
+          },
+            loading: false,
+             frmRule: {
+                connection_name: [
+                    { required: true, message: 'Please enter connection name', trigger: 'blur' }
+                ],
+                host: [
+                    { required: true, message: 'Please enter host name', trigger: 'blur' },
+                ],
+                port: [
+                    { required: true, message: 'Please enter port number', trigger: 'blur' },
+                ],
+                dbname: [
+                    { required: true, message: 'Please enter database name', trigger: 'blur' }
+                ],
+                rdoCrt: [
+                    { required: true, message: 'Please Select optio', trigger: 'blur' },
+                ],
+            },
+            mongo,
+            rethink,
+            elastic,
+            nedb,
+            model: false,
+            optType: [{
+                value: 'text',
+                label: 'Text'
+            }, {
+                value: 'email',
+                label: 'Email'
+            }, {
+                value: 'number',
+                label: 'Number'
+            }, {
+                value: 'boolean',
+                label: 'Boolean'
+            }, {
+                value: 'phone',
+                label: 'Phone'
+            }, {
+                value: 'date',
+                label: 'Date'
+            }],
+            allSetting: [],
+            allSchema: [],
+            tabsData: {
+                mongoCols: [],
+                mongoDt: [],
+                rethinkCols: [],
+                rethinkDt: [],
+                elasticDt: [],
+                elasticCols: [],
+                nedbDt: [],
+                nedbCols: [],
+                mysqlDt: [],
+                mysqlCols:[]
+            },
+            keys:[]
+        }
+    },
+    methods: {
+        getSchemaAll : function (value) {
+            // // alert(value)
+            // if (value === 'rbtDB') {
+            //     schema.get()
+            //         .then((response) => {
+            //             this.allSchema = response.data
+            //             console.log(response.data)  
+            //         })
+            //         .catch(error => {
+            //             console.log(error)
+            //         })
+            // } 
+        },
+        getsettingsAll : function (value) {
+             this.tabsData = {
+                mongoCols: [],
+                mongoDt: [],
+                rethinkCols: [],
+                rethinkDt: [],
+                elasticDt: [],
+                elasticCols: [],
+                nedbDt: [],
+                nedbCols: [],
+                mysqlDt: [],
+                mysqlCols:[]
+            }
+        
+             api.request('get', '/settings')
+                .then(response => {
+                    this.allSetting = response.data
+                    _.forEach(this.allSetting, (dbInst, db) => {
+                        if (dbInst.dbinstance.length != 0) {
+                                this.tabsData[db + 'Cols'].push({
+                                    type: 'expand',
+                                    width: 50,
+                                    render: (h, params) => {
+                                        return h(expandRow, {
+                                            props: {
+                                                row: {db: db, dbData:this.tabsData[db + 'Dt'][params.index]},
+                                                id: this.tabsData[db + 'Dt'][params.index].id,
+                                                index: params.index,
+                                                db: 'mongo'
+                                            }
+                                        })
+                                    }
+                                })
+                                this.tabsData[db + 'Cols'].push({
+                                    title: 'Select',
+                                    width: 80,
+                                    align: 'center',
+                                    render: (h, params) => {
+                                        return h('Checkbox', {
+                                            props: {
+                                              value: params.row.checked
+                                            },
+                                            on: {
+                                              'on-change': (value) => {
+                                                if(value == true){
+                                                    this.check = value
+                                                    // console.log("this.selectSchema",this.selectSchema);
+                                                   // this.frmSettings.push(this.selectSchema);
+                                                } else {
+                                                    this.check = value
+                                                }
+                                                
+                                                // this.enableDbInstance(this.tabPane, params.index, value)
+                                              }
+                                            }
+                                        })
+                                    }
+                                })
+                            _.forEach(dbInst.dbinstance[0], (v, k) => {
+                                this.tabsData[db + 'Cols'].push({title: k, key: k})
+                            })
+                        }
+                        this.tabsData[db + 'Dt'] = _.map(this.allSetting[db].dbinstance, m => {
+                            return {
+                                checked: true,
+                                dbname: m.dbname,
+                                host: m.host,
+                                id: m.id,
+                                isdefault: m.isdefault,
+                                isenable: m.isenable,
+                                notes: m.notes,
+                                port: m.port,
+                                rdoCrt: m.rdoCrt,
+                                upldIcn: m.upldIcn
+                            }
+                        })
+                    })
+                })
+                .catch(error => {
+                  console.log(error);
+                })
+           
+        },
+        getTableAll: function() {
+
+        },
+        goToStep: function(step, name) {
+          this.$refs[name].validate((valid) => {
+            if (valid) {
+              this.currentStep = step;
+            }
+          })
+        },
+        clearIcon(value) {
+            this.frmSettings.upldIcn = ''
+        },
+        handleModalOk() {
+            console.log('OK');
+        },
+        enable(value){
+            this.tabsData = {
+                mongoCols: [],
+                mongoDt: [],
+                rethinkCols: [],
+                rethinkDt: [],
+                elasticDt: [],
+                elasticCols: [],
+                neDt: [],
+                neCols: []
+            }
+            _.forEach(this.allSchema, (obj) => {
+                _.forEach(this.frmSettings.Database, (db) => {
+                    // obj.database[0] == db
+                    // alert(db)
+                    if (obj.database[0] == db) {
+                        this.tabsData[db + 'Dt'].push(obj)
+                        _.forEach(obj, (v, k) => {
+                            this.tabsData[db + 'Cols'].push({title: k, key: k})
+                        })
+                       // this.keys = Object.keys(this.obj)
+                    }
+                })
+            })
+            console.log('this.tabsData', this.tabsData)
+        },
+
+        dbcall(){
+            if(document.getElementById('mongo').checked) {
+                        return result.mongo
+                    }
+        },
+       
+        handleSubmit(name) {
+            this.$refs[name].validate((valid) => {
+                if (valid) {
+                    let guid = (this.S4() + this.S4() + "-" + this.S4() + "-4" + this.S4().substr(0,3) + "-" + this.S4() + "-" + this.S4() + this.S4() + this.S4()).toLowerCase();
+                    let obj = this.frmSettings;
+                    delete obj.optCrt
+                    delete obj.rdoCrt
+                    delete obj.Database
+                    obj.id = guid;
+                    api.request('post', '/settings', obj)
+                        .then(response => {
+                            // this.$Message.success('Success');
+                            if(response.data == 'Exist'){
+                                this.$Notice.error({duration: 5, title:'Alredy Exist!!', desc:'Connection Alredy exist...'})
+                               
+                            }
+                            else {
+                                this.$Notice.success({duration: 3, title:'Success!!', desc:'Connection Created...'})
+                                this.$router.push('/db');
+                               
+                            }
+                        })
+                        .catch(error => {
+                            // this.$Message.error('Error!!');
+                            this.$Notice.error({duration: 3, title:'Error!!'})
+                            console.log(error)
+                            this.loading = false
+                        })
+                } else {
+                    // this.$Message.error('Error!');
+                    this.$Notice.error({duration: 2, title:'Error!!', desc:'Please enter inputs!'})
+                   
+                }
+            })
+        },
+        S4() {
+            return (((1+Math.random())*0x10000)|0).toString(16).substring(1);
+        },
+        activatedProperty (property) {
+            let typePropertys = {
+                'text': ['max', 'allowedValue', 'defaultValue', 'placeholder', 'regEx', 'optional'],
+                'email': ['allowedValue', 'defaultValue', 'placeholder', 'optional'],
+                'number': ['min', 'max', 'allowedValue', 'defaultValue', 'placeholder', 'regEx', 'optional'],
+                'phone': ['allowedValue', 'defaultValue', 'placeholder', 'regEx', 'optional'],
+                'boolean': ['defaultValue', 'placeholder', 'optional'],
+                'date': ['allowedValue', 'defaultValue', 'mindate', 'maxdate', 'placeholder', 'regEx', 'optional']
+            }
+            if (typePropertys['text'] === undefined) {
+                return ['IsArray'].indexOf(property) >= 0
+            } else {
+                return typePropertys['text'].indexOf(property) >= 0
+            }
+        },
+        handleSchemaChange (value) {
+            console.log('test', value)
+            this.tabsData.mongoDt[value.index].checked = value.value
+            console.log('this.tabsData.mongoDt', this.tabsData.mongoDt)
+        }
+    },
+    mounted() {
+        this.frmSettings.selectedDb = this.$route.params.db;
+        var self = this;
+        $(document).ready(function(){
+            $('#upldIcn').change(function() {
+                let bucket = new AWS.S3({ params: { Bucket: 'airflowbucket1/obexpense/expenses' } });
+                let fileChooser = document.getElementById('upldIcn');
+                let file = fileChooser.files[0];
+
+                if (file) {
+                    self.loading = true;
+                    var params = { Key: file.name, ContentType: file.type, Body: file };
+                    bucket.upload(params).on('httpUploadProgress', function (evt) {
+                        console.log("Uploaded :: " + parseInt((evt.loaded * 100) / evt.total) + '%');
+                    }).send(function (err, data) {
+                        if(err) {
+                            alert(err);
+                        }
+                        self.frmSettings.upldIcn = data.Location;
+                        self.loading = false;
+                    })
+                }
+            });
+
+            $('#upldCSV').change(function() {
+                let fileChooser = document.getElementById('upldCSV');
+                let file = fileChooser.files[0];
+                Papa.parse(file, {
+                    complete: function(results, file) {
+                        // console.log("Parsing complete:", results.data, file);
+                        results.data.optType = [{
+                            value: 'text',
+                            label: 'Text'
+                        }, {
+                            value: 'email',
+                            label: 'Email'
+                        }, {
+                            value: 'number',
+                            label: 'Number'
+                        }, {
+                            value: 'boolean',
+                            label: 'Boolean'
+                        }, {
+                            value: 'phone',
+                            label: 'Phone'
+                        }, {
+                            value: 'date',
+                            label: 'Date'
+                        }]
+                        self.frmSettings.upldCSV = results.data;
+                        // console.log('settings',self.frmSettings.upldCSV);
+                    },
+                    error: function(error, file) {
+                        console.log("Error", error);
+                    }
+                });
+            });
+        });
+    },
+    created() {
+      this.$on('on-schema-change', this.handleSchemaChange);
+    }
+
+}
+</script>
+
+<style scoped>
+.no-margin{
+        margin:0px;
+    }
+.form {
+        margin-top: 50px;
+    }
+.demo-spin-icon-load{
+        animation: ani-demo-spin 1s linear infinite;
+    }
+.demo-spin-col{
+        height: 10px;
+        position: relative;
+    }
+.demo-upload-list{
+        display: inline-block;
+        width: 60px;
+        height: 60px;
+        text-align: center;
+        line-height: 60px;
+        border: 1px solid transparent;
+        border-radius: 4px;
+        overflow: hidden;
+        background: #fff;
+        position: relative;
+        box-shadow: 0 1px 1px rgba(0,0,0,.2);
+        margin-right: 4px;
+    }
+    .demo-upload-list img{
+        width: 100%;
+        height: 100%;
+    }
+    .demo-upload-list-cover{
+        display: none;
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: rgba(0,0,0,.6);
+    }
+    .demo-upload-list:hover .demo-upload-list-cover{
+        display: block;
+    }
+    .demo-upload-list-cover i{
+        color: #fff;
+        font-size: 10px;
+    }
+    .upload-btn-wrapper {
+        position: relative;
+        overflow: hidden;
+        display: inline-block;
+    }
+
+    .btn {
+        border: 0.5px solid #eff0f1;
+        color: #838893;
+        background-color: transparent;
+        padding: 1px 20px;
+        border-radius: 4px;
+        font-size: 12px;
+        outline: none;
+    }
+
+    .upload-btn-wrapper:hover .btn{
+        border: 0.5px solid #2d8cf0;
+        color: #2d8cf0;
+        transition: color 0.5s, border 1s;
+    }
+
+    .upload-btn-wrapper input[type=file] {
+        font-size: 100px;
+        position: absolute;
+        opacity: 0;
+        cursor: pointer;
+        outline: none;
+    }
+</style>

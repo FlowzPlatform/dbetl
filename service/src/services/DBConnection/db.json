@@ -1,1 +1,26 @@
-{"mongo":{"host":"localhost","port":"27017","isdefault":"false","username":"","password":"","dbname":"Flowz_Schema_Editor"},"rethink":{"host":"localhost","port":"28015","isdefault":"false","password":"","dbname":""},"elastic":{"host":"localhost","port":"9200","isdefault":"false","username":"","password":"","dbname":""}}
+{
+  "mongo": {
+    "dbinstance": []
+  },
+  "rethink": {
+    "dbinstance": [{
+      "isenable": true,
+      "connection_name": "Rethink",
+      "host": "localhost",
+      "port": "28015",
+      "dbname": "FlowzEngine",
+      "username": "",
+      "password": "",
+      "upldIcn": "",
+      "notes": "",
+      "isdefault": false,
+      "id": "f613518b-200b-46ca-bebd-90db7d45c553"
+    }]
+  },
+  "elastic": {
+    "dbinstance": []
+  },
+  "nedb": {
+    "dbinstance": []
+  }
+}
