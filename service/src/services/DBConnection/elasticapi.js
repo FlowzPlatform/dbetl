@@ -62,75 +62,176 @@ module.exports = {
   //***********************get cuustom methods******************
   getSchemaName: async(function (name) {
     console.log('elastic get SchemaName');
-    var data = [];
-    var result = await (
-      client.search({
-        index: db,
-        type: 'schema',
-        body: {
-          query: {
-            match: {
-              'title': name
+    var schemadata = async(function () {
+      var result1 = [];
+      for (var i = 0; i < client.length; i++) {
+        // var r = await (db[i].conn.collection('schema').find().toArray())
+        var data = [];
+        var result = await (
+          client[i].conn.search({
+            index: client[i].dbname,
+            type: 'schema',
+            body: {
+              "query": {
+        "bool": {
+            "must": {
+                "query_string": {
+                    "fields": ["title"],
+                    "query": name
+                }
+            },
             }
-          },
+          }}}
+          ))
+        result.hits.hits.forEach(function (hit) {
+          var item = hit._source;
+          item._id = hit._id;
+          data.push(item);
+        })
+        // console.log(client[i].id)
+        for (var j = 0; j < data.length; j++) {
+          result1.push(data[j])
         }
-      }))
-    result.hits.hits.forEach(function (hit) {
-      var item = hit._source;
-      item._id = hit._id;
-      data.push(item);
-    })
-    return data;
+      }
+      return result1;
+    });
+    var res = await (schemadata())
+    return res;
+    // var data = [];
+    // var result = await (
+    //   client.search({
+    //     index: db,
+    //     type: 'schema',
+    //     body: {
+    //       query: {
+    //         match: {
+    //           'title': name
+    //         }
+    //       },
+    //     }
+    //   }))
+    // result.hits.hits.forEach(function (hit) {
+    //   var item = hit._source;
+    //   item._id = hit._id;
+    //   data.push(item);
+    // })
+    // return data;
   }),
 
   getThisSchemaType: async(function (id, type) {
     console.log('elastic get SchemaCurrent Type');
-    var data = [];
-    var result = await (
-      client.search({
-        index: db,
-        type: 'schema',
-        body: {
-          query: {
-            match: {
+    var schemadata = async(function () {
+      var result1 = [];
+      for (var i = 0; i < client.length; i++) {
+        // var r = await (db[i].conn.collection('schema').find().toArray())
+        var data = [];
+        var result = await (
+          client[i].conn.search({
+            index: client[i].dbname,
+            type: 'schema',
+            body: {
+              query: {
+                 match: {
               '_id': id
             }
-          },
+              },
+            }
+          }))
+        result.hits.hits.forEach(function (hit) {
+          hit._source.entity.forEach(function (item, i) {
+          if (item.type === type) {
+            data.push(item);
+          }
+        });
+        })
+        // console.log(client[i].id)
+        for (var j = 0; j < data.length; j++) {
+          result1.push(data[j])
         }
-      }))
-    result.hits.hits.forEach(function (hit) {
-      hit._source.entity.forEach(function (item, i) {
-        if (item.type === type) {
-          data.push(item);
-        }
-      });
-    })
-    return data;
+      }
+      return result1;
+    });
+    var res = await (schemadata())
+    return res;
+    // var data = [];
+    // var result = await (
+    //   client.search({
+    //     index: db,
+    //     type: 'schema',
+    //     body: {
+    //       query: {
+    //         match: {
+    //           '_id': id
+    //         }
+    //       },
+    //     }
+    //   }))
+    // result.hits.hits.forEach(function (hit) {
+    //   hit._source.entity.forEach(function (item, i) {
+    //     if (item.type === type) {
+    //       data.push(item);
+    //     }
+    //   });
+    // })
+    // return data;
   }),
 
   getThisSchemaFieldName: async(function (id, fieldname) {
     console.log('elastic get SchemaCurrent fieldname');
-    var data = [];
-    var result = await (
-      client.search({
-        index: db,
-        type: 'schema',
-        body: {
-          query: {
-            match: {
+    var schemadata = async(function () {
+      var result1 = [];
+      for (var i = 0; i < client.length; i++) {
+        // var r = await (db[i].conn.collection('schema').find().toArray())
+        var data = [];
+        var result = await (
+          client[i].conn.search({
+            index: client[i].dbname,
+            type: 'schema',
+            body: {
+              query: {
+                 match: {
               '_id': id
             }
-          },
+              },
+            }
+          }))
+        result.hits.hits.forEach(function (hit) {
+          hit._source.entity.forEach(function (item, i) {
+          if (item.name === fieldname) {
+            data.push(item);
+          }
+        });
+        })
+        // console.log(client[i].id)
+        for (var j = 0; j < data.length; j++) {
+          result1.push(data[j])
         }
-      }))
-    result.hits.hits.forEach(function (hit) {
-      hit._source.entity.forEach(function (item, i) {
-        if (item.name === fieldname) {
-          data.push(item);
-        }
-      });
-    })
-    return data;
+      }
+      return result1;
+    });
+    var res = await (schemadata())
+    return res;
+    // var data = [];
+    // var result = await (
+    //   client.search({
+    //     index: db,
+    //     type: 'schema',
+    //     body: {
+    //       query: {
+    //         match: {
+    //           '_id': id
+    //         }
+    //       },
+    //     }
+    //   }))
+    // result.hits.hits.forEach(function (hit) {
+    //   hit._source.entity.forEach(function (item, i) {
+    //     if (item.name === fieldname) {
+    //       data.push(item);
+    //     }
+    //   });
+    // })
+    // return data;
   }),
 
   getSchemaByDbid: async(function(dbid) {

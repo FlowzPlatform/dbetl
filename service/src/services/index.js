@@ -7,6 +7,7 @@ const schemamapping = require('./schemamapping/schemamapping.service.js');
 const flowz = require('./flowz/flowz.service.js');
 const flowzinstance = require('./flowz-instance/flowz-instance.service.js');
 const instancetest = require('./instance-test/instance-test.service.js');
+const generatejsondatafile = require('./generatejsondatafile/generatejsondatafile.service.js');
 module.exports = function() {
   const app = this; // eslint-disable-line no-unused-vars
   app.configure(schema);
@@ -18,4 +19,5 @@ module.exports = function() {
   app.configure(flowz);
   app.configure(flowzinstance);
   app.configure(instancetest);
+  app.configure(generatejsondatafile);
 };

@@ -14,9 +14,11 @@ import schema from '../api/schema'
 import _ from 'lodash'
 import Emitter from '@/mixins/emitter'
 export default {
+  name: 'table-expand',
   mixins: [ Emitter ],
   data () {
     return {
+      newdata: [],
       schemaCols: [
         {
           title: 'Select',
@@ -54,13 +56,13 @@ export default {
           key: 'title'
         },
         {
-          title: 'Id',
+          // title: 'Id',
           key: '_id'
         }
       ],
       schemaData: [],
-      selectSchema: []
-
+      selectSchema: [],
+      allschema: []
     }
   },
   props: {
@@ -70,18 +72,32 @@ export default {
     id: String
   },
   methods: {
+    sendData () {
+      this.newdata = _.map(this.schemaData, (m) => {
+        return {
+          _id: m._id,
+          title: m.title
+        }
+      })
+      console.log('sendData...')
+      console.log('!!!!!!!!!!!!!!!!!', this.newdata)
+      this.dispatch('Settings', 'schemaData', {data: this.newdata})
+      console.log('data sent...')
+    }
   },
-  async mounted () {
-    console.log('table-expand calling........', this.row, schema)
-    var response = await schema.getByNameId(this.row.db, this.row.dbData.id)
-    console.log('schemaData', response.data)
-
-    this.schemaData = _.map(response.data, (m) => {
-      return {
-        _id: m._id,
-        title: m.title,
-        checked: true
-      }
+  mounted () {
+    console.log('hello expand', this.schemaData)
+    this.dispatch('Settings', 'expandTrue', {data: true})
+    this.$on('giveMeData', this.sendData)
+    schema.getByNameId(this.row.db, this.row.dbData.id).then(response => {
+      this.allschema = response.data._id
+      this.schemaData = _.map(response.data, (m) => {
+        return {
+          _id: m._id,
+          title: m.title,
+          checked: true
+        }
+      })
     })
   }
 }

@@ -54,44 +54,95 @@ module.exports = {
 
   getThisSchemaType: async(function (id, type) {
     console.log('rethink get Schema Type');
-    var schemadata = await (r.table('schema').filter({ 'id': id })
-      .run()
-      .then(function (response) {
-        // console.log('response',response);
-        var result = [];
-        response[0].entity.forEach(function (item, i) {
-          // console.log('item---',item);
-          if (item.type === type) {
-            result.push(item);
-          }
-        });
-        return result;
-      })
-      .error(function (err) {
-        console.log('Error:', err);
-      }))
-    return schemadata;
+    // var schemadata = await (r.table('schema').filter({ 'id': id })
+    //   .run()
+    //   .then(function (response) {
+    //     // console.log('response',response);
+    //     var result = [];
+    //     response[0].entity.forEach(function (item, i) {
+    //       // console.log('item---',item);
+    //       if (item.type === type) {
+    //         result.push(item);
+    //       }
+    //     });
+    //     return result;
+    //   })
+    //   .error(function (err) {
+    //     console.log('Error:', err);
+    //   }))
+    // return schemadata;
+    var schemadata = async(function () {
+      var result = []
+      _.forEach(r, function (dbinstance) {
+          var data = await (dbinstance.conn.table('schema').filter({ 'id': id }).run())
+          _.forEach(data, function (instance) {
+            result.push(instance)
+          })
+        })
+      return result;
+    });
+    var res = await (schemadata())
+    console.log('res..................', res)
+    // return res;
+    if(res.length != 0) {
+      var result = [];
+          res[0].entity.forEach(function (item, i) {
+            if (item.type === type) {
+              result.push(item);
+            }
+          });
+      console.log('item---',result);
+      return result;
+    } else {
+      var result = [];
+      return result
+    }
   }),
 
   getThisSchemaFieldName: async(function (id, fieldname) {
     console.log('rethink get Schema Type');
-    var schemadata = await (r.table('schema').filter({ 'id': id })
-      .run()
-      .then(function (response) {
-        // console.log('response',response);
-        var result = [];
-        response[0].entity.forEach(function (item, i) {
-          // console.log('item---',item);
-          if (item.name === fieldname) {
-            result.push(item);
-          }
-        });
-        return result;
-      })
-      .error(function (err) {
-        console.log('Error:', err);
-      }))
-    return schemadata;
+    // var schemadata = await (r.table('schema').filter({ 'id': id })
+    //   .run()
+    //   .then(function (response) {
+    //     // console.log('response',response);
+    //     var result = [];
+    //     response[0].entity.forEach(function (item, i) {
+    //       // console.log('item---',item);
+    //       if (item.name === fieldname) {
+    //         result.push(item);
+    //       }
+    //     });
+    //     return result;
+    //   })
+    //   .error(function (err) {
+    //     console.log('Error:', err);
+    //   }))
+    // return schemadata;
+     var schemadata = async(function () {
+      var result = []
+      _.forEach(r, function (dbinstance) {
+          var data = await (dbinstance.conn.table('schema').filter({ 'id': id }).run())
+          _.forEach(data, function (instance) {
+            result.push(instance)
+          })
+        })
+      return result;
+    });
+    var res = await (schemadata())
+    // return res;
+    if(res.length != 0) {
+      var result = [];
+          res[0].entity.forEach(function (item, i) {
+            if (item.name === fieldname) {
+              result.push(item);
+            }
+          });
+      console.log('item---',result);
+      return result;
+    } else {
+      var result = [];
+      return result
+    }
   }),
 
   getSchemaByDbid: async(function(dbid) {

@@ -31,6 +31,7 @@
       </Form-item>
     </Form>
     {{formSchemaInstance.data}}
+    {{savebutton}}
   </div>
 </template>
 
@@ -56,7 +57,8 @@ export default {
       },
       schema: {},
       entity: [],
-      savebutton: 'Save'
+      savebutton: 'Save',
+      instanceData: {}
     }
   },
   created () {
@@ -68,7 +70,14 @@ export default {
         this.fetch(this.$route.params.schemaid)
       }
     } else {
-      this.fetch(this.id)
+      if (this.$route.params.schemaid === undefined) {
+        this.savebutton = 'Update'
+        this.fetch(this.$route.params.id)
+      } else if (this.$route.params.schemaid !== undefined) {
+        this.fetch(this.$route.params.schemaid)
+      } else {
+        this.fetch(this.id)
+      }
     }
   },
   methods: {
@@ -114,8 +123,20 @@ export default {
       return res
     },
     async fetch (id) {
+      // alert(id)
       var self = this
+      if (this.$route.params.id !== undefined) {
+        console.log('Hii', this.$route.params.id)
+        var instanceres = await Instance.getThis(this.$route.params.id)
+        console.log('instancedata', instanceres.data)
+        this.instanceData = instanceres.data
+        var schemares = await Schema.getThis(instanceres.data.Schemaid)
+        console.log('response', schemares.data.entity)
+        id = instanceres.data.Schemaid
+      }
+      // else {
       var response = await Schema.getThis(id)
+      // console.log('this.$route.params.schemaid', response)
       this.formSchemaInstance.data = []
       this.schema = response.data
       this.entity = this.schema.entity
@@ -126,24 +147,31 @@ export default {
         }
       }
       this.handleAdd()
+      // }
     },
     handleAdd () {
       var self = this
-      var obj = {}
-      obj.database = this.schema.database
-      obj.Schemaid = this.schema._id
-      _.forEach(this.entity, function (v) {
-        if (v.customtype) {
-          obj[v.name] = self.getChildData(v.type)
-        } else {
-          if (v.type === 'number') {
-            obj[v.name] = 1
+      if (this.$route.params.id !== undefined) {
+        var D = []
+        D.push(this.instanceData)
+        this.formSchemaInstance.data = D
+      } else {
+        var obj = {}
+        obj.database = this.schema.database
+        obj.Schemaid = this.schema._id
+        _.forEach(this.entity, function (v) {
+          if (v.customtype) {
+            obj[v.name] = self.getChildData(v.type)
           } else {
-            obj[v.name] = ''
+            if (v.type === 'number') {
+              obj[v.name] = 1
+            } else {
+              obj[v.name] = ''
+            }
           }
-        }
-      })
-      this.formSchemaInstance.data.push(obj)
+        })
+        this.formSchemaInstance.data.push(obj)
+      }
     },
     makeObj () {
       var obj = this.schema
