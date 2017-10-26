@@ -76,7 +76,7 @@ export default {
                 props: {
                   type: 'text',
                   size: 'large',
-                  // icon: 'edit'
+                  icon: 'edit'
                 },
                 style: {
                   marginRight: '3px',

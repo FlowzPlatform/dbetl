@@ -151,7 +151,7 @@
                             </ul>
                         </FormItem> -->
                          
-                        <Col span="10" v-if="frmSettings.rdoCrt == 'rbtDB'">
+                        <Col span="10" v-if="frmSettings.rdoCrt == 'rbtDB'" style="display:none;">
                             <h4>Database Settings</h4>
                             <div class="upload-btn-wrapper">
                                 <button class="btn"><Icon type="ios-cloud-upload-outline"></Icon> Upload</button>
@@ -311,9 +311,16 @@
           </FormItem>
         </Row>
         <Row>
+        <Col span="6">
             <FormItem>
                 <Button type="primary" @click="handleSubmit('frmSettings')">Create Connection</Button>
             </FormItem>
+        </Col>
+        <Col span="6">
+            <FormItem>
+                <Button type="primary" @click="importdata()">Import</Button>
+            </FormItem>
+        </Col>
         </Row>
         <!-- <div>{{frmSettings}}</div> -->
         </Form>
@@ -348,8 +355,10 @@ export default{
     },
     data() {
         return {
+          expandValue: false,  
           currentStep: 1,
           check: this.checked,
+          expand: false,
           frmSettings: {
               isenable: true,
               connection_name: '',
@@ -367,8 +376,10 @@ export default{
               keep_sync: '',
               notes: '',
               Database: [],
+              schemaData:[],
               isdefault: false
           },
+            schemaAllData: [],
             loading: false,
              frmRule: {
                 connection_name: [
@@ -455,7 +466,6 @@ export default{
                 mysqlDt: [],
                 mysqlCols:[]
             }
-        
              api.request('get', '/settings')
                 .then(response => {
                     this.allSetting = response.data
@@ -507,6 +517,7 @@ export default{
                         this.tabsData[db + 'Dt'] = _.map(this.allSetting[db].dbinstance, m => {
                             return {
                                 checked: true,
+                                _expanded: false,
                                 dbname: m.dbname,
                                 host: m.host,
                                 id: m.id,
@@ -524,6 +535,43 @@ export default{
                   console.log(error);
                 })
            
+        },
+        importdata: function() {
+            //console.log('GiveMeData', this)
+            this.frmSettings.schemaData = []
+
+            if(this.expandValue == false){
+              console.log('false')
+              _.forEach(this.allSetting, (dbInst, db) => {
+                for (var index in this.tabsData[db + 'Dt']){
+                  schema.getByNameId(db, this.tabsData[db + 'Dt'][index].id).then(response => {
+                    console.log('schemaData', response.data)
+                    this.schemaAllData = _.map(response.data, (m) => {
+                      return {
+                        _id: m._id,
+                        title: m.title
+                      }
+                    })
+                    this.frmSettings.schemaData.push(this.schemaAllData)
+                  })
+                      
+                }
+            })
+            }
+            else{
+                  console.log('true')
+                  this.broadcast('table-expand', 'giveMeData', this)
+                }
+            
+           
+            // console.log("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
+        },
+        acceptData: function(data) {
+            console.log('accept data call')
+            console.log('data', data.data)
+            var sdata = data.data
+            this.frmSettings.schemaData.push(sdata)
+            console.log("@@@@@@@@@@@@@@@@@@@",this.frmSettings.schemaData)
         },
         getTableAll: function() {
 
@@ -631,10 +679,15 @@ export default{
             console.log('test', value)
             this.tabsData.mongoDt[value.index].checked = value.value
             console.log('this.tabsData.mongoDt', this.tabsData.mongoDt)
+        },
+        expands (data) {
+            this.expandValue = data
         }
     },
     mounted() {
         this.frmSettings.selectedDb = this.$route.params.db;
+        this.$on('schemaData', this.acceptData)
+        this.$on('expandTrue', this.expands)
         var self = this;
         $(document).ready(function(){
             $('#upldIcn').change(function() {

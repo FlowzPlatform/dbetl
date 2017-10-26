@@ -29,6 +29,7 @@
   },
   "dependencies": {
     "asyncawait": "^1.0.6",
+    "aws-sdk": "^2.138.0",
     "axios": "^0.16.2",
     "body-parser": "^1.18.2",
     "chokidar": "^1.7.0",

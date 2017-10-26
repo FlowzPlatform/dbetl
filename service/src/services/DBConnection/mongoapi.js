@@ -47,42 +47,106 @@ module.exports = {
   }),
   //get methods
   getSchemaName: async(function (name) {
-    console.log('mongo get SchemaName');
-    var schemadata = await (db.collection('schema').find({ title: name }).toArray());
-    // console.log('SchemaName',schemadata);
-    return schemadata;
+    console.log('mongo get SchemaName.............................');
+    var schemadata = async(function () {
+      var result = []
+      _.forEach(db, function (dbinstance) {
+        var r = await (dbinstance.conn.collection('schema').find({ title: name }).toArray())
+        _.forEach(r, function (instance) {
+          result.push(instance)
+        })
+      })
+      return result;
+    });
+    var res = await (schemadata())
+      // console.log('schemadata getSchema',res);
+    return res;
+    // var schemadata = await (db.collection('schema').find({ title: name }).toArray());
+    // // console.log('SchemaName',schemadata);
+    // return schemadata;
   }),
 
   getThisSchemaType: async(function (id, type) {
     console.log('mongo get SchemaCurrent Type', type);
-    var id = new mongoose.Types.ObjectId(id);
-    // console.log('mongo get SchemaCurrent id:',id);           {$and: [{_id: id}, {type: type}]}
-    var schemadata = await (db.collection('schema').find({ _id: id }, { _id: 0, title: 0, templateType: 0, template: 0 }).toArray());
-    // console.log('SchemaCurrent',schemadata[0].entity);
-    var result = [];
-    schemadata[0].entity.forEach(function (item, i) {
-      // console.log('item---',item);
-      if (item.type === type) {
-        result.push(item);
-      }
-    });
-    return result;
+    if (id.length != 24) {
+      return [];
+    } else {
+      var id = new mongoose.Types.ObjectId(id);
+      // // console.log('mongo get SchemaCurrent id:',id);           {$and: [{_id: id}, {type: type}]}
+      // var schemadata = await (db.collection('schema').find({ _id: id }, { _id: 0, title: 0, templateType: 0, template: 0 }).toArray());
+      // // console.log('SchemaCurrent',schemadata[0].entity);
+      // var result = [];
+      // schemadata[0].entity.forEach(function (item, i) {
+      //   // console.log('item---',item);
+      //   if (item.type === type) {
+      //     result.push(item);
+      //   }
+      // });
+      // return result;
+      var schemadata = async(function () {
+        var result = []
+        _.forEach(db, function (dbinstance) {
+          var r = await (dbinstance.conn.collection('schema').find({ _id: id }).toArray())
+          // console.log('rrrrrrrrrrrrrrrrrrrrrrrrrr', r)
+          _.forEach(r, function (instance) {
+            result.push(instance)
+          })
+        })
+        return result;
+      });
+      var res = await (schemadata())
+      console.log('item---',res);
+      var result = [];
+      res[0].entity.forEach(function (item, i) {
+        if (item.type === type) {
+          result.push(item);
+        }
+      });
+      return result;
+      // return res;
+    }
   }),
 
   getThisSchemaFieldName: async(function (id, fieldname) {
     console.log('mongo get SchemaCurrent fieldname');
-    var id = new mongoose.Types.ObjectId(id);
-    // console.log('mongo get SchemaCurrent id:',id);           {$and: [{_id: id}, {type: type}]}
-    var schemadata = await (db.collection('schema').find({ _id: id }, { _id: 0, title: 0, templateType: 0, template: 0 }).toArray());
-    // console.log('SchemaCurrent',schemadata[0].entity);
-    var result = [];
-    schemadata[0].entity.forEach(function (item, i) {
-      // console.log('item---',item);
-      if (item.name === fieldname) {
-        result.push(item);
-      }
-    });
-    return result;
+    if (id.length != 24) {
+      return [];
+    } else {
+      var id = new mongoose.Types.ObjectId(id);
+      // // console.log('mongo get SchemaCurrent id:',id);           {$and: [{_id: id}, {type: type}]}
+      // var schemadata = await (db.collection('schema').find({ _id: id }, { _id: 0, title: 0, templateType: 0, template: 0 }).toArray());
+      // // console.log('SchemaCurrent',schemadata[0].entity);
+      // var result = [];
+      // schemadata[0].entity.forEach(function (item, i) {
+      //   // console.log('item---',item);
+      //   if (item.name === fieldname) {
+      //     result.push(item);
+      //   }
+      // });
+      // return result;
+      var schemadata = async(function () {
+        var result = []
+        _.forEach(db, function (dbinstance) {
+          // console.log('rrrrrrrrrrrrrrrrrrrrrrrrrr', dbinstance)
+          var r = await (dbinstance.conn.collection('schema').find({ _id: id }).toArray())
+          _.forEach(r, function (instance) {
+            result.push(instance)
+          })
+        })
+        return result;
+      });
+      var res = await (schemadata())
+        console.log('schemadata getSchema',res);
+      var result = [];
+      res[0].entity.forEach(function (item, i) {
+        // console.log('item---',item);
+        if (item.name === fieldname) {
+          result.push(item);
+        }
+      });
+      return result;
+      // return res;
+    }
   }),
 
   getSchemaByDbid: async(function(dbid) {

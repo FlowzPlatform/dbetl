@@ -102,6 +102,32 @@ class Service {
   find(params) {
     console.log('find feathers...', params);
     if (params.query.dbname == undefined) {
+      if(params.query.name !== undefined ){
+        console.log('000000000000000000000000000000000000000000000', params.query.name)
+        var instance = []
+        dbapi.forEach(function (db) {
+            let _promise = new Promise((resolve, reject) => {
+              db.api.getSchemaName(params.query.name).then((data) => {
+                resolve(data);
+              })
+            });
+            instance.push(_promise)
+        });    
+        var _data = Promise.all(instance).then(function (response) {
+          console.log('response...................22',response)
+          // return response[0]
+          var Extract = []
+          response.forEach(function (item) {
+            item.forEach(function (result) {
+              Extract.push(result)
+            })
+          })
+          // console.log('Extract', Extract)
+          return Extract
+        })
+        return _data   
+      }
+      else{
         var instance = []
         dbapi.forEach(function (db) {
           let _promise = new Promise((resolve, reject) => {
@@ -131,6 +157,7 @@ class Service {
             // return _.union(response);
         })
         return _data
+      }
     }
     if(params.query.dbname !== undefined) {
       if (params.query.dbid == undefined) {
@@ -186,35 +213,130 @@ class Service {
     //   // var dbdata = dbapi.getSchema();
     // }
     // if(params.query.name !== undefined ){
+    //   console.log("@@@@@@@@")
     //   var dbdata = dbapi.getSchemaName(params.query.name);
     // }
   }
 
   get(id, params) {
     console.log('Get feathers...');
+    // var instance = []
     if (params.query.type !== undefined) {
-      var dbdata = dbapi.getThisSchemaType(id, params.query.type)
+      var instance = []
+      console.log("234")
+      dbapi.forEach(function (db) {
+        let _promise = new Promise((resolve, reject) => {
+          db.api.getThisSchemaType(id, params.query.type).then((data) => {
+            resolve(data);
+          })
+        });
+        instance.push(_promise)
+      });
+      var _data = Promise.all(instance).then(function (response) {
+        console.log('_data...type..............................\n', response)
+        var Extract = []
+            response.forEach(function (item) {
+              item.forEach(function (result) {
+                Extract.push(result)
+              })
+            })
+            // console.log('Extract', Extract)
+        return Extract
+      })
+      return _data;
+      // var dbdata = dbapi.getThisSchemaType(id, params.query.type)
     } else if (params.query.fieldname !== undefined) {
-      var dbdata = dbapi.getThisSchemaFieldName(id, params.query.fieldname)
+      var instance = []
+      dbapi.forEach(function (db) {
+        let _promise = new Promise((resolve, reject) => {
+          db.api.getThisSchemaFieldName(id, params.query.fieldname).then((data) => {
+            resolve(data);
+          })
+        });
+        instance.push(_promise)
+      });
+  
+      var _data = Promise.all(instance).then(function (response) {
+        console.log('_data.................', response)
+        var Extract = []
+            response.forEach(function (item) {
+              item.forEach(function (result) {
+                Extract.push(result)
+              })
+            })
+            // console.log('Extract', Extract)
+        return Extract
+      })
+      return _data;
+      // var dbdata = dbapi.getThisSchemaFieldName(id, params.query.fieldname)
     } else {
       var instance = []
+      console.log("12")
       dbapi.forEach(function (db) {
         let _promise = new Promise((resolve, reject) => {
           db.api.getThisSchema(id).then((data) => {
             resolve(data);
           })
         });
-        instance.push(_promise)
+      instance.push(_promise)
       });
+      var _data = Promise.all(instance).then(function (response) {
+            // var Extract = []
+            // response.forEach(function (item) {
+            //   item.forEach(function (result) {
+            //     Extract.push(result)
+            //   })
+            // })
+            // console.log('Extract', Extract)
+        // return Extract
+        var obj;
+        response.forEach(function (i) {
+          if (i[0] != undefined) {
+            obj = i[0]
+          }
+        })
+        console.log('_data.................', obj)
+        return obj
+      })
+      return _data;
+  
+      // var _data = Promise.all(instance).then(function (response) {
+      //   console.log('_data.................', response)
+      //   var Extract = []
+      //       response.forEach(function (item) {
+      //         item.forEach(function (result) {
+      //           Extract.push(result)
+      //         })
+      //       })
+      //       // console.log('Extract', Extract)
+      //   return Extract
+      //   // var obj;
+      //   // response.forEach(function (item) {
+      //   //   if (item[0] != undefined) {
+      //   //     obj = item[0]
+      //   //   }
+      //   // })
+      //   // return obj
+      // })
+      // return _data;
     }
     var _data = Promise.all(instance).then(function (response) {
-      var obj;
-      response.forEach(function (item) {
-        if (item[0] != undefined) {
-          obj = item[0]
-        }
-      })
-      return obj
+      console.log('_data.................', response)
+      var Extract = []
+          response.forEach(function (item) {
+            item.forEach(function (result) {
+              Extract.push(result)
+            })
+          })
+          // console.log('Extract', Extract)
+      return Extract
+      // var obj;
+      // response.forEach(function (item) {
+      //   if (item[0] != undefined) {
+      //     obj = item[0]
+      //   }
+      // })
+      // return obj
     })
     return _data;
     // if(params.query.type !== undefined ){

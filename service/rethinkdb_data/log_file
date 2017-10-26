@@ -1,0 +1,39 @@
+2017-10-16T09:52:21.726836309 0.432587s notice: Recursively removing directory /home/software/Dweep/DBETL/service/rethinkdb_data/tmp
+2017-10-16T09:52:21.739235778 0.444985s notice: Initializing directory /home/software/Dweep/DBETL/service/rethinkdb_data
+2017-10-16T09:52:21.739430862 0.445180s info: Creating a default database for your convenience. (This is because you ran 'rethinkdb' without 'create', 'serve', or '--join', and the directory '/home/software/Dweep/DBETL/service/rethinkdb_data' did not already exist or is empty.)
+2017-10-16T09:52:21.739486784 0.445235s notice: Running rethinkdb 2.3.5~0xenial (GCC 5.3.1)...
+2017-10-16T09:52:21.745913490 0.451666s notice: Running on Linux 4.4.0-93-generic x86_64
+2017-10-16T09:52:21.746020326 0.451769s notice: Loading data from directory /home/software/Dweep/DBETL/service/rethinkdb_data
+2017-10-16T09:52:21.843983808 0.549733s info: Automatically using cache size of 2750 MB
+2017-10-16T09:52:21.845121868 0.550870s notice: Listening for intracluster connections on port 29015
+2017-10-16T09:52:21.847208493 0.552957s notice: Listening for client driver connections on port 28015
+2017-10-16T09:52:21.847626159 0.553375s notice: Listening for administrative HTTP connections on port 8080
+2017-10-16T09:52:21.847636497 0.553385s notice: Listening on cluster addresses: 127.0.0.1, 127.0.1.1, ::1
+2017-10-16T09:52:21.847641997 0.553390s notice: Listening on driver addresses: 127.0.0.1, 127.0.1.1, ::1
+2017-10-16T09:52:21.847649280 0.553397s notice: Listening on http addresses: 127.0.0.1, 127.0.1.1, ::1
+2017-10-16T09:52:21.847654406 0.553403s notice: To fully expose RethinkDB on the network, bind to all addresses by running rethinkdb with the `--bind all` command line option.
+2017-10-16T09:52:21.847662066 0.553410s notice: Server ready, "OBLAP_77_qju" cf4e1777-d3a7-4163-bae1-1d721ed10617
+2017-10-16T09:52:23.960268779 2.666018s notice: A newer version of the RethinkDB server is available: 2.3.6. You can read the changelog at <https://github.com/rethinkdb/rethinkdb/releases>.
+2017-10-16T09:52:53.970988525 32.676737s notice: Server got SIGINT from pid 0, uid 0; shutting down...
+2017-10-16T09:52:53.971050235 32.676798s notice: Shutting down client connections...
+2017-10-16T09:52:53.971094095 32.676842s notice: All client connections closed.
+2017-10-16T09:52:53.971098299 32.676846s notice: Shutting down storage engine... (This may take a while if you had a lot of unflushed data in the writeback cache.)
+2017-10-16T09:52:53.971309456 32.677058s notice: Storage engine shut down.
+2017-10-16T09:55:37.605710158 0.050852s notice: Running rethinkdb 2.3.5~0xenial (GCC 5.3.1)...
+2017-10-16T09:55:37.607868998 0.053012s notice: Running on Linux 4.4.0-93-generic x86_64
+2017-10-16T09:55:37.607908789 0.053050s notice: Loading data from directory /home/software/Dweep/DBETL/service/rethinkdb_data
+2017-10-16T09:55:37.640165572 0.085308s info: Automatically using cache size of 2812 MB
+2017-10-16T09:55:37.640489210 0.085631s notice: Listening for intracluster connections on port 29015
+2017-10-16T09:55:37.641248201 0.086390s notice: Listening for client driver connections on port 28015
+2017-10-16T09:55:37.641415848 0.086557s notice: Listening for administrative HTTP connections on port 8080
+2017-10-16T09:55:37.641418860 0.086560s notice: Listening on cluster addresses: 127.0.0.1, 127.0.1.1, ::1
+2017-10-16T09:55:37.641420530 0.086562s notice: Listening on driver addresses: 127.0.0.1, 127.0.1.1, ::1
+2017-10-16T09:55:37.641423431 0.086565s notice: Listening on http addresses: 127.0.0.1, 127.0.1.1, ::1
+2017-10-16T09:55:37.641425168 0.086567s notice: To fully expose RethinkDB on the network, bind to all addresses by running rethinkdb with the `--bind all` command line option.
+2017-10-16T09:55:37.641427882 0.086569s notice: Server ready, "OBLAP_77_qju" cf4e1777-d3a7-4163-bae1-1d721ed10617
+2017-10-16T09:55:39.758873557 2.204015s notice: A newer version of the RethinkDB server is available: 2.3.6. You can read the changelog at <https://github.com/rethinkdb/rethinkdb/releases>.
+2017-10-16T09:56:11.502754232 33.947896s notice: Server got SIGINT from pid 0, uid 0; shutting down...
+2017-10-16T09:56:11.502817887 33.947959s notice: Shutting down client connections...
+2017-10-16T09:56:11.502863374 33.948005s notice: All client connections closed.
+2017-10-16T09:56:11.502864919 33.948006s notice: Shutting down storage engine... (This may take a while if you had a lot of unflushed data in the writeback cache.)
+2017-10-16T09:56:11.503013017 33.948154s notice: Storage engine shut down.
