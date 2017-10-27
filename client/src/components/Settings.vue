@@ -5,9 +5,9 @@
             <Step title="1"></Step>
             <Step title="2"></Step>
         </Steps>
-      <template  v-if="currentStep == 1">
-    
-            <Form  ref="frmSettings" :model="frmSettings" :rules="frmRule" class="form">
+        <Form  ref="frmSettings" :model="frmSettings" :rules="frmRule" class="form">
+          <template  v-if="currentStep == 1">
+
             <Row :gutter="20">
             <Col span="12">
                 <FormItem label="Connection Name" prop="connection_name">
@@ -55,6 +55,11 @@
                         <button class="btn"><Icon type="ios-cloud-upload-outline"></Icon> Upload Icon</button>
                         <input type="file" id="upldIcn" title="Upload icon" accept="image/*">
                     </div>
+                    <h4>CSV File Upload</h4>
+                    <div class="upload-btn-wrapper">
+                        <button class="btn"><Icon type="ios-cloud-upload-outline"></Icon> Upload CSV</button>
+                        <input type="file" id="upldCSV" title="Upload CSV">
+                    </div>
                 </FormItem>
 
                 <FormItem>
@@ -80,10 +85,10 @@
                 <Button type="primary" v-on:click="goToStep(2, 'frmSettings')">Continue</Button>
                 </Col>
                 </Row>
-                </Form>
-      </template>
+                <!-- </Form> -->
+          </template>
       <template  v-if="currentStep == 2">
-        <Form ref="frmSettings" :model="frmSettings" :rules="frmRule" class="form">
+        <!-- <Form ref="frmSettings" :model="frmSettings" :rules="frmRule" class="form"> -->
           <Row :gutter="20">
             <Col span="12">
                 <FormItem prop="rdoCrt">
@@ -91,7 +96,7 @@
                         <Radio label="rbtCSV"><span>CSV Upload</span></Radio>
                         <Radio label="rbtDB"><span>By Database</span></Radio>
                     </RadioGroup>
-                </FormItem> 
+                </FormItem>
                 <FormItem>
                   <Row>
                        <Col span="6">
@@ -150,7 +155,7 @@
                             </li>
                             </ul>
                         </FormItem> -->
-                         
+
                         <Col span="10" v-if="frmSettings.rdoCrt == 'rbtDB'" style="display:none;">
                             <h4>Database Settings</h4>
                             <div class="upload-btn-wrapper">
@@ -159,54 +164,64 @@
                             </div>
                         </Col>
                     </Row>
-                </FormItem> 
+
+                </FormItem>
             </Col>
 
-            
+
         <div v-if="frmSettings.optCrt && frmSettings.rdoCrt == 'rbtDB' && frmSettings.rdodb == 'rbtExstng'">
             <Tabs type="card" style="width: 100%;">
                 <TabPane label="mongo">
                     <Table border :columns="tabsData.mongoCols" :data="tabsData.mongoDt"></Table>
                 </TabPane>
-                <TabPane label="rethink"> 
+                <TabPane label="rethink">
                     <Table border :columns="tabsData.rethinkCols" :data="tabsData.rethinkDt"></Table>
                 </TabPane>
-                <TabPane label="elastic" > 
+                <TabPane label="elastic" >
                     <Table border :columns="tabsData.elasticCols" :data="tabsData.elasticDt"></Table>
                 </TabPane>
-                <TabPane label="nedb"> 
+                <TabPane label="nedb">
                     <Table border :columns="tabsData.nedbCols" :data="tabsData.nedbDt"></Table>
                 </TabPane>
-                <TabPane label="mysqldb"> 
+                <TabPane label="mysqldb">
                     <Table border :columns="tabsData.mysqlCols" :data="tabsData.mysqlDt"></Table>
                 </TabPane>
             </Tabs>
         </div>
         </Row>
-        <Row v-if="frmSettings.upldCSV">
+        <div id="example1" class="hot handsontable htColumnHeaders"></div>
+        <Row>
             <FormItem>
-            <div class="schema-form ivu-table-wrapper">
-            <div class="ivu-table ivu-table-border">
-                <div class="ivu-table-body">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th width="200" v-for="(item, index) in frmSettings.upldCSV[0]">
-                                    <div>
-                                        <span>{{item}}</span>
-                                    </div>
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody class="ivu-table-tbody">
-                            <tr class="ivu-table-row" v-for="(item, index) in frmSettings.upldCSV">
-                                <td class="" v-if="index != 0 && index <= frmSettings.upldCSV.length-2" v-for="data in item">{{data}}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+              <div id="hot-preview" v-if="showHandson">
+                <!-- <HotTable :root="root" :settings="hotSettings"></HotTable> -->
+
+                <Button type="primary" @click="modifyData()">Modify Data</Button>
+              </div>
+              <div class="schema-form ivu-table-wrapper" v-if="!showHandson">
+              <div class="ivu-table ivu-table-border">
+                  <div class="ivu-table-body" style="max-height:280px">
+                      <table style="width:100%">
+                          <thead style = "position: absolute; width:100%">
+                              <tr style="display: inline-table;width: 100%;">
+                                  <th width="20%" v-for="(item, index) in csvData">
+                                      <div>
+                                          <span>{{item.header}}</span>
+                                      </div>
+                                  </th>
+                              </tr>
+                          </thead>
+                          <tbody class="ivu-table-tbody">
+                              <tr class="ivu-table-row" v-for="(item, index) in frmSettings.upldCSV">
+                                  <td width="20%" class="" v-if="index <= frmSettings.upldCSV.length-2" v-for="data in item">{{data}}</td>
+                              </tr>
+                          </tbody>
+                      </table>
+                  </div>
+              </div>
             </div>
-          </div>
+            <!-- <div style="float: right;">
+              <Page :total="frmSettings.upldCSV.length" :current="1"></Page>
+            </div> -->
           </FormItem>
 
           <FormItem>
@@ -233,16 +248,16 @@
                             </tr>
                         </thead>
                         <tbody class="ivu-table-tbody">
-                            <tr class="ivu-table-row" v-for="(item, index) in frmSettings.upldCSV[0]">
+                            <tr class="ivu-table-row" v-for="(item, index) in headers">
                                 <th>
                                     <div class="ivu-table-cell">
                                         <span>{{item}}</span>
                                     </div>
                                 </th>
-                                <td><Input type="text" :value="item" :placeholder="item" size="small" class="schema-form-input"></Input></td>
+                                <td><Input v-model = "csvData[index].header" type="text" :value="item" :placeholder="item" size="small" class="schema-form-input"></Input></td>
                                 <td class="">
                                     <div class="ivu-table-cell">
-                                      <Select v-model="optType" size="small" class="schema-form-input">
+                                      <Select @on-change="type(index)" v-model="csvData[index].type" size="small" class="schema-form-input">
                                           <Option v-for="t in optType" :value="t.value" :key="t.value">{{t.label}}</Option>
                                           <!-- <Option value="email" key="email">Email</Option>
                                           <Option value="number" key="number">Number</Option>
@@ -258,29 +273,29 @@
                                         <a><Icon type="edit"></Icon></a>
                                         <div slot="title"><h3>Property</h3></div>
                                         <div slot="content">
-                                          <Form-item v-if="activatedProperty('min')" label="Min" :label-width="80" class="no-margin">
-                                            <Input-number size="small"></Input-number>
+                                          <Form-item v-if="activatedProperty(index,'min')" label="Min" :label-width="80" class="no-margin">
+                                            <Input-number v-model="csvData[index].min" size="small"></Input-number>
                                           </Form-item>
-                                          <Form-item v-if="activatedProperty('max')" label="Max" :label-width="80" class="no-margin">
-                                            <Input-number size="small"></Input-number>
+                                          <Form-item v-if="activatedProperty(index,'max')" label="Max" :label-width="80" class="no-margin">
+                                            <Input-number size="small" v-model="csvData[index].max"></Input-number>
                                           </Form-item>
-                                          <Form-item v-if="activatedProperty('allowedValue')" label="Allowed Value" class="no-margin">
-                                            <input-tag style="margin-left:80px;width:200px"></input-tag>
+                                          <Form-item v-if="activatedProperty(index,'allowedValue')" label="Allowed Value" class="no-margin">
+                                            <input-tag style="margin-left:80px;width:200px" :tags="csvData[index].allowedValue"></input-tag>
                                           </Form-item>
-                                          <Form-item v-if="activatedProperty('defaultValue')" label="Default Value" :label-width="80" class="no-margin">
-                                            <Input size="small"></Input>
+                                          <Form-item v-if="activatedProperty(index,'defaultValue')" label="Default Value" :label-width="80" class="no-margin">
+                                            <Input size="small" v-model="csvData[index].defaultValue"></Input>
                                           </Form-item>
-                                          <Form-item v-if="activatedProperty('regEx')" label="regEx" :label-width="80" class="no-margin">
-                                            <Input></Input>
+                                          <Form-item v-if="activatedProperty(index,'regEx')" label="regEx" :label-width="80" class="no-margin">
+                                            <Input v-model="csvData[index].regEx"></Input>
                                           </Form-item>
-                                          <Form-item v-if="activatedProperty('placeholder')" label="Placeholder" :label-width="80" class="no-margin">
-                                            <Input size="small"></Input>
+                                          <Form-item v-if="activatedProperty(index,'placeholder')" label="Placeholder" :label-width="80" class="no-margin">
+                                            <Input size="small" v-model="csvData[index].placeholder"></Input>
                                           </Form-item>
-                                          <Form-item v-if="activatedProperty('IsArray')" label="" :label-width="80" class="no-margin">
-                                            <Checkbox>Is Array</Checkbox>
+                                          <Form-item v-if="activatedProperty(index,'IsArray')" label="" :label-width="80" class="no-margin">
+                                            <Checkbox v-model="csvData[index].IsArray">Is Array</Checkbox>
                                           </Form-item>
-                                          <Form-item v-if="activatedProperty('optional')" label="" :label-width="80" class="no-margin">
-                                            <Checkbox style="margin-left:80px;">Optional</Checkbox>
+                                          <Form-item v-if="activatedProperty(index,'optional')" label="" :label-width="80" class="no-margin">
+                                            <Checkbox style="margin-left:80px;" @on-change="type(index)" v-model="csvData[index].optional">Optional</Checkbox>
                                           </Form-item>
                                         </div>
                                       </Poptip>
@@ -314,6 +329,8 @@
         <Col span="6">
             <FormItem>
                 <Button type="primary" @click="handleSubmit('frmSettings')">Create Connection</Button>
+                <Button type="primary" @click="insertCsvData(frmSettings.upldCSV)" v-if="validateButton">Validate Data</Button>
+                <Button type="primary" v-if="saveButton">Save Data</Button>
             </FormItem>
         </Col>
         <Col span="6">
@@ -323,14 +340,15 @@
         </Col>
         </Row>
         <!-- <div>{{frmSettings}}</div> -->
-        </Form>
 
         </template>
+      </Form>
     </div>
 </template>
 <script>
 /*eslint-disable*/
 const $ = require('jquery')
+var Schema = require( 'simpleschema' )
 import Papa from 'papaparse'
 import api from '../api'
 import schema from '../api/schema'
@@ -340,14 +358,21 @@ import rethink from '../assets/images/rethink.png'
 import elastic from '../assets/images/elasticsearch.png'
 import nedb from '../assets/images/nedb.png'
 import Tab from './Tab'
-let _ = require('lodash')
+// let _ = require('lodash')
+import _ from 'underscore'
 import expandRow from './table-expand.vue'
 import Emitter from '@/mixins/emitter'
+import moment from "moment";
+import VueMomentJS from "vue-momentjs";
+
+let res;
+let finalModifiedDataArray = [];
+
 export default{
     name: 'Settings',
     mixins: [ Emitter ],
     components: {'input-tag': InputTag, 'f-tab': Tab,  expandRow },
-    props: { 
+    props: {
         checked: {
             type: Boolean,
             default: true
@@ -355,7 +380,10 @@ export default{
     },
     data() {
         return {
-          expandValue: false,  
+          validateButton : true,
+          saveButton: false,
+          showHandson: false,
+          expandValue: false,
           currentStep: 1,
           check: this.checked,
           expand: false,
@@ -369,6 +397,7 @@ export default{
               password: '',
               selectedDb: '',
               upldIcn: '',
+              upldCSV: [],
               optCrt: '',
               rdoCrt: '',
               rdodb: '',
@@ -403,6 +432,12 @@ export default{
             elastic,
             nedb,
             model: false,
+            csvData: [],
+            errmsg: [],
+            headers: [],
+            complexSchema:{},
+            data1: [],
+            userUploadedDataArray : [] ,
             optType: [{
                 value: 'text',
                 label: 'Text'
@@ -446,13 +481,262 @@ export default{
             //     schema.get()
             //         .then((response) => {
             //             this.allSchema = response.data
-            //             console.log(response.data)  
+            //             console.log(response.data)
             //         })
             //         .catch(error => {
             //             console.log(error)
             //         })
-            // } 
+            // }
         },
+        type(index) {
+            let headerSchema = {}
+
+            for(var [index, item] of this.headers.entries()){
+
+              // console.log('item', item, index)
+              // let type
+              // switch(this.csvData[index].type){
+              //   case 'text':
+              //   type = 'string';
+              //   break;
+              //   case 'email':
+              //   type = 'email';
+              //   break;
+              //   case 'number':
+              //   type = 'number'
+              //   break;
+              //   case 'boolean':
+              //   type = 'boolean'
+              //   break;
+              //   case 'phone':
+              //   type = 'number'
+              //   break;
+              //   case 'date':
+              //   type = 'date'
+              //   break;
+              // }
+
+              let emailValidatorFunc = function( obj, value, fieldName ){
+                let re =/\S+@\S+\.\S+/;
+                console.log("val   ", value);
+                if (value != undefined) {
+                  if( re.test(value) != true ) return 'invalid email address';
+                  return;
+                }
+              };
+
+              let dateValidatorFunc = function(obj, value, fieldName){
+                let date = moment(value);
+                let isValid = date.isValid();
+                if (isValid != true) return 'invalid date. please provide date in y-m-d or d-m-y format' ;
+                return;
+              }
+
+              let phoneValidatorFunc = function(obj , value , fieldName){
+                let re = /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/im ;
+                console.log(value);
+                if (value != undefined) {
+                  if( re.test(value) != true ) return 'invalid phone number';
+                  return;
+                }
+              }
+
+
+              if(this.csvData[index].optional == true){
+                if(this.csvData[index].type == 'text'){
+                  headerSchema[item] = {type:'string'};
+                } else if(this.csvData[index].type == 'email'){
+                  //headerSchema[item] = {type:'string',regEx:/^[a-z0-9_.]+[@][a-z]+[.][a-z][a-z]+$/};
+                  headerSchema[item] = {type:'string' ,validator: emailValidatorFunc};
+                } else if(this.csvData[index].type == 'number'){
+                  headerSchema[item] = {type:'number'};
+                } else if(this.csvData[index].type == 'boolean'){
+                  headerSchema[item] = {type:'boolean'};
+                } else if(this.csvData[index].type == 'phone' ){
+                  headerSchema[item] = {type:'string' , validator: phoneValidatorFunc };
+                } else if(this.csvData[index].type == 'date'){
+                  headerSchema[item] = {type:'date',validator: dateValidatorFunc};
+                }
+              } else {
+                if(this.csvData[index].type == 'text'){
+                  headerSchema[item] = {type:'string',max:this.csvData[index].max};
+                } else if(this.csvData[index].type == 'email'){
+                  headerSchema[item] = {type:'email'};
+                } else if(this.csvData[index].type == 'number'){
+                  headerSchema[item] = {type:'number',max:this.csvData[index].max, min:this.csvData[index].min};
+                } else if(this.csvData[index].type == 'boolean'){
+                  headerSchema[item] = {type:'boolean'};
+                } else if(this.csvData[index].type == 'phone'){
+                  headerSchema[item] = {type:'number'};
+                } else if(this.csvData[index].type == 'date'){
+                  headerSchema[item] = {type:'date'};
+                }
+              }
+
+            }
+            this.complexSchema = headerSchema
+        },
+        insertCsvData(data) {
+          this.validateButton = false
+          var schema = new Schema(this.complexSchema)
+
+          // var data1 = []
+          var errcols = []
+          var self = this
+          this.userUploadedDataArray = data;
+          console.log(">>>> this.complexSchema " , this.complexSchema);
+
+          var schema = new Schema(this.complexSchema)
+          console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>.data ' , data);
+          console.log(">>>>>>>>>>>>>>> userUploadedDataArray" , this.userUploadedDataArray);
+          console.log("new headers ", this.headers);
+          // modify headers as per the changes
+          // asign new data to the data object
+
+
+          _.forEach(data, function(value, key) {
+            schema.validate(value, function( err, newP, errors ){
+              if( err ) {
+                throw err;
+              } else {
+                if( errors.length ){
+                  console.log("Validation errors!");
+                  console.log("error at : "+ JSON.stringify(errors) + " on row "+ key);
+                  // errrows.push(key)
+                  self.data1.push(Object.values(value))
+
+                  self.errmsg.push("error at : "+ JSON.stringify(errors) + " on row "+ key)
+                  console.log("******self.frmSettings.upldCSV[0]",self.frmSettings.upldCSV[0]);
+                  let old_headers = _.keys(self.frmSettings.upldCSV[0]);
+                  _.forEach(errors, (item) => {
+
+                    // console.log("}}}}}}}}}}}}}}}}}",new headers)
+                    errcols.push({cols:_.indexOf(old_headers, item.field), rows:key})
+                    // console.log("}}}}}}}}}}}}}}}}}",item.field)
+                    // console.log("123456",errcols)
+                  })
+                  self.showHandson = true
+                } else {
+                  console.log("newP:");
+                  console.log( newP );
+               }
+              }
+            });
+          })
+
+          self.showerrmsg(errcols)
+          document.getElementById("hot-display-license-info").style.display = "none";
+      },
+      showerrmsg(errcols){
+        var headers = []
+        var
+          example1 = document.getElementById('example1'),
+          hot;
+          _.forEach(errcols, function(value, key) {
+            console.log("!!!!!!!!!!columns",value.cols)
+            console.log("!!!!!!!!!!rows",value.rows)
+          });
+          _.forEach(this.csvData, function(value){
+            // console.log(this.csvData)
+            console.log("***************",value.header)
+            headers.push(value.header)
+          })
+        hot = new Handsontable(example1, {
+          data: this.data1,
+
+          colHeaders: headers,
+          cells: function(row, col) {
+            var cellProp = {};
+            _.forEach(errcols, function(value, key) {
+              if (col === value.cols && row === key) {
+                cellProp.className = ' above-fifty'
+              }
+            });
+            return cellProp;
+          }
+        });
+},
+modifyData(){
+
+  let schema = new Schema(this.complexSchema)
+  let colHeaders = this.headers ;
+  let hotSettingsData= this.data1;
+  let showHandson = this.showHandson;
+  let errMsgArray = this.errmsg;
+  let userUploadedDataArr = this.userUploadedDataArray;
+  let newHotSettingsData = [];
+
+  errMsgArray=[];
+  var errcols = [];
+  var self = this;
+  console.log("valueToBeValidat hotSettingsData " , hotSettingsData);
+  console.log("valueToBeValidat colHeaders " , colHeaders);
+ _.forEach(hotSettingsData, function(value, key) {
+    let valueToBeValidated = _.object(colHeaders, value)
+    schema.validate(valueToBeValidated, function( err, newP, errors ){
+      if( err )
+      {
+      } else {
+        if( errors.length ){
+          console.log("Validation errors!");
+          console.log("error at : "+ JSON.stringify(errors) + " on row "+ key);
+          newHotSettingsData.push(Object.values(value))
+          console.log("newHotSettingsData ",newHotSettingsData);
+          self.data1 = newHotSettingsData;
+          console.log("+++++++",self.data1)
+          _.forEach(errors, (item) => {
+            errcols.push({cols:_.indexOf(self.headers, item.field), rows:key})
+          })
+          errMsgArray.push("error at : "+ JSON.stringify(errors) + " on row "+ key)
+
+          showHandson = true
+        } else {
+          console.log("modified data " , newP);
+          console.log("userUploadedDataArray ", userUploadedDataArr)
+          finalModifiedDataArray.push(newP);
+          console.log("11111111111",finalModifiedDataArray)
+          res = userUploadedDataArr.map(obj => finalModifiedDataArray.find(o => o._id === obj._id) || obj);
+          console.log("FINAL MODIFIED ARRAY AFTER CORRECTION ", res);
+          userUploadedDataArr = res;
+       }
+     }
+    });
+  })
+  console.log("@@@@@@res " , res);
+  if (res != undefined) {
+    this.frmSettings.upldCSV = res;
+  }
+
+  this.data = newHotSettingsData;
+  if (this.data.length == 0) {
+    $('table.htCore').each(function (){
+      this.remove()
+    })
+    document.getElementsByClassName("ht_master handsontable")[0].remove();
+    // document.getElementById("hot-display-license-info").style.display = "none";
+    this.saveButton = true
+    // alert("proceed")
+    this.showHandson = false;
+  }else{
+    // $('.ht_clone_top handsontable').remove()
+    $('table.htCore').each(function (){
+      this.remove()
+    })
+    document.getElementsByClassName("ht_master handsontable")[0].remove();
+    console.log("hello")
+
+    console.log("hello2")
+    self.showerrmsg(errcols)
+  }
+document.getElementById("hot-display-license-info").style.display = "none";
+  // //console.log("dataArrayToBeValidated ", dataArrayToBeValidated)
+  // _.forEach(dataArrayToBeValidated, function(value, key) {
+  //
+  //
+  // })
+
+},
+
         getsettingsAll : function (value) {
              this.tabsData = {
                 mongoCols: [],
@@ -503,7 +787,7 @@ export default{
                                                 } else {
                                                     this.check = value
                                                 }
-                                                
+
                                                 // this.enableDbInstance(this.tabPane, params.index, value)
                                               }
                                             }
@@ -534,7 +818,7 @@ export default{
                 .catch(error => {
                   console.log(error);
                 })
-           
+
         },
         importdata: function() {
             //console.log('GiveMeData', this)
@@ -554,7 +838,7 @@ export default{
                     })
                     this.frmSettings.schemaData.push(this.schemaAllData)
                   })
-                      
+
                 }
             })
             }
@@ -562,8 +846,8 @@ export default{
                   console.log('true')
                   this.broadcast('table-expand', 'giveMeData', this)
                 }
-            
-           
+
+
             // console.log("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
         },
         acceptData: function(data) {
@@ -588,6 +872,7 @@ export default{
         },
         handleModalOk() {
             console.log('OK');
+
         },
         enable(value){
             this.tabsData = {
@@ -621,7 +906,7 @@ export default{
                         return result.mongo
                     }
         },
-       
+
         handleSubmit(name) {
             this.$refs[name].validate((valid) => {
                 if (valid) {
@@ -636,12 +921,12 @@ export default{
                             // this.$Message.success('Success');
                             if(response.data == 'Exist'){
                                 this.$Notice.error({duration: 5, title:'Alredy Exist!!', desc:'Connection Alredy exist...'})
-                               
+
                             }
                             else {
                                 this.$Notice.success({duration: 3, title:'Success!!', desc:'Connection Created...'})
                                 this.$router.push('/db');
-                               
+
                             }
                         })
                         .catch(error => {
@@ -653,7 +938,7 @@ export default{
                 } else {
                     // this.$Message.error('Error!');
                     this.$Notice.error({duration: 2, title:'Error!!', desc:'Please enter inputs!'})
-                   
+
                 }
             })
         },
@@ -713,8 +998,12 @@ export default{
             $('#upldCSV').change(function() {
                 let fileChooser = document.getElementById('upldCSV');
                 let file = fileChooser.files[0];
+
                 Papa.parse(file, {
+                    header : true ,
+                    encoding: "UTF-8",
                     complete: function(results, file) {
+                      console.log(results.data)
                         // console.log("Parsing complete:", results.data, file);
                         results.data.optType = [{
                             value: 'text',
@@ -735,8 +1024,27 @@ export default{
                             value: 'date',
                             label: 'Date'
                         }]
+
+
                         self.frmSettings.upldCSV = results.data;
-                        // console.log('settings',self.frmSettings.upldCSV);
+
+                        self.headers = Object.keys(self.frmSettings.upldCSV[0]);
+                        _.forEach(self.headers, (f) => {
+                          self.csvData.push({
+                            header: f,
+                            type: '',
+                            min: 0,
+                            max: 0,
+                            allowedValue: [],
+                            defaultValue: '',
+                            regEx: '',
+                            placeholder: '',
+                            optional: true,
+                            IsArray: '',
+                            transform: ''
+                          })
+                        })
+
                     },
                     error: function(error, file) {
                         console.log("Error", error);
@@ -752,7 +1060,7 @@ export default{
 }
 </script>
 
-<style scoped>
+<style>
 .no-margin{
         margin:0px;
     }
@@ -828,5 +1136,10 @@ export default{
         opacity: 0;
         cursor: pointer;
         outline: none;
+    }
+    .handsontable td.above-fifty {
+      /*color: #33691E;
+      background: #DCEDC8;*/
+      border: 2px solid red;
     }
 </style>
