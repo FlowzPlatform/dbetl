@@ -1,7 +1,8 @@
 /* eslint-disable no-unused-vars */
 const fs = require("fs")
 const path = require('path')
-let config = require("config")
+const config = require("config")
+
 class Service {
     constructor(options) {
         this.options = options || {};
@@ -65,10 +66,12 @@ class Service {
         var AWS = require('aws-sdk'),
             fs = require('fs');
 
+
+            console.log("config.get(awsAccessKeyId) " , process.env.AWSACCESSKEYID , " - ", process.env.AWSSECRETACCESSKEY , ' - ' , process.env.AWSBUCKET);
         // For dev purposes only
         AWS.config.update({
-            accessKeyId: config.get("awsAccessKeyId"),
-            secretAccessKey: config.get("awsSecretAccessKey")
+            accessKeyId: process.env.AWSACCESSKEYID,
+            secretAccessKey: process.env.AWSSECRETACCESSKEY
         });
 
         return new Promise(function(resolve, reject) {
@@ -79,17 +82,18 @@ class Service {
                 var base64data = new Buffer(data, 'binary');
                 var s3 = new AWS.S3();
                 s3.putObject({
-                    Bucket: config.get("awsBucket"),
+                    Bucket: process.env.AWSBUCKET,
                     Key: filename,
                     Body: base64data,
                     ACL: 'public-read'
-                }, function(resp) {
+                }, function(resp , err) {
                     //console.log(resp);
-                    console.log(arguments);
+                    if (err) {
+                      console.log("AWS error " , err);
+                      resolve(err)
+                    }
                     uploadS3Res = {
-                        "res": arguments,
-                        msg: 'Successfully uploaded file to S3.',
-                        code: 200
+                        "res": arguments
                     }
                     fs.unlink(filename, function(err, result) {
                         if (err) throw err;

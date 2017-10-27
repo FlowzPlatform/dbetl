@@ -49,5 +49,6 @@ app.use(notFound());
 app.use(handler());
 
 app.hooks(appHooks);
+console.log("config.get(awsAccessKeyId) " , app.get("awsaccesskeyid"));
 
 module.exports = app;
