@@ -82,9 +82,13 @@
                     <Input type="textarea" v-model.trim="frmSettings.notes"></Input>
                 </FormItem>
 
-                <Button type="primary" v-on:click="goToStep(2, 'frmSettings')">Continue</Button>
+                <Button type="primary" v-on:click="goToStep(2, 'frmSettings')">Continue
+                   <!-- <span v-if="!papapaserdata">Continue</span>
+                   <span v-else>Loading...</span> -->
+              </Button>
                 </Col>
                 </Row>
+
                 <!-- </Form> -->
           </template>
       <template  v-if="currentStep == 2">
@@ -190,6 +194,9 @@
         </div>
         </Row>
         <div id="example1" class="hot handsontable htColumnHeaders"></div>
+        <table>
+          <tr class="ivu-table-row" v-for="(item, index) in errmsg" style="color:red;font-size:14px;">{{item}}</tr>
+        </table>
         <Row>
             <FormItem>
               <div id="hot-preview" v-if="showHandson">
@@ -197,27 +204,30 @@
 
                 <Button type="primary" @click="modifyData()">Modify Data</Button>
               </div>
-              <div class="schema-form ivu-table-wrapper" v-if="!showHandson">
-              <div class="ivu-table ivu-table-border">
-                  <div class="ivu-table-body" style="max-height:280px">
-                      <table style="width:100%">
-                          <thead style = "position: absolute; width:100%">
-                              <tr style="display: inline-table;width: 100%;">
-                                  <th width="20%" v-for="(item, index) in csvData">
-                                      <div>
-                                          <span>{{item.header}}</span>
-                                      </div>
-                                  </th>
-                              </tr>
-                          </thead>
-                          <tbody class="ivu-table-tbody">
-                              <tr class="ivu-table-row" v-for="(item, index) in frmSettings.upldCSV">
-                                  <td width="20%" class="" v-if="index <= frmSettings.upldCSV.length-2" v-for="data in item">{{data}}</td>
-                              </tr>
-                          </tbody>
-                      </table>
-                  </div>
+              <div v-if="!showHandson">
+                <div class="schema-form ivu-table-wrapper" >
+                <div class="ivu-table ivu-table-border"  style="display: block;white-space: nowrap;">
+                    <div class="ivu-table-body">
+                        <table style="min-width: 1077px;overflow-x: auto;">
+                            <thead>
+                                <tr>
+                                    <th v-for="(item, index) in csvData" >
+                                        <div>
+                                            <span>{{item.header}}</span>
+                                        </div>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody class="ivu-table-tbody">
+                                <tr class="ivu-table-row" v-for="(item, index) in frmSettings.upldCSV" v-if="(index<5)">
+                                    <td class="" v-if="index <= frmSettings.upldCSV.length-2" v-for="data in item" style="overflow:hidden;">{{data}}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
               </div>
+              <p style="color: grey;font-size: smaller;">Displaying Some Data As Reference</p>
             </div>
             <!-- <div style="float: right;">
               <Page :total="frmSettings.upldCSV.length" :current="1"></Page>
@@ -329,8 +339,11 @@
         <Col span="6">
             <FormItem>
                 <Button type="primary" @click="handleSubmit('frmSettings')">Create Connection</Button>
-                <Button type="primary" @click="insertCsvData(frmSettings.upldCSV)" v-if="validateButton">Validate Data</Button>
-                <Button type="primary" v-if="saveButton">Save Data</Button>
+                <Button type="primary" :loading="loadingData" v-on:click="insertCsvData(frmSettings.upldCSV)" v-if="validateButton">
+                  <span v-show="!loadingData">Validate Data</span>
+                  <span v-show ="loadingData">Loading...</span>
+                </Button>
+                <Button type="primary" @click="saveData()" v-if="saveButton">Save Data</Button>
             </FormItem>
         </Col>
         <Col span="6">
@@ -339,7 +352,7 @@
             </FormItem>
         </Col>
         </Row>
-        <!-- <div>{{frmSettings}}</div> -->
+        <!-- <div>{{validatingData}}</div> -->
 
         </template>
       </Form>
@@ -369,18 +382,19 @@ let res;
 let finalModifiedDataArray = [];
 
 export default{
-    name: 'Settings',
-    mixins: [ Emitter ],
-    components: {'input-tag': InputTag, 'f-tab': Tab,  expandRow },
-    props: {
-        checked: {
-            type: Boolean,
-            default: true
-        }
-    },
+  name: 'Settings',
+  mixins: [ Emitter ],
+  components: {'input-tag': InputTag, 'f-tab': Tab,  expandRow },
+  props: {
+    checked: {
+      type: Boolean,
+      default: true
+    }
+  },
     data() {
         return {
           validateButton : true,
+          // parsedata: [],
           saveButton: false,
           showHandson: false,
           expandValue: false,
@@ -438,6 +452,7 @@ export default{
             complexSchema:{},
             data1: [],
             userUploadedDataArray : [] ,
+            loadingData: false,
             optType: [{
                 value: 'text',
                 label: 'Text'
@@ -476,266 +491,285 @@ export default{
     },
     methods: {
         getSchemaAll : function (value) {
-            // // alert(value)
-            // if (value === 'rbtDB') {
-            //     schema.get()
-            //         .then((response) => {
-            //             this.allSchema = response.data
-            //             console.log(response.data)
-            //         })
-            //         .catch(error => {
-            //             console.log(error)
-            //         })
-            // }
-        },
-        type(index) {
-            let headerSchema = {}
-
-            for(var [index, item] of this.headers.entries()){
-
-              // console.log('item', item, index)
-              // let type
-              // switch(this.csvData[index].type){
-              //   case 'text':
-              //   type = 'string';
-              //   break;
-              //   case 'email':
-              //   type = 'email';
-              //   break;
-              //   case 'number':
-              //   type = 'number'
-              //   break;
-              //   case 'boolean':
-              //   type = 'boolean'
-              //   break;
-              //   case 'phone':
-              //   type = 'number'
-              //   break;
-              //   case 'date':
-              //   type = 'date'
-              //   break;
+              // // alert(value)
+              // if (value === 'rbtDB') {
+              //     schema.get()
+              //         .then((response) => {
+              //             this.allSchema = response.data
+              //             console.log(response.data)
+              //         })
+              //         .catch(error => {
+              //             console.log(error)
+              //         })
               // }
+          },
+        type(index) {
+              this.validateButton = true
+              this.errmsg = [];
+              this.data1 = [];
+              let headerSchema = {}
 
-              let emailValidatorFunc = function( obj, value, fieldName ){
-                let re =/\S+@\S+\.\S+/;
-                console.log("val   ", value);
-                if (value != undefined) {
-                  if( re.test(value) != true ) return 'invalid email address';
+              for(var [index, item] of this.headers.entries()){
+
+                // console.log('item', item, index)
+                // let type
+                // switch(this.csvData[index].type){
+                //   case 'text':
+                //   type = 'string';
+                //   break;
+                //   case 'email':
+                //   type = 'email';
+                //   break;
+                //   case 'number':
+                //   type = 'number'
+                //   break;
+                //   case 'boolean':
+                //   type = 'boolean'
+                //   break;
+                //   case 'phone':
+                //   type = 'number'
+                //   break;
+                //   case 'date':
+                //   type = 'date'
+                //   break;
+                // }
+
+                let emailValidatorFunc = function( obj, value, fieldName ){
+                  let re =/\S+@\S+\.\S+/;
+                  // console.log("val   ", value);
+                  if (value != undefined) {
+                    if( re.test(value) != true ) return 'invalid email address';
+                    return;
+                  }
+                };
+
+                let dateValidatorFunc = function(obj, value, fieldName){
+                  let date = moment(value);
+                  let isValid = date.isValid();
+                  if (isValid != true) return 'invalid date. please provide date in y-m-d or d-m-y format' ;
                   return;
                 }
-              };
 
-              let dateValidatorFunc = function(obj, value, fieldName){
-                let date = moment(value);
-                let isValid = date.isValid();
-                if (isValid != true) return 'invalid date. please provide date in y-m-d or d-m-y format' ;
-                return;
-              }
-
-              let phoneValidatorFunc = function(obj , value , fieldName){
-                let re = /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/im ;
-                console.log(value);
-                if (value != undefined) {
-                  if( re.test(value) != true ) return 'invalid phone number';
-                  return;
+                let phoneValidatorFunc = function(obj , value , fieldName){
+                  let re = /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/im ;
+                  // console.log(value);
+                  if (value != undefined) {
+                    if( re.test(value) != true ) return 'invalid phone number';
+                    return;
+                  }
                 }
-              }
 
 
-              if(this.csvData[index].optional == true){
-                if(this.csvData[index].type == 'text'){
-                  headerSchema[item] = {type:'string'};
-                } else if(this.csvData[index].type == 'email'){
-                  //headerSchema[item] = {type:'string',regEx:/^[a-z0-9_.]+[@][a-z]+[.][a-z][a-z]+$/};
-                  headerSchema[item] = {type:'string' ,validator: emailValidatorFunc};
-                } else if(this.csvData[index].type == 'number'){
-                  headerSchema[item] = {type:'number'};
-                } else if(this.csvData[index].type == 'boolean'){
-                  headerSchema[item] = {type:'boolean'};
-                } else if(this.csvData[index].type == 'phone' ){
-                  headerSchema[item] = {type:'string' , validator: phoneValidatorFunc };
-                } else if(this.csvData[index].type == 'date'){
-                  headerSchema[item] = {type:'date',validator: dateValidatorFunc};
-                }
-              } else {
-                if(this.csvData[index].type == 'text'){
-                  headerSchema[item] = {type:'string',max:this.csvData[index].max};
-                } else if(this.csvData[index].type == 'email'){
-                  headerSchema[item] = {type:'email'};
-                } else if(this.csvData[index].type == 'number'){
-                  headerSchema[item] = {type:'number',max:this.csvData[index].max, min:this.csvData[index].min};
-                } else if(this.csvData[index].type == 'boolean'){
-                  headerSchema[item] = {type:'boolean'};
-                } else if(this.csvData[index].type == 'phone'){
-                  headerSchema[item] = {type:'number'};
-                } else if(this.csvData[index].type == 'date'){
-                  headerSchema[item] = {type:'date'};
-                }
-              }
-
-            }
-            this.complexSchema = headerSchema
-        },
-        insertCsvData(data) {
-          this.validateButton = false
-          var schema = new Schema(this.complexSchema)
-
-          // var data1 = []
-          var errcols = []
-          var self = this
-          this.userUploadedDataArray = data;
-          console.log(">>>> this.complexSchema " , this.complexSchema);
-
-          var schema = new Schema(this.complexSchema)
-          console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>.data ' , data);
-          console.log(">>>>>>>>>>>>>>> userUploadedDataArray" , this.userUploadedDataArray);
-          console.log("new headers ", this.headers);
-          // modify headers as per the changes
-          // asign new data to the data object
-
-
-          _.forEach(data, function(value, key) {
-            schema.validate(value, function( err, newP, errors ){
-              if( err ) {
-                throw err;
-              } else {
-                if( errors.length ){
-                  console.log("Validation errors!");
-                  console.log("error at : "+ JSON.stringify(errors) + " on row "+ key);
-                  // errrows.push(key)
-                  self.data1.push(Object.values(value))
-
-                  self.errmsg.push("error at : "+ JSON.stringify(errors) + " on row "+ key)
-                  console.log("******self.frmSettings.upldCSV[0]",self.frmSettings.upldCSV[0]);
-                  let old_headers = _.keys(self.frmSettings.upldCSV[0]);
-                  _.forEach(errors, (item) => {
-
-                    // console.log("}}}}}}}}}}}}}}}}}",new headers)
-                    errcols.push({cols:_.indexOf(old_headers, item.field), rows:key})
-                    // console.log("}}}}}}}}}}}}}}}}}",item.field)
-                    // console.log("123456",errcols)
-                  })
-                  self.showHandson = true
+                if(this.csvData[index].optional == true){
+                  if(this.csvData[index].type == 'text'){
+                    headerSchema[item] = {type:'string'};
+                  } else if(this.csvData[index].type == 'email'){
+                    //headerSchema[item] = {type:'string',regEx:/^[a-z0-9_.]+[@][a-z]+[.][a-z][a-z]+$/};
+                    headerSchema[item] = {type:'string' ,validator: emailValidatorFunc};
+                  } else if(this.csvData[index].type == 'number'){
+                    headerSchema[item] = {type:'number'};
+                  } else if(this.csvData[index].type == 'boolean'){
+                    headerSchema[item] = {type:'boolean'};
+                  } else if(this.csvData[index].type == 'phone' ){
+                    headerSchema[item] = {type:'string' , validator: phoneValidatorFunc };
+                  } else if(this.csvData[index].type == 'date'){
+                    headerSchema[item] = {type:'date',validator: dateValidatorFunc};
+                  }
                 } else {
-                  console.log("newP:");
-                  console.log( newP );
-               }
-              }
-            });
-          })
+                  if(this.csvData[index].type == 'text'){
+                    headerSchema[item] = {type:'string',max:this.csvData[index].max};
+                  } else if(this.csvData[index].type == 'email'){
+                    headerSchema[item] = {type:'email'};
+                  } else if(this.csvData[index].type == 'number'){
+                    headerSchema[item] = {type:'number',max:this.csvData[index].max, min:this.csvData[index].min};
+                  } else if(this.csvData[index].type == 'boolean'){
+                    headerSchema[item] = {type:'boolean'};
+                  } else if(this.csvData[index].type == 'phone'){
+                    headerSchema[item] = {type:'number'};
+                  } else if(this.csvData[index].type == 'date'){
+                    headerSchema[item] = {type:'date'};
+                  }
+                }
 
-          self.showerrmsg(errcols)
-          document.getElementById("hot-display-license-info").style.display = "none";
-      },
-      showerrmsg(errcols){
-        var headers = []
-        var
-          example1 = document.getElementById('example1'),
-          hot;
-          _.forEach(errcols, function(value, key) {
-            console.log("!!!!!!!!!!columns",value.cols)
-            console.log("!!!!!!!!!!rows",value.rows)
+              }
+              this.complexSchema = headerSchema
+          },
+        insertCsvData(data) {
+            var self = this
+            self.loadingData = true
+
+            setTimeout(function(){
+              // alert(this.validatingData)
+              var schema = new Schema(self.complexSchema)
+
+              // var data1 = []
+              var errcols = []
+
+              self.userUploadedDataArray = data;
+              // console.log(">>>> this.complexSchema " , self.complexSchema);
+
+              var schema = new Schema(self.complexSchema)
+              // console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>.data ' , data);
+              // console.log(">>>>>>>>>>>>>>> userUploadedDataArray" , this.userUploadedDataArray);
+              // console.log("new headers ", this.headers);
+              // modify headers as per the changes
+              // asign new data to the data object
+
+
+               _.forEach(data, function(value, key) {
+                schema.validate(value, function( err, newP, errors ){
+                  if( err ) {
+                    throw err;
+                  } else {
+                    if( errors.length ){
+                      // console.log("Validation errors!");
+                      // console.log("error at : "+ JSON.stringify(errors) + " on row "+ key);
+                      // errrows.push(key)
+                      self.data1.push(Object.values(value))
+                      // console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@",self.data1)
+
+                      // self.errmsg.push("error at : "+ JSON.stringify(errors) + " on row "+ key)
+                      // console.log("*****************errmsg",self.errmsg);
+                      let old_headers = _.keys(self.frmSettings.upldCSV[0]);
+                      _.forEach(errors, (item) => {
+
+                        // console.log("}}}}}}}}}}}}}}}}}",new headers)
+                        errcols.push({cols:_.indexOf(old_headers, item.field), rows:key})
+                        // console.log("}}}}}}}}}}}}}}}}}",item.field)
+                        // console.log("@@@@@@@@@@@@@@@@@@",item.message)
+                        self.errmsg.push("* "+item.message +" at column: "+ item.field)
+                        // console.log("!!!!!!!!!!!!!!!!!!",self.errmsg)
+                        // console.log("123456",errcols)
+                      })
+                      self.showHandson = true
+
+                    } else {
+                      console.log("newP:");
+                      // console.log( newP );
+                   }
+                  }
+                });
+              })
+              self.loadingData = false
+              self.validateButton = false
+              // .log("@@@@@@@@@@@@",self.data1)
+              if(self.data1.length == 0){
+                document.getElementById("example1").style.display = "none";
+                self.errmsg=[]
+                self.$Message.success('validation successfully complited');
+                self.saveButton = true
+              }else{
+                self.$Message.error('validation error');
+              }
+              self.showerrmsg(errcols)
+              document.getElementById("hot-display-license-info").style.display = "none";
+            }, 1000)
+        },
+        showerrmsg(errcols){
+          var headers = []
+          var
+            example1 = document.getElementById('example1'),
+            hot;
+            _.forEach(this.csvData, function(value){
+              headers.push(value.header)
+            })
+          hot = new Handsontable(example1, {
+            data: this.data1,
+            // rowHeaders: true,
+            colHeaders: headers,
+            // rowHeaders: true,
+            height: 300,
+            cells: function(row, col) {
+              var cellProp = {};
+              _.forEach(errcols, function(value, key) {
+                if (col === value.cols && row === key) {
+                  cellProp.className = 'error'
+                }
+              });
+              return cellProp;
+            }
           });
-          _.forEach(this.csvData, function(value){
-            // console.log(this.csvData)
-            console.log("***************",value.header)
-            headers.push(value.header)
-          })
-        hot = new Handsontable(example1, {
-          data: this.data1,
+        },
+        modifyData(){
 
-          colHeaders: headers,
-          cells: function(row, col) {
-            var cellProp = {};
-            _.forEach(errcols, function(value, key) {
-              if (col === value.cols && row === key) {
-                cellProp.className = ' above-fifty'
-              }
-            });
-            return cellProp;
-          }
-        });
-},
-modifyData(){
+            let schema = new Schema(this.complexSchema)
+            let colHeaders = this.headers ;
+            let hotSettingsData= this.data1;
+            let showHandson = this.showHandson;
+            let errMsgArray = this.errmsg;
+            let userUploadedDataArr = this.userUploadedDataArray;
+            let newHotSettingsData = [];
 
-  let schema = new Schema(this.complexSchema)
-  let colHeaders = this.headers ;
-  let hotSettingsData= this.data1;
-  let showHandson = this.showHandson;
-  let errMsgArray = this.errmsg;
-  let userUploadedDataArr = this.userUploadedDataArray;
-  let newHotSettingsData = [];
+            errMsgArray=[];
+            var errcols = [];
+            var self = this;
+            // console.log("valueToBeValidat hotSettingsData " , hotSettingsData);
+            // console.log("valueToBeValidat colHeaders " , colHeaders);
+           _.forEach(hotSettingsData, function(value, key) {
+              let valueToBeValidated = _.object(colHeaders, value)
+              schema.validate(valueToBeValidated, function( err, newP, errors ){
+                if( err )
+                {
+                } else {
+                  if( errors.length ){
+                    // console.log("Validation errors!");
+                    // console.log("error at : "+ JSON.stringify(errors) + " on row "+ key);
+                    newHotSettingsData.push(Object.values(value))
+                    // console.log("newHotSettingsData ",newHotSettingsData);
+                    self.data1 = newHotSettingsData;
+                    _.forEach(errors, (item) => {
+                      errcols.push({cols:_.indexOf(self.headers, item.field), rows:key})
+                      errMsgArray.push("* "+item.message +" at column: "+ item.field)
+                      // errMsgArray.push("error at field:"+item.field+ "  message:"+item.message)
+                    })
+                    self.errmsg = errMsgArray;
+                    // errMsgArray.push("error at : "+ JSON.stringify(errors) + " on row "+ key)
 
-  errMsgArray=[];
-  var errcols = [];
-  var self = this;
-  console.log("valueToBeValidat hotSettingsData " , hotSettingsData);
-  console.log("valueToBeValidat colHeaders " , colHeaders);
- _.forEach(hotSettingsData, function(value, key) {
-    let valueToBeValidated = _.object(colHeaders, value)
-    schema.validate(valueToBeValidated, function( err, newP, errors ){
-      if( err )
-      {
-      } else {
-        if( errors.length ){
-          console.log("Validation errors!");
-          console.log("error at : "+ JSON.stringify(errors) + " on row "+ key);
-          newHotSettingsData.push(Object.values(value))
-          console.log("newHotSettingsData ",newHotSettingsData);
-          self.data1 = newHotSettingsData;
-          console.log("+++++++",self.data1)
-          _.forEach(errors, (item) => {
-            errcols.push({cols:_.indexOf(self.headers, item.field), rows:key})
-          })
-          errMsgArray.push("error at : "+ JSON.stringify(errors) + " on row "+ key)
+                    showHandson = true
+                  } else {
+                    // console.log("modified data " , newP);
+                    // console.log("userUploadedDataArray ", userUploadedDataArr)
+                    finalModifiedDataArray.push(newP);
+                    // console.log("11111111111",finalModifiedDataArray)
+                    res = userUploadedDataArr.map(obj => finalModifiedDataArray.find(o => o._id === obj._id) || obj);
+                    // console.log("FINAL MODIFIED ARRAY AFTER CORRECTION ", res);
+                    userUploadedDataArr = res;
+                 }
+               }
+              });
+            })
+            // console.log("@@@@@@res " , res);
+            if (res != undefined) {
+              this.frmSettings.upldCSV = res;
+            }
 
-          showHandson = true
-        } else {
-          console.log("modified data " , newP);
-          console.log("userUploadedDataArray ", userUploadedDataArr)
-          finalModifiedDataArray.push(newP);
-          console.log("11111111111",finalModifiedDataArray)
-          res = userUploadedDataArr.map(obj => finalModifiedDataArray.find(o => o._id === obj._id) || obj);
-          console.log("FINAL MODIFIED ARRAY AFTER CORRECTION ", res);
-          userUploadedDataArr = res;
-       }
-     }
-    });
-  })
-  console.log("@@@@@@res " , res);
-  if (res != undefined) {
-    this.frmSettings.upldCSV = res;
-  }
-
-  this.data = newHotSettingsData;
-  if (this.data.length == 0) {
-    $('table.htCore').each(function (){
-      this.remove()
-    })
-    document.getElementsByClassName("ht_master handsontable")[0].remove();
-    // document.getElementById("hot-display-license-info").style.display = "none";
-    this.saveButton = true
-    // alert("proceed")
-    this.showHandson = false;
-  }else{
-    // $('.ht_clone_top handsontable').remove()
-    $('table.htCore').each(function (){
-      this.remove()
-    })
-    document.getElementsByClassName("ht_master handsontable")[0].remove();
-    console.log("hello")
-
-    console.log("hello2")
-    self.showerrmsg(errcols)
-  }
-document.getElementById("hot-display-license-info").style.display = "none";
-  // //console.log("dataArrayToBeValidated ", dataArrayToBeValidated)
-  // _.forEach(dataArrayToBeValidated, function(value, key) {
-  //
-  //
-  // })
-
-},
+            this.data = newHotSettingsData;
+            if (this.data.length == 0) {
+              self.errmsg=[]
+              $('table.htCore').each(function (){
+                this.remove()
+              })
+              document.getElementsByClassName("ht_master handsontable")[0].remove();
+              document.getElementById("example1").style.display = "none";
+              // document.getElementById("hot-display-license-info").style.display = "none";
+              this.saveButton = true
+              // alert("proceed")
+              this.showHandson = false;
+              this.$Message.success('validation successfully complited');
+            }else{
+              // $('.ht_clone_top handsontable').remove()
+              $('table.htCore').each(function (){
+                this.remove()
+              })
+              document.getElementsByClassName("ht_master handsontable")[0].remove();
+              self.showerrmsg(errcols)
+              self.$Message.error('validation error');
+            }
+              document.getElementById("hot-display-license-info").style.display = "none";
+          },
+        saveData(){
+          console.log(this.frmSettings.upldCSV)
+        },
 
         getsettingsAll : function (value) {
              this.tabsData = {
@@ -846,16 +880,12 @@ document.getElementById("hot-display-license-info").style.display = "none";
                   console.log('true')
                   this.broadcast('table-expand', 'giveMeData', this)
                 }
-
-
-            // console.log("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
         },
         acceptData: function(data) {
             console.log('accept data call')
             console.log('data', data.data)
             var sdata = data.data
             this.frmSettings.schemaData.push(sdata)
-            console.log("@@@@@@@@@@@@@@@@@@@",this.frmSettings.schemaData)
         },
         getTableAll: function() {
 
@@ -945,7 +975,7 @@ document.getElementById("hot-display-license-info").style.display = "none";
         S4() {
             return (((1+Math.random())*0x10000)|0).toString(16).substring(1);
         },
-        activatedProperty (property) {
+        activatedProperty (index,property) {
             let typePropertys = {
                 'text': ['max', 'allowedValue', 'defaultValue', 'placeholder', 'regEx', 'optional'],
                 'email': ['allowedValue', 'defaultValue', 'placeholder', 'optional'],
@@ -954,10 +984,12 @@ document.getElementById("hot-display-license-info").style.display = "none";
                 'boolean': ['defaultValue', 'placeholder', 'optional'],
                 'date': ['allowedValue', 'defaultValue', 'mindate', 'maxdate', 'placeholder', 'regEx', 'optional']
             }
-            if (typePropertys['text'] === undefined) {
+
+            if (typePropertys[this.csvData[index].type] === undefined) {
                 return ['IsArray'].indexOf(property) >= 0
             } else {
-                return typePropertys['text'].indexOf(property) >= 0
+              // console.log(typePropertys[this.csvData[index].type].valueOf(property))
+                return typePropertys[this.csvData[index].type].indexOf(property) >= 0
             }
         },
         handleSchemaChange (value) {
@@ -1044,7 +1076,6 @@ document.getElementById("hot-display-license-info").style.display = "none";
                             transform: ''
                           })
                         })
-
                     },
                     error: function(error, file) {
                         console.log("Error", error);
@@ -1137,9 +1168,16 @@ document.getElementById("hot-display-license-info").style.display = "none";
         cursor: pointer;
         outline: none;
     }
-    .handsontable td.above-fifty {
+    .handsontable td.error {
       /*color: #33691E;
       background: #DCEDC8;*/
       border: 2px solid red;
+      outline: none;
+    }
+    .htCore{
+      min-width: 100%!important;
+    }
+    #example1{
+      width:100%!important;
     }
 </style>
