@@ -43,7 +43,7 @@ export default {
         },
         {
           title: 'Instance ID',
-          key: 'id',
+          key: '_id',
           sortable: true
         },
         {

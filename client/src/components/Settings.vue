@@ -1,363 +1,363 @@
 <template>
     <div id="app">
-      <h3>Add New Connection</h3>
-      <Steps :current="currentStep">
-            <Step title="1"></Step>
-            <Step title="2"></Step>
-        </Steps>
+        <h4>Add New Connection</h4>
+        <Card :bordered="true">
+            <span slot="title" style="padding: 10px 10px;">
+            <!-- style="padding-top:10px;padding-bottom:10px" -->
+                <Steps :current="currentStep"  >
+                    <Step title="1"></Step>
+                    <Step title="2"></Step>
+                </Steps>
+            </span>
+        </Card>
         <Form  ref="frmSettings" :model="frmSettings" :rules="frmRule" class="form">
-          <template  v-if="currentStep == 1">
-
-            <Row :gutter="20">
-            <Col span="12">
-                <FormItem label="Connection Name" prop="connection_name">
-                    <Input placeholder="Connection Name" v-model.trim="frmSettings.connection_name"></Input>
-                </FormItem>
-                <FormItem label="Host" prop="host">
-                    <Input placeholder="localhost" v-model.trim="frmSettings.host"></Input>
-                </FormItem>
-                <FormItem label="username">
-                    <Input placeholder="Username" v-model.trim="frmSettings.username"></Input>
-                </FormItem>
-                <FormItem label="Select Database">
-                    <Select v-model="frmSettings.selectedDb" @on-change="clearIcon">
-                        <Option value="mongo" key="mdb">Mongo DB</Option>
-                        <Option value="rethink" key="rdb">Rethink DB</Option>
-                        <Option value="elastic" key="edb">ElasticSearch DB</Option>
-                        <Option value="nedb" key="ndb">Ne DB</Option>
-                        <Option value="mysql" key="mysql">MySQL DB</Option>
-                    </Select>
-                </FormItem>
-            <!--
-                <FormItem label="Notes">
-                    <Input type="textarea" v-model="frmSettings.notes"></Input>
-                </FormItem> -->
-
-
-                <FormItem label="Icon" v-if="frmSettings.selectedDb">
-                    <div class="demo-upload-list">
-                        <template>
-                            <img v-if="frmSettings.upldIcn" :src="frmSettings.upldIcn">
-                            <div v-else>
-                                <img v-if="frmSettings.selectedDb === 'mongo'" :src="mongo">
-                                <img v-if="frmSettings.selectedDb === 'rethink'" :src="rethink">
-                                <img v-if="frmSettings.selectedDb === 'elastic'" :src="elastic">
-                                <img v-if="frmSettings.selectedDb === 'nedb'" :src="nedb">
-                            </div>
-                        </template>
-                     </div>
-                     <Col v-if="loading" class="demo-spin-col" span="1">
-                        <Spin fix>
-                            <Icon type="load-c" size=18 class="demo-spin-icon-load"></Icon>
-                        </Spin>
-                    </Col>
-                    <div class="upload-btn-wrapper">
-                        <button class="btn"><Icon type="ios-cloud-upload-outline"></Icon> Upload Icon</button>
-                        <input type="file" id="upldIcn" title="Upload icon" accept="image/*">
-                    </div>
-                    <h4>CSV File Upload</h4>
-                    <div class="upload-btn-wrapper">
-                        <button class="btn"><Icon type="ios-cloud-upload-outline"></Icon> Upload CSV</button>
-                        <input type="file" id="upldCSV" title="Upload CSV">
-                    </div>
-                </FormItem>
-
-                <FormItem>
-                    <Checkbox v-model="frmSettings.isenable" label="enable">Enable</Checkbox>
-                    <Checkbox v-model="frmSettings.isdefault" label="default">is Default</Checkbox>
-                </FormItem>
-            </Col>
-            <Col span="12">
-                <FormItem label="Database Name" prop="dbname">
-                    <Input placeholder="Flowz" v-model.trim="frmSettings.dbname"></Input>
-                </FormItem>
-                <FormItem label="Port" prop="port">
-                    <Input placeholder="8080" v-model.trim="frmSettings.port"></Input>
-                </FormItem>
-                <FormItem label="Password">
-                    <Input type="password" placeholder="Password" v-model.trim="frmSettings.password"></Input>
-                </FormItem>
-
-                <FormItem label="Notes">
-                    <Input type="textarea" v-model.trim="frmSettings.notes"></Input>
-                </FormItem>
-
-                <Button type="primary" v-on:click="goToStep(2, 'frmSettings')">Continue
-                   <!-- <span v-if="!papapaserdata">Continue</span>
-                   <span v-else>Loading...</span> -->
-              </Button>
-                </Col>
-                </Row>
-
-                <!-- </Form> -->
-          </template>
-      <template  v-if="currentStep == 2">
-        <!-- <Form ref="frmSettings" :model="frmSettings" :rules="frmRule" class="form"> -->
-          <Row :gutter="20">
-            <Col span="12">
-                <FormItem prop="rdoCrt">
-                    <RadioGroup v-model="frmSettings.rdoCrt" @on-change="getSchemaAll(frmSettings.rdoCrt)">
-                        <Radio label="rbtCSV"><span>CSV Upload</span></Radio>
-                        <Radio label="rbtDB"><span>By Database</span></Radio>
-                    </RadioGroup>
-                </FormItem>
-                <FormItem>
-                  <Row>
-                       <Col span="6">
-                          <FormItem prop="rdosync">
-                              <RadioGroup v-model="frmSettings.rdosync" v-if="frmSettings.rdoCrt == 'rbtDB'">
-                                  <Radio label="rbtsync"><span>Keep Sync</span></Radio>
-                              </RadioGroup>
-                          </FormItem>
-                        </Col>
-                        <Col span="6">
-                          <FormItem prop="keep_sync" v-if="frmSettings.rdosync == 'rbtsync' && frmSettings.rdoCrt == 'rbtDB'">
-                              <Input placeholder="Everyday/Everyhour" v-model.trim="frmSettings.keep_sync"></Input>
-                          </FormItem>
-                        </Col>
-                  </Row>
-                </FormItem>
-                <FormItem prop="rdodb">
-                    <RadioGroup v-model="frmSettings.rdodb" v-if="frmSettings.rdoCrt == 'rbtDB'" @on-change="getTableAll()">
-                        <Radio label="rbtCrnt"><span>Current Database</span></Radio>
-                        <Radio label="rbtExstng"><span>Existing Database</span></Radio>
-                    </RadioGroup>
-                </FormItem>
-                <FormItem label="Create with" v-if="frmSettings.rdoCrt == 'rbtDB' && frmSettings.rdodb == 'rbtExstng'" >
-                    <Select v-model="frmSettings.optCrt" @on-change="getsettingsAll(frmSettings.optCrt)">
-                        <Option value="schema" key="schema">Only Schema</Option>
-                        <Option value="schemaData" key="schemaData">Both Schema & Data</Option>
-                    </Select>
-                </FormItem>
-                <FormItem>
-                    <Row>
-                        <Col span="10" v-if="frmSettings.rdoCrt == 'rbtCSV'">
-                            <h4>CSV File Upload</h4>
-                            <div class="upload-btn-wrapper">
-                                <button class="btn"><Icon type="ios-cloud-upload-outline"></Icon> Upload CSV</button>
-                                <input type="file" id="upldCSV" title="Upload CSV">
-                            </div>
-                        </Col>
-                       <!--  <FormItem v-if="frmSettings.rdoCrt == 'rbtDB'" style="display:none;">
-                            <h4>Select Database</h4>
-                            <ul>
-                            <li>
-                                <input type="checkbox"  value="mongo" v-model="frmSettings.Database" @change="enable()"/>
-                                Mongo DB
-                            </li>
-                            <li>
-                                <input type="checkbox"  value="rethink" v-model="frmSettings.Database" @change="enable()"/>
-                                Rethink DB
-                            </li>
-                            <li>
-                                <input type="checkbox"  value="elastic" v-model="frmSettings.Database" @change="enable()"/>
-                                ElasticSearch DB
-                            </li>
-                            <li>
-                                <input type="checkbox"  value="ne" v-model="frmSettings.Database" @change="enable()"/>
-                                Ne DB
-                            </li>
-                            </ul>
-                        </FormItem> -->
-
-                        <Col span="10" v-if="frmSettings.rdoCrt == 'rbtDB'" style="display:none;">
-                            <h4>Database Settings</h4>
-                            <div class="upload-btn-wrapper">
-                                <button class="btn"><Icon type="ios-cloud-upload-outline"></Icon> Upload</button>
-                                <input type="file" id="upload" title="Upload">
-                            </div>
+            <template  v-if="currentStep == 0">
+                <Card :bordered="true" style="">
+                    <span slot="title">
+                        <Row>
+                            <Col span="12">
+                                <FormItem label="Select Database" style="margin-bottom:0px">
+                                    <Select v-model="frmSettings.selectedDb" @on-change="clearIcon(frmSettings.selectedDb)">
+                                        <Option value="mongo" key="mdb">Mongo DB</Option>
+                                        <Option value="rethink" key="rdb">Rethink DB</Option>
+                                        <Option value="elastic" key="edb">ElasticSearch DB</Option>
+                                        <Option value="nedb" key="ndb">Ne DB</Option>
+                                        <Option value="mysql" key="mysql">MySQL DB</Option>
+                                    </Select>
+                                </FormItem>
+                            </Col>
+                            <Col span="12">
+                                <FormItem label="Icon" v-if="frmSettings.selectedDb" style="margin-bottom:0px">
+                                    <div class="demo-upload-list"> 
+                                        <template>
+                                            <img v-if="frmSettings.upldIcn" :src="frmSettings.upldIcn">
+                                            <div v-else>
+                                                <img v-if="frmSettings.selectedDb === 'mongo'" :src="mongo">
+                                                <img v-if="frmSettings.selectedDb === 'rethink'" :src="rethink">
+                                                <img v-if="frmSettings.selectedDb === 'elastic'" :src="elastic">
+                                                <img v-if="frmSettings.selectedDb === 'nedb'" :src="nedb">
+                                                <img v-if="frmSettings.selectedDb === 'mysql'" :src="mysql">
+                                            </div>
+                                        </template>
+                                    </div>
+                                    <Col v-if="loading" class="demo-spin-col" span="1">
+                                      <Spin fix>
+                                        <Icon type="load-c" size=18 class="demo-spin-icon-load"></Icon>
+                                      </Spin>
+                                    </Col>
+                                    <div class="upload-btn-wrapper">
+                                      <button class="btn"><Icon type="ios-cloud-upload-outline"></Icon> Upload Icon</button>
+                                      <input type="file" id="upldIcn" title="Upload icon" accept="image/*">
+                                    </div>
+                                </FormItem>
+                            </Col>
+                        </Row>
+                    </span>
+                    <Row style="margin-top:10px;">
+                        <Col span="12" style="padding-left:10px;padding-right:10px">
+                            <FormItem label="Connection Name" prop="connection_name">
+                                <Input placeholder="Connection Name" v-model.trim="frmSettings.connection_name"></Input>
+                            </FormItem>
+                            <FormItem label="Host" prop="host">
+                                <Input placeholder="localhost" v-model.trim="frmSettings.host"></Input>
+                            </FormItem>
+                            <FormItem label="username">
+                                <Input placeholder="Username" v-model.trim="frmSettings.username"></Input>
+                            </FormItem>
+                            <!-- <FormItem>
+                                <h4>CSV File Upload</h4>
+                                <div class="upload-btn-wrapper">
+                                    <button class="btn"><Icon type="ios-cloud-upload-outline"></Icon> Upload CSV</button>
+                                    <input type="file" id="upldCSV" title="Upload CSV">
+                                </div>
+                            </FormItem> -->
+                            <FormItem>
+                                <Checkbox v-model="frmSettings.isenable" label="enable">Enable</Checkbox>
+                                <Checkbox v-model="frmSettings.isdefault" label="default">is Default</Checkbox>
+                            </FormItem>
+                          </Col>
+                          <Col span="12" style="padding-left:10px;padding-right:10px">
+                              <FormItem label="Database Name" prop="dbname">
+                                  <Input placeholder="Flowz" v-model.trim="frmSettings.dbname"></Input>
+                              </FormItem>
+                              <FormItem label="Port" prop="port">
+                                  <Input placeholder="8080" v-model.trim="frmSettings.port"></Input>
+                              </FormItem>
+                              <FormItem label="Password">
+                                  <Input type="password" placeholder="Password" v-model.trim="frmSettings.password"></Input>
+                              </FormItem>
+                              <FormItem label="Notes">
+                                  <Input type="textarea" v-model.trim="frmSettings.notes"></Input>
+                              </FormItem>
+                              <Button type="primary" v-on:click="goToStep(1, 'frmSettings', frmSettings)">Continue
+                                   <!-- <span v-if="!papapaserdata">Continue</span>
+                                   <span v-else>Loading...</span> -->
+                                  <span>
+                                      <Icon  v-if="check_conn" :type="conn_icon" style="padding-left:5px;font-size:12px;"/>
+                                  </span>
+                              </Button>
+                          <!-- <i class="ivu-icon ivu-icon-checkmark" style="padding-left:10px;font-size:20px;color:#5cb85c"></i>  :class="getIcon()" -->
                         </Col>
                     </Row>
-
-                </FormItem>
-            </Col>
-
-
-        <div v-if="frmSettings.optCrt && frmSettings.rdoCrt == 'rbtDB' && frmSettings.rdodb == 'rbtExstng'">
-            <Tabs type="card" style="width: 100%;">
-                <TabPane label="mongo">
-                    <Table border :columns="tabsData.mongoCols" :data="tabsData.mongoDt"></Table>
-                </TabPane>
-                <TabPane label="rethink">
-                    <Table border :columns="tabsData.rethinkCols" :data="tabsData.rethinkDt"></Table>
-                </TabPane>
-                <TabPane label="elastic" >
-                    <Table border :columns="tabsData.elasticCols" :data="tabsData.elasticDt"></Table>
-                </TabPane>
-                <TabPane label="nedb">
-                    <Table border :columns="tabsData.nedbCols" :data="tabsData.nedbDt"></Table>
-                </TabPane>
-                <TabPane label="mysqldb">
-                    <Table border :columns="tabsData.mysqlCols" :data="tabsData.mysqlDt"></Table>
-                </TabPane>
-            </Tabs>
-        </div>
-        </Row>
-        <div id="example1" class="hot handsontable htColumnHeaders"></div>
-        <table>
-          <tr class="ivu-table-row" v-for="(item, index) in errmsg" style="color:red;font-size:14px;">{{item}}</tr>
-        </table>
-        <Row>
-            <FormItem>
-              <div id="hot-preview" v-if="showHandson">
-                <!-- <HotTable :root="root" :settings="hotSettings"></HotTable> -->
-
-                <Button type="primary" @click="modifyData()">Modify Data</Button>
-              </div>
-              <div v-if="!showHandson">
-                <div class="schema-form ivu-table-wrapper" >
-                <div class="ivu-table ivu-table-border"  style="display: block;white-space: nowrap;">
-                    <div class="ivu-table-body">
-                        <table style="min-width: 1077px;overflow-x: auto;">
-                            <thead>
-                                <tr>
-                                    <th v-for="(item, index) in csvData" >
-                                        <div>
-                                            <span>{{item.header}}</span>
+                </Card>
+            </template>
+            <template  v-if="currentStep == 1">
+                <Card :bordered="true" style="padding: 10px 10px;">
+                    <Row>
+                        <Col span="12">
+                            <FormItem prop="rdoCrt">
+                                <RadioGroup v-model="frmSettings.rdoCrt">
+                                    <Radio label="rbtCSV"><span>CSV Upload</span></Radio>
+                                    <Radio label="rbtDB"><span>By Database</span></Radio>
+                                </RadioGroup>
+                            </FormItem>
+                            <FormItem>
+                                <Row>
+                                   <Col span="6">
+                                      <FormItem prop="rdosync">
+                                          <RadioGroup v-model="frmSettings.rdosync" v-if="frmSettings.rdoCrt == 'rbtDB'">
+                                              <Radio label="rbtsync"><span>Keep Sync</span></Radio>
+                                          </RadioGroup>
+                                      </FormItem>
+                                    </Col>
+                                    <Col span="6">
+                                      <FormItem prop="keep_sync" v-if="frmSettings.rdosync == 'rbtsync' && frmSettings.rdoCrt == 'rbtDB'">
+                                          <Input placeholder="Everyday/Everyhour" v-model.trim="frmSettings.keep_sync"></Input>
+                                      </FormItem>
+                                    </Col>
+                                </Row>
+                            </FormItem>
+                            <FormItem prop="rdodb">
+                                <RadioGroup v-model="frmSettings.rdodb" v-if="frmSettings.rdoCrt == 'rbtDB'">
+                                    <Radio label="rbtCrnt"><span>Current Database</span></Radio>
+                                    <Radio label="rbtExstng"><span>Existing Database</span></Radio>
+                                </RadioGroup>
+                            </FormItem>
+                            <FormItem label="Create with" v-if="frmSettings.rdoCrt == 'rbtDB' && frmSettings.rdodb == 'rbtExstng'" >
+                                <Select v-model="frmSettings.optCrt" @on-change="getsettingsAll(frmSettings.optCrt)">
+                                    <Option value="schema" key="schema">Only Schema</Option>
+                                    <Option value="schemaData" key="schemaData">Both Schema & Data</Option>
+                                </Select>
+                            </FormItem>
+                            <FormItem
+                              label="Select Database"
+                              :label-width="115"
+                              v-if="frmSettings.optCrt && frmSettings.rdoCrt == 'rbtDB' && frmSettings.rdodb == 'rbtExstng'"
+                              >
+                              <!-- :rules="{required: true, message: 'Please select Database'}" -->
+                                <!-- <Cascader v-if="formSchema._id" :data="CascaderData" filterable v-model='formSchema.database' disabled></Cascader> -->
+                                <Cascader :data="CascaderData" filterable v-model='importDB' @on-change="setTranfer"></Cascader>
+                            </FormItem>
+                            <FormItem
+                                v-if="frmSettings.optCrt && frmSettings.rdoCrt == 'rbtDB' && frmSettings.rdodb == 'rbtExstng' && importDB.length !== 0"  width="100%"
+                                >
+                                <Transfer :data="ImportSourceDt" :target-keys="ImportTargetDt" :render-format="render1" @on-change="handleChange1">
+                                </Transfer>
+                            </FormItem>
+                            <FormItem>
+                                <Row>
+                                    <Col span="10" v-if="frmSettings.rdoCrt == 'rbtCSV'">
+                                        <h4>CSV File Upload</h4>
+                                        <div class="upload-btn-wrapper">
+                                            <button class="btn"><Icon type="ios-cloud-upload-outline"></Icon> Upload CSV</button>
+                                            <input type="file" id="upldCSV" title="Upload CSV">
                                         </div>
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody class="ivu-table-tbody">
-                                <tr class="ivu-table-row" v-for="(item, index) in frmSettings.upldCSV" v-if="(index<5)">
-                                    <td class="" v-if="index <= frmSettings.upldCSV.length-2" v-for="data in item" style="overflow:hidden;">{{data}}</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-              </div>
-              <p style="color: grey;font-size: smaller;">Displaying Some Data As Reference</p>
-            </div>
-            <!-- <div style="float: right;">
-              <Page :total="frmSettings.upldCSV.length" :current="1"></Page>
-            </div> -->
-          </FormItem>
-
-          <FormItem>
-            <div class="schema-form ivu-table-wrapper">
-            <div class="ivu-table ivu-table-border">
-                <div class="ivu-table-body">
+                                    </Col>
+                                    <Col span="10" v-if="frmSettings.rdoCrt == 'rbtDB'" style="display:none;">
+                                        <h4>Database Settings</h4>
+                                        <div class="upload-btn-wrapper">
+                                            <button class="btn"><Icon type="ios-cloud-upload-outline"></Icon> Upload</button>
+                                            <input type="file" id="upload" title="Upload">
+                                        </div>
+                                    </Col>
+                                </Row>
+                            </FormItem>
+                        </Col>
+                       <!--  <div v-if="frmSettings.optCrt && frmSettings.rdoCrt == 'rbtDB' && frmSettings.rdodb == 'rbtExstng'">
+                            <Tabs type="card" style="width: 100%;">
+                                <TabPane label="mongo">
+                                    <Table border :columns="tabsData.mongoCols" :data="tabsData.mongoDt"></Table>
+                                </TabPane>
+                                <TabPane label="rethink">
+                                    <Table border :columns="tabsData.rethinkCols" :data="tabsData.rethinkDt"></Table>
+                                </TabPane>
+                                <TabPane label="elastic" >
+                                    <Table border :columns="tabsData.elasticCols" :data="tabsData.elasticDt"></Table>
+                                </TabPane>
+                                <TabPane label="nedb">
+                                    <Table border :columns="tabsData.nedbCols" :data="tabsData.nedbDt"></Table>
+                                </TabPane>
+                                <TabPane label="mysqldb">
+                                    <Table border :columns="tabsData.mysqlCols" :data="tabsData.mysqlDt"></Table>
+                                </TabPane>
+                            </Tabs>
+                        </div> -->
+                    </Row>
+                    <div id="example1" class="hot handsontable htColumnHeaders"></div>
                     <table>
-                        <colgroup>
-                            <col width="300">
-                                <col width="300">
-                                    <col width="200">
-                                        <col width="70">
-                                            <col width="300">
-                                                <col width="100">
-                        </colgroup>
-                        <thead>
-                            <tr>
-                                <th class="">Header</th>
-                                <th class="">Edit header</th>
-                                <th class="">Type</th>
-                                <th class="">Property</th>
-                                <th class="">Notes</th>
-                                <th class="">Transform</th>
-                            </tr>
-                        </thead>
-                        <tbody class="ivu-table-tbody">
-                            <tr class="ivu-table-row" v-for="(item, index) in headers">
-                                <th>
-                                    <div class="ivu-table-cell">
-                                        <span>{{item}}</span>
-                                    </div>
-                                </th>
-                                <td><Input v-model = "csvData[index].header" type="text" :value="item" :placeholder="item" size="small" class="schema-form-input"></Input></td>
-                                <td class="">
-                                    <div class="ivu-table-cell">
-                                      <Select @on-change="type(index)" v-model="csvData[index].type" size="small" class="schema-form-input">
-                                          <Option v-for="t in optType" :value="t.value" :key="t.value">{{t.label}}</Option>
-                                          <!-- <Option value="email" key="email">Email</Option>
-                                          <Option value="number" key="number">Number</Option>
-                                          <Option value="boolean" key="boolean">Boolean</Option>
-                                          <Option value="phone" key="phone">Phone</Option>
-                                          <Option value="date" key="date">Date</Option> -->
-                                      </Select>
-                                    </div>
-                                </td>
-                                <td class="">
-                                    <div class="ivu-table-cell">
-                                      <Poptip placement="left" width="300">
-                                        <a><Icon type="edit"></Icon></a>
-                                        <div slot="title"><h3>Property</h3></div>
-                                        <div slot="content">
-                                          <Form-item v-if="activatedProperty(index,'min')" label="Min" :label-width="80" class="no-margin">
-                                            <Input-number v-model="csvData[index].min" size="small"></Input-number>
-                                          </Form-item>
-                                          <Form-item v-if="activatedProperty(index,'max')" label="Max" :label-width="80" class="no-margin">
-                                            <Input-number size="small" v-model="csvData[index].max"></Input-number>
-                                          </Form-item>
-                                          <Form-item v-if="activatedProperty(index,'allowedValue')" label="Allowed Value" class="no-margin">
-                                            <input-tag style="margin-left:80px;width:200px" :tags="csvData[index].allowedValue"></input-tag>
-                                          </Form-item>
-                                          <Form-item v-if="activatedProperty(index,'defaultValue')" label="Default Value" :label-width="80" class="no-margin">
-                                            <Input size="small" v-model="csvData[index].defaultValue"></Input>
-                                          </Form-item>
-                                          <Form-item v-if="activatedProperty(index,'regEx')" label="regEx" :label-width="80" class="no-margin">
-                                            <Input v-model="csvData[index].regEx"></Input>
-                                          </Form-item>
-                                          <Form-item v-if="activatedProperty(index,'placeholder')" label="Placeholder" :label-width="80" class="no-margin">
-                                            <Input size="small" v-model="csvData[index].placeholder"></Input>
-                                          </Form-item>
-                                          <Form-item v-if="activatedProperty(index,'IsArray')" label="" :label-width="80" class="no-margin">
-                                            <Checkbox v-model="csvData[index].IsArray">Is Array</Checkbox>
-                                          </Form-item>
-                                          <Form-item v-if="activatedProperty(index,'optional')" label="" :label-width="80" class="no-margin">
-                                            <Checkbox style="margin-left:80px;" @on-change="type(index)" v-model="csvData[index].optional">Optional</Checkbox>
-                                          </Form-item>
-                                        </div>
-                                      </Poptip>
-                                    </div>
-                                </td>
-                                <td class="">
-                                    <div class="ivu-table-cell">
-                                        <Input type="textarea" placeholder="Notes..." size="small" class="schema-form-input"></Input>
-                                    </div>
-                                </td>
-                                <td class="">
-                                    <div class="ivu-table-cell">
-                                        <a @click="model = true"><Icon type="compose"></Icon></a>
-                                        <Modal v-model="model" title="Transform" @on-ok="handleModalOk" width="900px">
-                                            <Row>
-                                                <Col span="20">Script</Col>
-                                                <Col span="4">Opration</Col>
-                                            </Row>
-                                        </Modal>
-                                    </div>
-                                </td>
-                            </tr>
-                        </tbody>
+                      <tr class="ivu-table-row" v-for="(item, index) in errmsg" style="color:red;font-size:14px;">{{item}}</tr>
                     </table>
-                </div>
-            </div>
-          </div>
-          </FormItem>
-        </Row>
-        <Row>
-        <Col span="6">
-            <FormItem>
-                <Button type="primary" @click="handleSubmit('frmSettings')">Create Connection</Button>
-                <Button type="primary" :loading="loadingData" v-on:click="insertCsvData(frmSettings.upldCSV)" v-if="validateButton">
-                  <span v-show="!loadingData">Validate Data</span>
-                  <span v-show ="loadingData">Loading...</span>
-                </Button>
-                <Button type="primary" @click="saveData()" v-if="saveButton">Save Data</Button>
-            </FormItem>
-        </Col>
-        <Col span="6">
-            <FormItem>
-                <Button type="primary" @click="importdata()">Import</Button>
-            </FormItem>
-        </Col>
-        </Row>
-        <!-- <div>{{validatingData}}</div> -->
+                    <Row v-if="frmSettings.rdoCrt == 'rbtCSV'">
+                        <FormItem>
+                          <div id="hot-preview" v-if="showHandson">
+                            <!-- <HotTable :root="root" :settings="hotSettings"></HotTable> -->
 
-        </template>
-      </Form>
+                            <Button type="primary" @click="modifyData()">Modify Data</Button>
+                          </div>
+                          <div v-if="!showHandson">
+                            <div class="schema-form ivu-table-wrapper" >
+                              <div class="ivu-table ivu-table-border"  style="display: block;white-space: nowrap;">
+                                  <div class="ivu-table-body">
+                                      <table style="min-width: 1077px;overflow-x: auto;">
+                                          <thead>
+                                              <tr>
+                                                  <th v-for="(item, index) in csvData" >
+                                                      <div>
+                                                          <span>{{item.header}}</span>
+                                                      </div>
+                                                  </th>
+                                              </tr>
+                                          </thead>
+                                          <tbody class="ivu-table-tbody">
+                                              <tr class="ivu-table-row" v-for="(item, index) in frmSettings.upldCSV" v-if="(index<5)">
+                                                  <td class="" v-if="index <= frmSettings.upldCSV.length-2" v-for="data in item" style="overflow:hidden;">{{data}}</td>
+                                              </tr>
+                                          </tbody>
+                                      </table>
+                                  </div>
+                              </div>
+                            </div>
+                            <p style="color: grey;font-size: smaller;">Displaying Some Data As Reference</p>
+                          </div>
+                          <!-- <div style="float: right;">
+                            <Page :total="frmSettings.upldCSV.length" :current="1"></Page>
+                          </div> -->
+                        </FormItem>
+
+                        <FormItem>
+                          <div class="schema-form ivu-table-wrapper">
+                          <div class="ivu-table ivu-table-border">
+                              <div class="ivu-table-body">
+                                  <table>
+                                      <colgroup>
+                                          <col width="300">
+                                              <col width="300">
+                                                  <col width="200">
+                                                      <col width="70">
+                                                          <col width="300">
+                                                              <col width="100">
+                                      </colgroup>
+                                      <thead>
+                                          <tr>
+                                              <th class="">Header</th>
+                                              <th class="">Edit header</th>
+                                              <th class="">Type</th>
+                                              <th class="">Property</th>
+                                              <th class="">Notes</th>
+                                              <th class="">Transform</th>
+                                          </tr>
+                                      </thead>
+                                      <tbody class="ivu-table-tbody">
+                                          <tr class="ivu-table-row" v-for="(item, index) in headers">
+                                              <th>
+                                                  <div class="ivu-table-cell">
+                                                      <span>{{item}}</span>
+                                                  </div>
+                                              </th>
+                                              <td><Input v-model = "csvData[index].header" type="text" :value="item" :placeholder="item" size="small" class="schema-form-input"></Input></td>
+                                              <td class="">
+                                                  <div class="ivu-table-cell">
+                                                    <Select @on-change="type(index)" v-model="csvData[index].type" size="small" class="schema-form-input">
+                                                        <Option v-for="t in optType" :value="t.value" :key="t.value">{{t.label}}</Option>
+                                                        <!-- <Option value="email" key="email">Email</Option>
+                                                        <Option value="number" key="number">Number</Option>
+                                                        <Option value="boolean" key="boolean">Boolean</Option>
+                                                        <Option value="phone" key="phone">Phone</Option>
+                                                        <Option value="date" key="date">Date</Option> -->
+                                                    </Select>
+                                                  </div>
+                                              </td>
+                                              <td class="">
+                                                  <div class="ivu-table-cell">
+                                                    <Poptip placement="left" width="300">
+                                                      <a><Icon type="edit"></Icon></a>
+                                                      <div slot="title"><h3>Property</h3></div>
+                                                      <div slot="content">
+                                                        <Form-item v-if="activatedProperty(index,'min')" label="Min" :label-width="80" class="no-margin">
+                                                          <Input-number v-model="csvData[index].min" size="small"></Input-number>
+                                                        </Form-item>
+                                                        <Form-item v-if="activatedProperty(index,'max')" label="Max" :label-width="80" class="no-margin">
+                                                          <Input-number size="small" v-model="csvData[index].max"></Input-number>
+                                                        </Form-item>
+                                                        <Form-item v-if="activatedProperty(index,'allowedValue')" label="Allowed Value" class="no-margin">
+                                                          <input-tag style="margin-left:80px;width:200px" :tags="csvData[index].allowedValue"></input-tag>
+                                                        </Form-item>
+                                                        <Form-item v-if="activatedProperty(index,'defaultValue')" label="Default Value" :label-width="80" class="no-margin">
+                                                          <Input size="small" v-model="csvData[index].defaultValue"></Input>
+                                                        </Form-item>
+                                                        <Form-item v-if="activatedProperty(index,'regEx')" label="regEx" :label-width="80" class="no-margin">
+                                                          <Input v-model="csvData[index].regEx"></Input>
+                                                        </Form-item>
+                                                        <Form-item v-if="activatedProperty(index,'placeholder')" label="Placeholder" :label-width="80" class="no-margin">
+                                                          <Input size="small" v-model="csvData[index].placeholder"></Input>
+                                                        </Form-item>
+                                                        <Form-item v-if="activatedProperty(index,'IsArray')" label="" :label-width="80" class="no-margin">
+                                                          <Checkbox v-model="csvData[index].IsArray">Is Array</Checkbox>
+                                                        </Form-item>
+                                                        <Form-item v-if="activatedProperty(index,'optional')" label="" :label-width="80" class="no-margin">
+                                                          <Checkbox style="margin-left:80px;" @on-change="type(index)" v-model="csvData[index].optional">Optional</Checkbox>
+                                                        </Form-item>
+                                                      </div>
+                                                    </Poptip>
+                                                  </div>
+                                              </td>
+                                              <td class="">
+                                                  <div class="ivu-table-cell">
+                                                      <Input type="textarea" placeholder="Notes..." size="small" class="schema-form-input"></Input>
+                                                  </div>
+                                              </td>
+                                              <td class="">
+                                                  <div class="ivu-table-cell">
+                                                      <a @click="model = true"><Icon type="compose"></Icon></a>
+                                                      <Modal v-model="model" title="Transform" @on-ok="handleModalOk" width="900px">
+                                                          <Row>
+                                                              <Col span="20">Script</Col>
+                                                              <Col span="4">Opration</Col>
+                                                          </Row>
+                                                      </Modal>
+                                                  </div>
+                                              </td>
+                                          </tr>
+                                      </tbody>
+                                  </table>
+                              </div>
+                          </div>
+                        </div>
+                        </FormItem>
+                    </Row>
+                    <Row>
+                      <Col span="6">
+                          <FormItem>
+                              <Button type="primary" @click="handleSubmit('frmSettings')">Create Connection</Button>
+                              <Button type="primary" :loading="loadingData" v-on:click="insertCsvData(frmSettings.upldCSV)" v-if="validateButton &&  frmSettings.rdoCrt == 'rbtCSV'">
+                                <span v-show="!loadingData">Validate Data</span>
+                                <span v-show ="loadingData">Loading...</span>
+                              </Button>
+                              <Button type="primary" @click="saveData()" v-if="saveButton">Save Data</Button>
+                          </FormItem>
+                      </Col>
+                      <!-- <Col span="6">
+                          <FormItem>
+                              <Button type="primary" @click="importdata()">Import</Button>
+                          </FormItem>
+                      </Col> -->
+                    </Row>
+                </Card>
+            </template>
+        </Form>
     </div>
 </template>
+
 <script>
 /*eslint-disable*/
 const $ = require('jquery')
@@ -370,6 +370,7 @@ import mongo from '../assets/images/mongo.png'
 import rethink from '../assets/images/rethink.png'
 import elastic from '../assets/images/elasticsearch.png'
 import nedb from '../assets/images/nedb.png'
+import mysql from '../assets/images/mysql.png'
 import Tab from './Tab'
 // let _ = require('lodash')
 import _ from 'underscore'
@@ -392,19 +393,43 @@ export default{
     }
   },
     data() {
+        const validatePort = (rule, value, callback) => {
+            if (value === '') {
+                callback(new Error('Please enter port number'));
+            }
+            else {
+                if ((this.frmSettings.selectedDb === 'rethink' && value === '9200') || (this.frmSettings.selectedDb === 'rethink' && value === '27017') || (this.frmSettings.selectedDb === 'rethink' && value === '8080') || (this.frmSettings.selectedDb === 'mongo' && value === '9200')) {
+                        callback(new Error('Please enter valid port'));
+                } else {
+                    callback();
+                }
+            }
+        };
+        const validateConn_name = async (rule, value, callback) => {
+            var res = await this.validateName(value, this.frmSettings.selectedDb)
+            // console.log('res..// ', res)
+            if (res === 'yes') {
+                callback(new Error('Already Exist....'))
+            } else {
+                callback();
+            }
+        };
         return {
+          check_conn: false,
+          conn_icon: 'load-a',
           validateButton : true,
           // parsedata: [],
           saveButton: false,
           showHandson: false,
+          importDB: [],
           expandValue: false,
-          currentStep: 1,
+          currentStep: 0,
           check: this.checked,
           expand: false,
           frmSettings: {
               isenable: true,
               connection_name: '',
-              host: '',
+              host: 'localhost',
               port: '',
               dbname: '',
               username: '',
@@ -418,21 +443,23 @@ export default{
               rdosync: '',
               keep_sync: '',
               notes: '',
-              Database: [],
-              schemaData:[],
+              // Database: [],
+              // schemaData:[],
               isdefault: false
           },
             schemaAllData: [],
             loading: false,
-             frmRule: {
+            frmRule: {
                 connection_name: [
-                    { required: true, message: 'Please enter connection name', trigger: 'blur' }
+                    { required: true, message: 'Please enter connection name', trigger: 'blur' },
+                    { validator: validateConn_name, trigger: 'blur' }
                 ],
                 host: [
                     { required: true, message: 'Please enter host name', trigger: 'blur' },
                 ],
                 port: [
-                    { required: true, message: 'Please enter port number', trigger: 'blur' },
+                    // { required: true, message: 'Please enter port number', trigger: 'blur' },
+                    { validator: validatePort, trigger: 'blur' }
                 ],
                 dbname: [
                     { required: true, message: 'Please enter database name', trigger: 'blur' }
@@ -445,6 +472,7 @@ export default{
             rethink,
             elastic,
             nedb,
+            mysql,
             model: false,
             csvData: [],
             errmsg: [],
@@ -486,23 +514,66 @@ export default{
                 mysqlDt: [],
                 mysqlCols:[]
             },
-            keys:[]
+            CascaderData: [],
+            keys:[],
+            ImportSourceDt: [],
+            ImportTargetDt: [],
+            sCurrent: []
         }
     },
     methods: {
-        getSchemaAll : function (value) {
-              // // alert(value)
-              // if (value === 'rbtDB') {
-              //     schema.get()
-              //         .then((response) => {
-              //             this.allSchema = response.data
-              //             console.log(response.data)
-              //         })
-              //         .catch(error => {
-              //             console.log(error)
-              //         })
-              // }
-          },
+        validateName: async function(value, db) {
+            // console.log('value', value, db)
+            var _res = await api.request('get', '/settings?dbname='+db)
+            // console.log('_res/// ', _res.data)
+            var flag = false
+            for (let i = 0; i < _res.data.length; i++) {
+                if (_res.data[i].connection_name === value) {
+                    flag = true
+                }
+            }
+            if (!flag) {
+                return 'no'
+            } else {
+                return 'yes'
+            }
+        },
+        setTranfer (value ,sfd) {
+            // alert(value[0] + value[1])
+            this.ImportSourceDt = []
+            this.ImportTargetDt = []
+            schema.getByNameId(value[0], value[1]).then(response => {
+                // console.log('response.data', response.data)
+                this.sCurrent = response.data
+                for (let i = 0; i < this.sCurrent.length; i++) {
+                    // console.log(sData[i])
+                    this.ImportSourceDt.push({
+                        key: i.toString(),
+                        label: this.sCurrent[i].title,
+                        description: this.sCurrent[i]._id,
+                        // disabled: Math.random() * 3 < 1
+                    });
+                }
+            })
+        },
+        render1 (item) {
+            return item.label;
+        },
+        handleChange1 (newTargetKeys, direction, moveKeys) {
+            // console.log(newTargetKeys);
+            // console.log(direction);
+            // console.log(moveKeys);
+            this.ImportTargetDt = newTargetKeys;
+        },
+        getIcon: function() {
+            if (this.conn_icon == 'load-a') {
+                return 'process'
+            } else if (this.conn_icon == 'checkmark') {
+                return 'created'
+            } else if (this.conn_icon == 'close') {
+                return 'rejected'
+            }
+        },
         type(index) {
               this.validateButton = true
               this.errmsg = [];
@@ -784,70 +855,98 @@ export default{
                 mysqlDt: [],
                 mysqlCols:[]
             }
-             api.request('get', '/settings')
+            api.request('get', '/settings')
                 .then(response => {
+                    this.CascaderData = []
                     this.allSetting = response.data
-                    _.forEach(this.allSetting, (dbInst, db) => {
-                        if (dbInst.dbinstance.length != 0) {
-                                this.tabsData[db + 'Cols'].push({
-                                    type: 'expand',
-                                    width: 50,
-                                    render: (h, params) => {
-                                        return h(expandRow, {
-                                            props: {
-                                                row: {db: db, dbData:this.tabsData[db + 'Dt'][params.index]},
-                                                id: this.tabsData[db + 'Dt'][params.index].id,
-                                                index: params.index,
-                                                db: 'mongo'
-                                            }
-                                        })
-                                    }
-                                })
-                                this.tabsData[db + 'Cols'].push({
-                                    title: 'Select',
-                                    width: 80,
-                                    align: 'center',
-                                    render: (h, params) => {
-                                        return h('Checkbox', {
-                                            props: {
-                                              value: params.row.checked
-                                            },
-                                            on: {
-                                              'on-change': (value) => {
-                                                if(value == true){
-                                                    this.check = value
-                                                    // console.log("this.selectSchema",this.selectSchema);
-                                                   // this.frmSettings.push(this.selectSchema);
-                                                } else {
-                                                    this.check = value
-                                                }
+                    var result = response.data
+                    // console.log('settings',result)
 
-                                                // this.enableDbInstance(this.tabPane, params.index, value)
-                                              }
-                                            }
-                                        })
-                                    }
-                                })
-                            _.forEach(dbInst.dbinstance[0], (v, k) => {
-                                this.tabsData[db + 'Cols'].push({title: k, key: k})
-                            })
-                        }
-                        this.tabsData[db + 'Dt'] = _.map(this.allSetting[db].dbinstance, m => {
-                            return {
-                                checked: true,
-                                _expanded: false,
-                                dbname: m.dbname,
-                                host: m.host,
-                                id: m.id,
-                                isdefault: m.isdefault,
-                                isenable: m.isenable,
-                                notes: m.notes,
-                                port: m.port,
-                                rdoCrt: m.rdoCrt,
-                                upldIcn: m.upldIcn
-                            }
+                    for(var db in result){
+                      var obj = {}
+                      // if(result[db].dbdefault == 'true'){
+                        // console.log('aaaaaaa',db)
+                        obj.value = db,
+                        obj.label = db,
+                        obj.children = []
+                        // console.log(result[db].dbinstance)
+                        result[db].dbinstance.forEach(function(instance, i){
+                          if(instance.isenable){
+                            // console.log(instance.cname)
+                            obj.children.push({label: instance.connection_name, value:instance.id})
+                          }
                         })
-                    })
+                        if(obj.children.length == 0 && obj.label != 'nedb'){
+                          obj.disabled = true
+                        }
+                      // }
+                      // console.log(obj)
+                      this.CascaderData.push(obj)
+                    }
+             // api.request('get', '/settings')
+             //    .then(response => {
+             //        this.allSetting = response.data
+             //        _.forEach(this.allSetting, (dbInst, db) => {
+             //            if (dbInst.dbinstance.length != 0) {
+             //                    this.tabsData[db + 'Cols'].push({
+             //                        type: 'expand',
+             //                        width: 50,
+             //                        render: (h, params) => {
+             //                            return h(expandRow, {
+             //                                props: {
+             //                                    row: {db: db, dbData:this.tabsData[db + 'Dt'][params.index]},
+             //                                    id: this.tabsData[db + 'Dt'][params.index].id,
+             //                                    index: params.index,
+             //                                    db: 'mongo'
+             //                                }
+             //                            })
+             //                        }
+             //                    })
+             //                    this.tabsData[db + 'Cols'].push({
+             //                        title: 'Select',
+             //                        width: 80,
+             //                        align: 'center',
+             //                        render: (h, params) => {
+             //                            return h('Checkbox', {
+             //                                props: {
+             //                                  value: params.row.checked
+             //                                },
+             //                                on: {
+             //                                  'on-change': (value) => {
+             //                                    if(value == true){
+             //                                        this.check = value
+             //                                        // console.log("this.selectSchema",this.selectSchema);
+             //                                       // this.frmSettings.push(this.selectSchema);
+             //                                    } else {
+             //                                        this.check = value
+             //                                    }
+
+             //                                    // this.enableDbInstance(this.tabPane, params.index, value)
+             //                                  }
+             //                                }
+             //                            })
+             //                        }
+             //                    })
+             //                _.forEach(dbInst.dbinstance[0], (v, k) => {
+             //                    this.tabsData[db + 'Cols'].push({title: k, key: k})
+             //                })
+             //            }
+             //            this.tabsData[db + 'Dt'] = _.map(this.allSetting[db].dbinstance, m => {
+             //                return {
+             //                    checked: true,
+             //                    _expanded: false,
+             //                    dbname: m.dbname,
+             //                    host: m.host,
+             //                    id: m.id,
+             //                    isdefault: m.isdefault,
+             //                    isenable: m.isenable,
+             //                    notes: m.notes,
+             //                    port: m.port,
+             //                    rdoCrt: m.rdoCrt,
+             //                    upldIcn: m.upldIcn
+             //                }
+             //            })
+             //        })
                 })
                 .catch(error => {
                   console.log(error);
@@ -887,76 +986,133 @@ export default{
             var sdata = data.data
             this.frmSettings.schemaData.push(sdata)
         },
-        getTableAll: function() {
-
-        },
-        goToStep: function(step, name) {
+        goToStep: function(step, name, data) {
+          var self = this
           this.$refs[name].validate((valid) => {
             if (valid) {
-              this.currentStep = step;
+                this.check_conn = true
+                this.conn_icon = 'load-a'
+                api.request('get', '/Settings?dbname=' + data.selectedDb).then(function(_res) {
+                  var flag = false
+                  var c_name = ''
+                  _.map(_res.data, function(instance) { 
+                    if(instance.host == data.host && instance.port == data.port && instance.dbname == data.dbname){
+                        flag = true
+                        c_name = instance.connection_name
+                    }
+                  })
+                  // console.log('flag = ', flag, c_name)
+                  if (!flag){
+                    api.request('post', '/settings?check=' + data.selectedDb, data)
+                      .then(response => {
+                        // console.log('CheckConnection', response.data)
+                        if(response.data.result){
+                            self.conn_icon = 'checkmark'
+                            self.currentStep = step;
+                        } else {
+                            self.conn_icon = 'close'
+                            self.$Notice.error({title: 'Connection Not Establish...!', desc: 'Please Check Your Database..'})
+                        }
+                      })
+                      .catch(error => {
+                        console.log(error)
+                        self.$Notice.error({title: 'Error!', desc: 'Connection Error...'})
+                      })
+                  } else {
+                    self.conn_icon = 'close'
+                    self.$Notice.error({title: 'Connection already Exist!', desc: 'with connection name :: ' + c_name})
+                  }
+
+                })
             }
           })
         },
         clearIcon(value) {
             this.frmSettings.upldIcn = ''
+            // alert(value)
+            if (value === 'mongo') {
+              this.frmSettings.port = '27017'
+            } else if (value === 'rethink') {
+              this.frmSettings.port = '28015'
+            } else if (value === 'elastic') {
+              this.frmSettings.port = '9200'
+            } else if (value === 'nedb') {
+              this.frmSettings.port = '8080'
+            } else if (value === 'mysql') {
+              this.frmSettings.port = '27017'
+            }
         },
         handleModalOk() {
             console.log('OK');
-
         },
-        enable(value){
-            this.tabsData = {
-                mongoCols: [],
-                mongoDt: [],
-                rethinkCols: [],
-                rethinkDt: [],
-                elasticDt: [],
-                elasticCols: [],
-                neDt: [],
-                neCols: []
-            }
-            _.forEach(this.allSchema, (obj) => {
-                _.forEach(this.frmSettings.Database, (db) => {
-                    // obj.database[0] == db
-                    // alert(db)
-                    if (obj.database[0] == db) {
-                        this.tabsData[db + 'Dt'].push(obj)
-                        _.forEach(obj, (v, k) => {
-                            this.tabsData[db + 'Cols'].push({title: k, key: k})
-                        })
-                       // this.keys = Object.keys(this.obj)
-                    }
-                })
+        makeObj(Obj) {
+            var s = {}
+            _.forEach(Obj, (v, k) => {
+                if (k === 'isenable' || k === 'connection_name' || k === 'host' || k === 'port' || k === 'dbname' || k === 'username' || k === 'password' || k === 'selectedDb' || k === 'upldIcn' || k === 'notes' || k === 'isdefault') {
+                    s[k] = v
+                }
             })
-            console.log('this.tabsData', this.tabsData)
+            return s
         },
-
-        dbcall(){
-            if(document.getElementById('mongo').checked) {
-                        return result.mongo
-                    }
-        },
-
         handleSubmit(name) {
+            console.log('before', this.frmSettings)
             this.$refs[name].validate((valid) => {
                 if (valid) {
                     let guid = (this.S4() + this.S4() + "-" + this.S4() + "-4" + this.S4().substr(0,3) + "-" + this.S4() + "-" + this.S4() + this.S4() + this.S4()).toLowerCase();
-                    let obj = this.frmSettings;
-                    delete obj.optCrt
-                    delete obj.rdoCrt
-                    delete obj.Database
+                    // var s = this.frmSettings
+                    let obj = this.makeObj(this.frmSettings)
+                    // delete obj.optCrt
+                    // delete obj.rdoCrt
+                    // delete obj.rdodb
+                    // delete obj.rdosync
+                    // delete obj.keep_sync
+                    // delete obj.schemaData
+                    // let dbData = obj.Database
+                    // delete obj.Database
                     obj.id = guid;
+                    // console.log('Obj', obj)
                     api.request('post', '/settings', obj)
                         .then(response => {
                             // this.$Message.success('Success');
                             if(response.data == 'Exist'){
                                 this.$Notice.error({duration: 5, title:'Alredy Exist!!', desc:'Connection Alredy exist...'})
-
                             }
                             else {
-                                this.$Notice.success({duration: 3, title:'Success!!', desc:'Connection Created...'})
-                                this.$router.push('/db');
+                                let Finalarr = []
+                                _.forEach(this.ImportTargetDt, (index) => {
+                                    // console.log(index)
+                                    for(let i = 0; i < this.sCurrent.length; i++ ) {
+                                        if(i === parseInt(index)) {
+                                            // alert('match')
+                                            Finalarr.push(this.sCurrent[i])
+                                        }
+                                    }
+                                })
+                                if (Finalarr.length != 0) {
+                                    _.map(Finalarr, (d) => {
+                                        // delete d.id
+                                        // delete d._id
+                                        d.database[0] = obj.selectedDb
+                                        d.database[1] = obj.id
+                                    })
+                                    // console.log('Finalarr', Finalarr)
+                                    // this.$Notice.success({duration: 3, title:'Uploading Data..!!', desc:''})
+                                    // alert(this.frmSettings.optCrt)
+                                    api.request('post', '/addInputToJobQue', {data: Finalarr, option: this.frmSettings.optCrt}).then(res => {
+                                        console.log('import jobqueue......', res)
+                                        this.$Notice.success({duration: 3, title:'Connection Created...', desc:'Uploading Data..!!'})
+                                        this.$store.dispatch('getSchema')
+                                        this.$router.push('/db');
+                                    })
+                                    .catch(err => {
+                                        console.log('Error..', err)
+                                        this.$Notice.error({duration: 3, title:'Error in import Data..!!', desc:''})
+                                    })
 
+                                } else {
+                                    this.$Notice.success({duration: 3, title:'Success!!', desc:'Connection Created...'})
+                                    this.$router.push('/db');
+                                }
                             }
                         })
                         .catch(error => {
@@ -968,7 +1124,7 @@ export default{
                 } else {
                     // this.$Message.error('Error!');
                     this.$Notice.error({duration: 2, title:'Error!!', desc:'Please enter inputs!'})
-
+                   
                 }
             })
         },
@@ -1003,7 +1159,7 @@ export default{
     },
     mounted() {
         this.frmSettings.selectedDb = this.$route.params.db;
-        this.$on('schemaData', this.acceptData)
+        // this.$on('schemaData', this.acceptData)
         this.$on('expandTrue', this.expands)
         var self = this;
         $(document).ready(function(){
@@ -1028,6 +1184,7 @@ export default{
             });
 
             $('#upldCSV').change(function() {
+              // console.log('//////////////////////////////////////////////')
                 let fileChooser = document.getElementById('upldCSV');
                 let file = fileChooser.files[0];
 
@@ -1092,32 +1249,44 @@ export default{
 </script>
 
 <style>
-.no-margin{
-        margin:0px;
+    .ivu-card-body {
+         padding: 0px; 
     }
-.form {
-        margin-top: 50px;
+    .process {
+        color: rgb(45, 183, 245)
     }
-.demo-spin-icon-load{
-        animation: ani-demo-spin 1s linear infinite;
+    .created {
+        color: #5cb85c
     }
-.demo-spin-col{
-        height: 10px;
-        position: relative;
+    .rejected {
+        color: #ff5500
     }
-.demo-upload-list{
-        display: inline-block;
-        width: 60px;
-        height: 60px;
-        text-align: center;
-        line-height: 60px;
-        border: 1px solid transparent;
-        border-radius: 4px;
-        overflow: hidden;
-        background: #fff;
-        position: relative;
-        box-shadow: 0 1px 1px rgba(0,0,0,.2);
-        margin-right: 4px;
+    .no-margin{
+            margin:0px;
+        }
+    .form {
+            margin-top: 0px;
+        }
+    .demo-spin-icon-load{
+            animation: ani-demo-spin 1s linear infinite;
+        }
+    .demo-spin-col{
+            height: 10px;
+            position: relative;
+        }
+    .demo-upload-list{
+            display: inline-block;
+            width: 60px;
+            height: 60px;
+            text-align: center;
+            line-height: 60px;
+            border: 1px solid transparent;
+            border-radius: 4px;
+            overflow: hidden;
+            background: #fff;
+            position: relative;
+            box-shadow: 0 1px 1px rgba(0,0,0,.2);
+            margin-right: 4px;
     }
     .demo-upload-list img{
         width: 100%;
@@ -1180,4 +1349,9 @@ export default{
     #example1{
       width:100%!important;
     }
+    .ivu-card-head {
+      border-bottom: 1px solid #e9eaec;
+      /*padding: 13px 16px;*/
+      line-height: 1;
+  }
 </style>

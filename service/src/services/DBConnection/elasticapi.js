@@ -423,7 +423,7 @@ module.exports = {
           item._id = hit._id;
           data.push(item);
         })
-        console.log(client[i].id)
+        // console.log(client[i].id)
         for (var j = 0; j < data.length; j++) {
           result1.push(data[j])
         }
@@ -455,14 +455,21 @@ module.exports = {
     // }))
     // return result;
   }),
-  postflowsInstance: async(function (data) {
+  postflowsInstance: async(function (data, dbid) {
     console.log('........................elastic post flowsInstance....................');
     // data.Schemaid = data._id
     // delete data._id
     // delete data.id
-    var selectedDB = _.find(client, (d) => {
-      return d.id == data.database[1]
-    })
+    // var selectedDB = _.find(client, (d) => {
+    //   return d.id == dbid
+    // })
+    var selectedDB;
+    for(let i = 0; i < client.length; i++ ){
+      // console.log('connid', db[i].id)
+      if(client[i].id == dbid) {
+        selectedDB = client[i]
+      } 
+    }
     var result = await (
       selectedDB.conn.index({
         index: selectedDB.dbname,
@@ -498,17 +505,29 @@ module.exports = {
 
     // return schemadata;
   }),
-  putflowsInstance: async(function (data, id) {
+  putflowsInstance: async(function (data, id, dbid) {
     var instanceid = id;
+    delete data._id
     // console.log('DATA:',data);
-    var schemadata = await (client.index({
-      index: db,
-      type: 'instance',
-      id: instanceid,
-      body: data
-    }))
-
-    return schemadata;
+    // var schemaid = id;
+    var selectedDB = _.find(client, (d) => {
+      return d.id == dbid
+    })
+    var result = await (
+      selectedDB.conn.index({
+        index: selectedDB.dbname,
+        type: 'instance',
+        id: instanceid,
+        body: data
+      }))
+    return result;
+    // var schemadata = await (client.index({
+    //   index: db,
+    //   type: 'instance',
+    //   id: instanceid,
+    //   body: data
+    // }))
+    // return schemadata;
   }),
 
   //******************************delete methods*************************

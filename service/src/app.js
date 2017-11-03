@@ -29,9 +29,7 @@ app.use(cors());
 app.use(helmet());
 app.use(compress());
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({
-  extended: true
-}));
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(favicon(path.join(app.get('public'), 'favicon.ico')));
 // Host the public folder
 app.use('/', feathers.static(app.get('public')));
@@ -49,5 +47,7 @@ app.configure(services);
 // Configure a middleware for 404s and the error handler
 app.use(notFound());
 app.use(handler());
+
 app.hooks(appHooks);
+
 module.exports = app;
