@@ -23,8 +23,9 @@
           </Col>
         </Col>
       </Row>
-      <Row style="padding: 10px;">
-        <Col span="12">
+      
+      <Row style="padding: 10px;" :gutter="16">
+        <Col span="8">
           <!-- <Dropdown trigger="click" @on-click='handleCommand' style="margin-left: 20px;">
             <a href="javascript:void(0)" class="list">Sort By
                 <Icon type="arrow-down-b"></Icon>
@@ -34,7 +35,7 @@
                 <DropdownItem name="desc">z-aZ-A</DropdownItem>
             </DropdownMenu>
           </Dropdown> -->
-          <Select @on-change="handleCommand" placeholder="Sort By" size="small" style="width:200px;margin-left: 20px;">
+          <Select @on-change="handleCommand" placeholder="Sort By" size="small" style="width:135px;">
             <!-- <Option v-for="item in cityList" :value="item.value" :key="item.value">{{ item.label }}</Option> -->
             <Option value="asc"><span>A-Za-z</span>
               <span style="float:right;">Ascending</span>
@@ -43,11 +44,13 @@
               <span style="float:right;">Descending</span>
             </Option>
         </Select>
-
         </Col>
-        <Col span="12">
-          <Row type="flex" justify="end" align="middle">
-            <Col>
+        <Col span="16">
+          <Row type="flex" justify="end">
+            <Col col="8">
+              <Checkbox @on-change="handleGroupBy" label="groupby" size="small" style="color:#fff;margin-top:5px;">Group By</Checkbox>
+            </Col>
+            <Col span="8">
               <router-link to="/schema/new">
                 <Button type="default" size="small" icon="plus-round">Add</Button>
               </router-link>
@@ -56,7 +59,56 @@
         </Col>
       </Row>
       <Menu theme="dark" style="max-height:615px; overflow-y: auto" width="auto">
-        <Menu-item :name="index" v-for="(item, index) in schema" :key="index">
+        <Submenu v-show="groupby" :name="index" v-for="(item, index) in schema" :key="index">
+          <template slot="title">
+            {{item[0]}}
+          </template>
+          <Submenu :name="ind-ind" v-for="(el, ind) in item[1]" :key="ind-ind">
+            <template slot="title">
+              {{el[0]}}
+            </template>
+            <MenuItem :name="indx-indx" v-for="(itm, indx) in el[1]" :key="indx-indx">
+              <img v-if="itm.iconpath === 'mongo'" :src="mongo" class="schema-icon">
+              <img v-else-if="itm.iconpath === 'rethink'" :src="rethink" class="schema-icon">
+              <img v-else-if="itm.iconpath === 'elastic'" :src="elastic" class="schema-icon">
+              <img v-else-if="itm.iconpath === 'nedb'" :src="nedb" class="schema-icon">
+              <img v-else :src="itm.iconpath" class="schema-icon">
+              <span>
+                {{itm.title}}
+              </span>
+              <div class="menu-action-icon">
+                <Tooltip content="Create instance" placement="top">
+                    <router-link :to="{ name: 'schema-instance', params: { schemaid: itm._id }}">
+                      <Icon type="play" class="ficon play"></Icon>
+                    </router-link>
+                </Tooltip>
+                <Tooltip content="List" placement="top">
+                  <a @click="setData(itm.title, '/instancelist/'+itm._id, itm._id, 'list')">
+                    <Icon type="navicon-round" class="ficon list"></Icon>
+                  </a>
+                </Tooltip>
+                <Tooltip content="Edit" placement="top">
+                  <a @click="setData(itm.title, '/schema/edit/'+itm._id, itm._id, 'edit')">
+                      <Icon type="ios-compose-outline" class="ficon edit"></Icon>
+                  </a>
+                  <router-link :to="{name: 'schema/edit', params: {id: itm._id}}" exact>
+                  </router-link> 
+                </Tooltip>
+                  <Tooltip content="Mapping" placement="top">
+                  <router-link :to="{name: 'schemamappinglist', params: {id: itm._id}}">
+                    <Icon type="arrow-swap" class="ficon transform"></Icon>
+                  </router-link>
+                </Tooltip> 
+                <Tooltip content="Delete" placement="top">
+                  <a @click="handleRemove(indx)">
+                    <Icon type="android-delete" class="ficon delete"></Icon>
+                  </a>
+                </Tooltip>
+              </div>
+            </MenuItem>
+          </Submenu>
+        </Submenu>
+        <Menu-item v-show="!groupby" :name="index" v-for="(item, index) in schema" :key="index">
               <img v-if="item.iconpath === 'mongo'" :src="mongo" class="schema-icon">
               <img v-else-if="item.iconpath === 'rethink'" :src="rethink" class="schema-icon">
               <img v-else-if="item.iconpath === 'elastic'" :src="elastic" class="schema-icon">
@@ -102,6 +154,7 @@
 <script>
 /*eslint-disable*/
   import api from '../api'
+  import settings from '../api/settings'
   import mongo from '../assets/images/mongo.png'
   import rethink from '../assets/images/rethink.png'
   import elastic from '../assets/images/elasticsearch.png'
@@ -111,6 +164,7 @@
     data () {
       return {
         orderby: 'asc',
+        groupby: false,
         mongo,
         rethink,
         elastic,
@@ -122,26 +176,34 @@
       this.$store.dispatch('getSchema')
       this.$store.dispatch('getSettings')
     },
-    computed: {
-      schema () {
+    asyncComputed: {
+      async schema () {
         // console.log('allSchema from sidebar computed', this.$store.getters.allSchema, this.$store.getters.allSettings)
         var _data = this.$store.getters.allSchema
         var _settings = this.$store.getters.allSettings
         if (_data.length > 0) {
           _.map(_data, function (obj) {
-            // console.log('obj', obj)
-              _.forEach(_settings[obj.database[0]], function(res, i){
-                var instance = _.find(res, {id: obj.database[1]})
-                  
-                  if (instance.upldIcn === '') {
-                    obj.iconpath = obj.database[0]
-                  } else {
-                    obj.iconpath = instance.upldIcn
-                  }
-              })
+            _.forEach(_settings[obj.database[0]], function(res, i){
+              var instance = _.find(res, {id: obj.database[1]})
+                if (instance.upldIcn === '') {
+                  obj.iconpath = obj.database[0]
+                } else {
+                  obj.iconpath = instance.upldIcn
+                }
+            })
           })
-          // console.log(_data)
-          return _.orderBy(_data, [checkcase => checkcase.title.toLowerCase()], [this.orderby])
+          if (this.groupby) {
+            var temp = await Promise.all(_.chain(_data).groupBy('database[0]').toPairs().map(async (m) => {
+              var dbinstances = await settings.get(m[0])
+              m[1] = _.chain(m[1]).groupBy(innermap => {
+                return _.find(dbinstances.data, f=> { return f.id === innermap.database[1]}).connection_name
+              }).toPairs().value()
+              return m
+            }).value())
+            return temp
+          } else {
+            return _.orderBy(_data, [checkcase => checkcase.title.toLowerCase()], [this.orderby])
+          }
         } else {
           return []
         }
@@ -261,6 +323,9 @@
       },
       handleCommand (name) {
         this.orderby = name
+      },
+      handleGroupBy () {
+        this.groupby = !this.groupby
       }
     }
   }

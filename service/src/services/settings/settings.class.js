@@ -46,6 +46,45 @@ var check_Connection = async(function(db, data) {
     }))
     return r
   }
+    // console.log('response>>>>>>>>>>>>', _res)
+      // , function(err, database) {
+      // if(err){
+      //   console.log('err', err)
+      //   return 'false'
+      // }
+      // else {
+      // console.log('Mongo connected....',database);
+      //   return 'true'
+      // }
+    // });
+  }
+  else if(db == 'rethink') {
+    // console.log("RethinkDB..............");
+    var r = await (require('rethinkdbdash')({
+      username: data.username,
+      password: data.password,
+      port: data.port,
+      host: data.host,
+      db: data.dbname
+    }).connect({
+      username: data.username,
+      password: data.password,
+      port: data.port,
+      host: data.host,
+      db: data.dbname
+    }))
+    return r
+    // ,function(err,response){
+    //   if(err){
+    //     console.log('XXXXXXXXXXXXXXXXXXXXXXXXX',err);
+    //     return 'false'
+    //   }
+    //   else {
+    //     console.log('EEEEEEEEEEEEEEEEEEEEEEEEEEE',response);
+    //    return'true'
+    //   }
+    // })
+  }
   else if(db == 'elastic') {
     // console.log("Elastic Search..............");
     var client = await (new elasticsearch.Client( {  
@@ -56,6 +95,13 @@ var check_Connection = async(function(db, data) {
     }))
     console.log(client)
     return client
+    // , function (error) {
+    //   if (error) {
+    //     return 'false'
+    //   } else {
+    //     return 'true'
+    //   }
+    // });
   }
   else {
     var _res = new error()
