@@ -1,12 +1,12 @@
 import api from '../api'
-// import _ from 'lodash'
+import _ from 'lodash'
 export default {
   getSchema ({ commit }) {
     commit('SET_SCHEMA', [])
     api.request('get', '/schema')
       .then(response => {
-        // console.log('hdhd::', _.reject(response.data, { 'isdeleted': true }))
-        commit('SET_SCHEMA', response.data)
+        // console.log('hdhd::', _.reject(response.data, { 'isdeleted': true })) response.data
+        commit('SET_SCHEMA', _.reject(response.data, { 'isdeleted': true }))
       })
       .catch(error => {
         console.log(error)

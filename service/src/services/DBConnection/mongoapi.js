@@ -266,16 +266,24 @@ module.exports = {
     // console.log(schema)
     return schema.ops;
   }),
-  postflowsInstance: async(function (data) {
+  postflowsInstance: async(function (data, dbid) {
     console.log('...................mongo post flowsInstance...................');
     // data.Schemaid = data._id
     // delete data._id
     // delete data.id
     // console.log('guid', data.database[1])
-    var selectedDB = _.find(db, async(function(d){
-        return d.id == data.database[1]
-      }))
-      // console.log(selectedDB)
+    console.log('dbid', dbid)
+    // var selectedDB = _.find(db, async(function(d){
+    //     return d.id == dbid
+    //   }))
+    var selectedDB;
+    for(let i = 0; i < db.length; i++ ){
+      // console.log('connid', db[i].id)
+      if(db[i].id == dbid) {
+        selectedDB = db[i]
+      } 
+    }
+    // console.log('selectedDB', selectedDB)
     var schema = await (selectedDB.conn.collection('flows-instance').insert(data));
     console.log('Generated Id:', schema.ops[0]._id)
     return schema.ops[0]._id;
@@ -304,12 +312,16 @@ module.exports = {
     var schema = await (selectedDB.conn.collection('schema').updateOne({ _id: id }, { $set: data }));
     return schema;
   }),
-  putflowsInstance: async(function (data, id) {
+  putflowsInstance: async(function (data, id, dbid) {
     // var _data = JSON.parse(data);
     console.log('mongo put flowsInstance');
+    delete data._id
     var id = new mongoose.Types.ObjectId(id);
     // console.log('id from putflowsInstance:',id);
-    var flowsInstance = await (db.collection('flows-instance').updateOne({ _id: id }, { $set: data }));
+    var selectedDB = _.find(db, (d) => {
+      return d.id == dbid
+    })
+    var flowsInstance = await (selectedDB.conn.collection('flows-instance').updateOne({ _id: id }, { $set: data }));
     return flowsInstance;
   }),
 

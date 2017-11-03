@@ -286,12 +286,19 @@ module.exports = {
     // return schema;
   }),
   
-  postflowsInstance: async(function (data) {
+  postflowsInstance: async(function (data, dbid) {
     console.log('....................rethink post flowsInstance........................');
-    console.log('guid', data.database[1])
-    var selectedDB = _.find(r, (d) => {
-        return d.id == data.database[1]
-    })
+    console.log('guid', dbid)
+    // var selectedDB = _.find(r, (d) => {
+    //     return d.id == dbid
+    // })
+    var selectedDB;
+    for(let i = 0; i < r.length; i++ ){
+      // console.log('connid', db[i].id)
+      if(r[i].id == dbid) {
+        selectedDB = r[i]
+      } 
+    }
     // var _data = JSON.parse(data);
     // console.log('data:',_data);
     var flowsInstance = await (selectedDB.conn.table("flowsinstance").insert(data).run());
@@ -314,10 +321,10 @@ module.exports = {
     // var schema = await (r.table('schema').get(id).replace(data).run());
     // return schema;
   }),
-  putflowsInstance: async(function (data, id) {
+  putflowsInstance: async(function (data, id, dbid) {
     console.log('rethink put flowsInstance');
     var selectedDB = _.find(r, (d) => {
-        return d.id == data.database[1]
+        return d.id == dbid
     })
     var flowsinstance = await (selectedDB.conn.table('flowsinstance').get(id).replace(data).run());
     return flowsinstance;

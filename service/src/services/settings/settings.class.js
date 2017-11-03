@@ -28,7 +28,24 @@ var check_Connection = async(function(db, data) {
       _res = await (MongoClient.connect('mongodb://'+data.host+':'+data.port+'/'+data.dbname))
     }
     return _res
-
+  }
+  else if(db == 'rethink') {
+    // console.log("RethinkDB..............");
+    var r = await (require('rethinkdbdash')({
+      username: data.username,
+      password: data.password,
+      port: data.port,
+      host: data.host,
+      db: data.dbname
+    }).connect({
+      username: data.username,
+      password: data.password,
+      port: data.port,
+      host: data.host,
+      db: data.dbname
+    }))
+    return r
+  }
     // console.log('response>>>>>>>>>>>>', _res)
       // , function(err, database) {
       // if(err){
@@ -210,7 +227,7 @@ class Service {
         //check connection alredy exist or not
         var check = ''
         _.map(res[selectDB].dbinstance, function(instance) { 
-          if(instance.connection_name == data.connection_name && instance.host == data.host && instance.port == data.port && instance.dbname == data.dbname){
+          if(instance.host == data.host && instance.port == data.port && instance.dbname == data.dbname){
               check = 'Exist'
           }
         })

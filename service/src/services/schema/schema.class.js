@@ -53,8 +53,8 @@ var chokidar = require('chokidar');
 
 let readfile = async(function () {
   fs.readFile(path.join(__dirname, '../DBConnection/db.json'), function (err, data) {
+    // console.log('reading file form schema' + data)
     if (err) return console.log(err);
-    // console.log('reading file' + data)
     if (data == '') {
       console.log('BLANCK DATA');
       return 'nodata';
@@ -71,6 +71,7 @@ let readfile = async(function () {
       if(flag) {
         var api = require('../DBConnection/' + i + 'api')
         dbapi.push({ db: i, api: api });
+        // console.log('From..........................................schema')
         api.choose()
       }
     })
@@ -78,6 +79,7 @@ let readfile = async(function () {
 })
 
 chokidar.watch(path.join(__dirname, '../DBConnection/db.json'), { ignored: /(^|[\/\\])\../ }).on('change', async(function (path) {
+  // console.log('From..........................................schema11')
   // console.log('File', path, 'has been changed');
   delete require.cache[require.resolve('../DBConnection/db')];
   delete require.cache[require.resolve('../DBConnection/mongoapi')];
@@ -100,7 +102,7 @@ class Service {
   }
 
   find(params) {
-    console.log('find feathers...', params);
+    console.log('find feathers...');
     if (params.query.dbname == undefined) {
       if(params.query.name !== undefined ){
         console.log('000000000000000000000000000000000000000000000', params.query.name)
@@ -257,7 +259,7 @@ class Service {
       });
   
       var _data = Promise.all(instance).then(function (response) {
-        console.log('_data.................', response)
+        // console.log('_data.................', response)
         var Extract = []
             response.forEach(function (item) {
               item.forEach(function (result) {
@@ -271,7 +273,7 @@ class Service {
       // var dbdata = dbapi.getThisSchemaFieldName(id, params.query.fieldname)
     } else {
       var instance = []
-      console.log("12")
+      // console.log("12")
       dbapi.forEach(function (db) {
         let _promise = new Promise((resolve, reject) => {
           db.api.getThisSchema(id).then((data) => {
@@ -295,7 +297,7 @@ class Service {
             obj = i[0]
           }
         })
-        console.log('_data.................', obj)
+        // console.log('_data.................', obj)
         return obj
       })
       return _data;
