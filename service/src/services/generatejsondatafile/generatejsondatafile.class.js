@@ -2,6 +2,7 @@
 const fs = require("fs")
 const path = require('path')
 const config = require("config")
+const shell = require('shelljs');
 
 class Service {
   constructor(options) {
@@ -43,7 +44,8 @@ class Service {
 
   async writeFile(data) {
     let scopeFs;
-    try {
+    try
+    {
       let file_name = 'temp/' + Date.now() + '.json';
       fs.writeFile(file_name, JSON.stringify(data), async function(err, result) {
         if (err) {
@@ -51,7 +53,8 @@ class Service {
         }
         console.log("file " + file_name + " written ");
       });
-      scopeFs = await this.uploadToS3(file_name)
+    //  scopeFs = await this.uploadToS3(file_name)
+      scopeFs = await this.saveDataToMongo(file_name)
     } catch (e) {
       console.log("Cannot write file ", e);
     }
@@ -73,10 +76,12 @@ class Service {
     });
 
     return new Promise(function(resolve, reject) {
+
       fs.readFile(filename, function(err, data) {
         if (err) {
           reject(err);
         }
+
         var base64data = new Buffer(data, 'binary');
         var s3 = new AWS.S3();
         s3.putObject({
@@ -97,7 +102,22 @@ class Service {
     })
   }
 
+  async saveDataToMongo(filename) {
+    return new Promise(function(resolve, reject) {
+      fs.readFile(filename, function(err, data) {
+        if (err) {
+          reject(err);
+        }
+        shell.exec("mongoimport -h localhost:3001 --db flowzPDM --collection customerUploadedData --file "+filename+" --jsonArray");
 
+        fs.unlink(filename, function(err, result) {
+          if (err) throw err;
+        });
+        resolve("saved to database")
+      })
+
+    })
+  }
   update(id, data, params) {
     return Promise.resolve(data);
   }

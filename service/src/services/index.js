@@ -9,6 +9,7 @@ const flowzinstance = require('./flowz-instance/flowz-instance.service.js');
 const instancetest = require('./instance-test/instance-test.service.js');
 const generatejsondatafile = require('./generatejsondatafile/generatejsondatafile.service.js');
 const importtodb = require('./importtodb/importtodb.service.js');
+const customerUploadedSchema = require('./customerUploadedSchema/customerUploadedSchema.service.js');
 module.exports = function() {
   const app = this; // eslint-disable-line no-unused-vars
   app.configure(schema);
@@ -22,4 +23,5 @@ module.exports = function() {
   app.configure(instancetest);
   app.configure(generatejsondatafile);
   app.configure(importtodb);
+  app.configure(customerUploadedSchema);
 };

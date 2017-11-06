@@ -7,7 +7,6 @@ let shell = require('shelljs');
 let elasticsearch = require('elasticsearch')
 
 let esUrl = 'https://elastic:09cl1i3Unf9j2Uq4eG4jL9hG@ae3f5d08fa1ec79613b0b307dadb0834.us-east-1.aws.found.io:9243';
-// https://ae3f5d08fa1ec79613b0b307dadb0834.us-east-1.aws.found.io:9243
 let ESClient = new elasticsearch.Client({
   host: esUrl,
   log: 'trace'
@@ -77,12 +76,13 @@ class Service {
     });
 
     req.on('httpDone', function() {
+      //shell.exec("ps axf | grep <process name> | grep -v grep ")
       if (req.done == false) {
         req.done = true;
-         shell.echo('importing to database');
-         shell.exec('rethinkdb import -f data.json --table flowzPDM.customerUploadedData --force');
-         shell.exec("mongoimport -h localhost:3001 --db flowzPDM --collection customerUploadedData --file data.json --jsonArray")
-        shell.exec(`cat data.json | jq -c '.[] | {"index": {"_index": "flowzpdm", "_type": "customeruploadeddata", "_id": .id}}, .' | curl -XPOST https://elastic:09cl1i3Unf9j2Uq4eG4jL9hG@ae3f5d08fa1ec79613b0b307dadb0834.us-east-1.aws.found.io:9243/_bulk --data-binary @-`)
+        shell.echo('importing to database');
+        //shell.exec('rethinkdb import -f data.json --table flowzPDM.customerUploadedData --force');
+        shell.exec("mongoimport -h localhost:3001 --db flowzPDM --collection customerUploadedData --file dataq.json --jsonArray")
+        //shell.exec(`cat data.json | jq -c '.[] | {"index": {"_index": "flowzpdm", "_type": "customeruploadeddata", "_id": .id}}, .' | curl -XPOST https://elastic:09cl1i3Unf9j2Uq4eG4jL9hG@ae3f5d08fa1ec79613b0b307dadb0834.us-east-1.aws.found.io:9243/_bulk --data-binary @-`)
       } else {
         console.log('done called twice for ');
       }
