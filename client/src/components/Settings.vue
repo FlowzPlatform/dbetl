@@ -190,185 +190,187 @@
     </Tabs>
   </div>
 </Row>
-<div id="example1" class="hot handsontable htColumnHeaders"></div>
-<table>
-  <tr class="ivu-table-row" v-for="(item, index) in errmsg" style="color:red;font-size:14px;">{{item}}</tr>
-</table>
-<Row>
-  <FormItem>
-    <div id="hot-preview" v-if="showHandson">
-      <!-- <HotTable :root="root" :settings="hotSettings"></HotTable> -->
+<div v-if="frmSettings.rdoCrt == 'rbtCSV'">
+    <div id="example1" class="hot handsontable htColumnHeaders"></div>
+    <table>
+      <tr class="ivu-table-row" v-for="(item, index) in errmsg" style="color:red;font-size:14px;">{{item}}</tr>
+    </table>
+    <Row>
+      <FormItem>
+        <div id="hot-preview" v-if="showHandson">
+          <!-- <HotTable :root="root" :settings="hotSettings"></HotTable> -->
 
-      <Button type="primary" @click="modifyData()">Modify Data</Button>
-    </div>
-    <div v-if="!showHandson && displaymessage">
-      <div class="schema-form ivu-table-wrapper">
-        <div class="ivu-table ivu-table-border" style="display: block;white-space: nowrap;">
-          <div class="ivu-table-body">
-            <table style="min-width: 1077px;overflow-x: auto;">
-              <thead>
-                <tr>
-                  <th v-for="(item, index) in csvData">
-                    <div>
-                      <span>{{item.header}}</span>
-                    </div>
-                  </th>
-                </tr>
-              </thead>
-              <tbody class="ivu-table-tbody">
-                <tr class="ivu-table-row" v-for="(item, index) in frmSettings.upldCSV" v-if="(index<5)">
-                  <td class="" v-if="index <= frmSettings.upldCSV.length-2" v-for="data in item" style="overflow:hidden;">{{data}}</td>
-                </tr>
-              </tbody>
-            </table>
+          <Button type="primary" @click="modifyData()">Modify Data</Button>
+        </div>
+        <div v-if="!showHandson && displaymessage">
+          <div class="schema-form ivu-table-wrapper">
+            <div class="ivu-table ivu-table-border" style="display: block;white-space: nowrap;">
+              <div class="ivu-table-body">
+                <table style="min-width: 1077px;overflow-x: auto;">
+                  <thead>
+                    <tr>
+                      <th v-for="(item, index) in csvData">
+                        <div>
+                          <span>{{item.header}}</span>
+                        </div>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody class="ivu-table-tbody">
+                    <tr class="ivu-table-row" v-for="(item, index) in frmSettings.upldCSV" v-if="(index<5)">
+                      <td class="" v-if="index <= frmSettings.upldCSV.length-2" v-for="data in item" style="overflow:hidden;">{{data}}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          <p style="color: grey;font-size: smaller;" >Displaying Some Data As Reference</p>
+        </div>
+        <!-- <div style="float: right;">
+                  <Page :total="frmSettings.upldCSV.length" :current="1"></Page>
+                </div> -->
+      </FormItem>
+
+      <FormItem>
+        <div class="schema-form ivu-table-wrapper" v-if="displaymessage">
+          <div class="ivu-table ivu-table-border" >
+            <div class="ivu-table-body">
+              <table>
+                <colgroup>
+                  <col width="300">
+                  <col width="300">
+                  <col width="200">
+                  <col width="70">
+                  <col width="300">
+                  <col width="100">
+                </colgroup>
+                <thead>
+                  <tr>
+                    <th class="">Header</th>
+                    <th class="">Edit header</th>
+                    <th class="">Type</th>
+                    <th class="">Property</th>
+                    <th class="">Notes</th>
+                    <th class="">Transform</th>
+                  </tr>
+                </thead>
+                <tbody class="ivu-table-tbody">
+                  <tr class="ivu-table-row" v-for="(item, index) in headers">
+                    <th>
+                      <div class="ivu-table-cell">
+                        <span>{{item}}</span>
+                      </div>
+                    </th>
+                    <td>
+                      <Input v-model="csvData[index].header" type="text" :value="item" :placeholder="item" size="small" class="schema-form-input">
+                      </Input>
+                    </td>
+
+                    <td class="">
+                      <div class="ivu-table-cell">
+                        <Select @on-change="type(index)" v-model="csvData[index].type" size="small" class="schema-form-input">
+                                              <Option v-for="t in optType" :value="t.value" :key="t.value">{{t.label}}</Option>
+                                              <!-- <Option value="email" key="email">Email</Option>
+                                              <Option value="number" key="number">Number</Option>
+                                              <Option value="boolean" key="boolean">Boolean</Option>
+                                              <Option value="phone" key="phone">Phone</Option>
+                                              <Option value="date" key="date">Date</Option> -->
+                                          </Select>
+                      </div>
+                    </td>
+
+                    <td class="">
+                      <div class="ivu-table-cell">
+                        <Poptip placement="left" width="300">
+                          <a>
+                            <Icon type="edit"></Icon>
+                          </a>
+                          <div slot="title">
+                            <h3>Property</h3></div>
+                          <div slot="content">
+                            <Form-item v-if="activatedProperty(index,'min')" label="Min" :label-width="80" class="no-margin">
+                              <Input-number v-model="csvData[index].min" size="small"></Input-number>
+                            </Form-item>
+                            <Form-item v-if="activatedProperty(index,'max')" label="Max" :label-width="80" class="no-margin">
+                              <Input-number size="small" v-model="csvData[index].max"></Input-number>
+                            </Form-item>
+                            <Form-item v-if="activatedProperty(index,'allowedValue')" label="Allowed Value" class="no-margin">
+                              <input-tag style="margin-left:80px;width:200px" :tags="csvData[index].allowedValue"></input-tag>
+                            </Form-item>
+                            <Form-item v-if="activatedProperty(index,'defaultValue')" label="Default Value" :label-width="80" class="no-margin">
+                              <Input size="small" v-model="csvData[index].defaultValue"></Input>
+                            </Form-item>
+                            <Form-item v-if="activatedProperty(index,'regEx')" label="regEx" :label-width="80" class="no-margin">
+                              <Input v-model="csvData[index].regEx"></Input>
+                            </Form-item>
+                            <Form-item v-if="activatedProperty(index,'placeholder')" label="Placeholder" :label-width="80" class="no-margin">
+                              <Input size="small" v-model="csvData[index].placeholder"></Input>
+                            </Form-item>
+                            <Form-item v-if="activatedProperty(index,'dependentOn')" label="Dependent On" :label-width="80" class="no-margin">
+                              <!-- <Input size="small" v-model="csvData[index].dependentOn"></Input> -->
+                              <div>
+                                <label class="typo__label">Tagging</label>
+                                <multiselect v-model="value" :options="options" :multiple="true" :custom-label="customLabel">
+                                </multiselect>
+                              </div>
+                            </Form-item>
+                            <Form-item v-if="activatedProperty(index,'IsArray')" label="" :label-width="80" class="no-margin">
+                              <Checkbox v-model="csvData[index].IsArray">Is Array</Checkbox>
+                            </Form-item>
+                            <Form-item v-if="activatedProperty(index,'optional')" label="" :label-width="80" class="no-margin">
+                              <Checkbox style="margin-left:80px;" @on-change="type(index)" v-model="csvData[index].optional">Optional</Checkbox>
+                            </Form-item>
+                          </div>
+                        </Poptip>
+                      </div>
+                    </td>
+
+                    <td class="">
+                      <div class="ivu-table-cell">
+                        <Input type="textarea" placeholder="Notes..." size="small" class="schema-form-input"></Input>
+                      </div>
+                    </td>
+
+                    <td class="">
+                      <div class="ivu-table-cell">
+                        <a @click="model = true">
+                          <Icon type="compose"></Icon>
+                        </a>
+                        <Modal v-model="model" title="Transform" @on-ok="handleModalOk" width="900px">
+                          <Row>
+                            <Col span="20">Script</Col>
+                            <Col span="4">Opration</Col>
+                          </Row>
+                        </Modal>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
-      </div>
-      <p style="color: grey;font-size: smaller;" >Displaying Some Data As Reference</p>
-    </div>
-    <!-- <div style="float: right;">
-              <Page :total="frmSettings.upldCSV.length" :current="1"></Page>
-            </div> -->
-  </FormItem>
-
-  <FormItem>
-    <div class="schema-form ivu-table-wrapper" v-if="displaymessage">
-      <div class="ivu-table ivu-table-border" >
-        <div class="ivu-table-body">
-          <table>
-            <colgroup>
-              <col width="300">
-              <col width="300">
-              <col width="200">
-              <col width="70">
-              <col width="300">
-              <col width="100">
-            </colgroup>
-            <thead>
-              <tr>
-                <th class="">Header</th>
-                <th class="">Edit header</th>
-                <th class="">Type</th>
-                <th class="">Property</th>
-                <th class="">Notes</th>
-                <th class="">Transform</th>
-              </tr>
-            </thead>
-            <tbody class="ivu-table-tbody">
-              <tr class="ivu-table-row" v-for="(item, index) in headers">
-                <th>
-                  <div class="ivu-table-cell">
-                    <span>{{item}}</span>
-                  </div>
-                </th>
-                <td>
-                  <Input v-model="csvData[index].header" type="text" :value="item" :placeholder="item" size="small" class="schema-form-input">
-                  </Input>
-                </td>
-
-                <td class="">
-                  <div class="ivu-table-cell">
-                    <Select @on-change="type(index)" v-model="csvData[index].type" size="small" class="schema-form-input">
-                                          <Option v-for="t in optType" :value="t.value" :key="t.value">{{t.label}}</Option>
-                                          <!-- <Option value="email" key="email">Email</Option>
-                                          <Option value="number" key="number">Number</Option>
-                                          <Option value="boolean" key="boolean">Boolean</Option>
-                                          <Option value="phone" key="phone">Phone</Option>
-                                          <Option value="date" key="date">Date</Option> -->
-                                      </Select>
-                  </div>
-                </td>
-
-                <td class="">
-                  <div class="ivu-table-cell">
-                    <Poptip placement="left" width="300">
-                      <a>
-                        <Icon type="edit"></Icon>
-                      </a>
-                      <div slot="title">
-                        <h3>Property</h3></div>
-                      <div slot="content">
-                        <Form-item v-if="activatedProperty(index,'min')" label="Min" :label-width="80" class="no-margin">
-                          <Input-number v-model="csvData[index].min" size="small"></Input-number>
-                        </Form-item>
-                        <Form-item v-if="activatedProperty(index,'max')" label="Max" :label-width="80" class="no-margin">
-                          <Input-number size="small" v-model="csvData[index].max"></Input-number>
-                        </Form-item>
-                        <Form-item v-if="activatedProperty(index,'allowedValue')" label="Allowed Value" class="no-margin">
-                          <input-tag style="margin-left:80px;width:200px" :tags="csvData[index].allowedValue"></input-tag>
-                        </Form-item>
-                        <Form-item v-if="activatedProperty(index,'defaultValue')" label="Default Value" :label-width="80" class="no-margin">
-                          <Input size="small" v-model="csvData[index].defaultValue"></Input>
-                        </Form-item>
-                        <Form-item v-if="activatedProperty(index,'regEx')" label="regEx" :label-width="80" class="no-margin">
-                          <Input v-model="csvData[index].regEx"></Input>
-                        </Form-item>
-                        <Form-item v-if="activatedProperty(index,'placeholder')" label="Placeholder" :label-width="80" class="no-margin">
-                          <Input size="small" v-model="csvData[index].placeholder"></Input>
-                        </Form-item>
-                        <Form-item v-if="activatedProperty(index,'dependentOn')" label="Dependent On" :label-width="80" class="no-margin">
-                          <!-- <Input size="small" v-model="csvData[index].dependentOn"></Input> -->
-                          <div>
-                            <label class="typo__label">Tagging</label>
-                            <multiselect v-model="value" :options="options" :multiple="true" :custom-label="customLabel">
-                            </multiselect>
-                          </div>
-                        </Form-item>
-                        <Form-item v-if="activatedProperty(index,'IsArray')" label="" :label-width="80" class="no-margin">
-                          <Checkbox v-model="csvData[index].IsArray">Is Array</Checkbox>
-                        </Form-item>
-                        <Form-item v-if="activatedProperty(index,'optional')" label="" :label-width="80" class="no-margin">
-                          <Checkbox style="margin-left:80px;" @on-change="type(index)" v-model="csvData[index].optional">Optional</Checkbox>
-                        </Form-item>
-                      </div>
-                    </Poptip>
-                  </div>
-                </td>
-
-                <td class="">
-                  <div class="ivu-table-cell">
-                    <Input type="textarea" placeholder="Notes..." size="small" class="schema-form-input"></Input>
-                  </div>
-                </td>
-
-                <td class="">
-                  <div class="ivu-table-cell">
-                    <a @click="model = true">
-                      <Icon type="compose"></Icon>
-                    </a>
-                    <Modal v-model="model" title="Transform" @on-ok="handleModalOk" width="900px">
-                      <Row>
-                        <Col span="20">Script</Col>
-                        <Col span="4">Opration</Col>
-                      </Row>
-                    </Modal>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  </FormItem>
-</Row>
-<Row>
-  <Col span="6">
-  <FormItem>
-    <Button type="primary" @click="handleSubmit('frmSettings')" v-if = "displaymessage">Create Connection</Button>
-    <Button type="primary" :loading="loadingData" v-on:click="insertCsvData(frmSettings.upldCSV)" v-if="validateButton">
-                  <span v-show="!loadingData">Validate Data</span>
-                  <span v-show ="loadingData">Loading...</span>
-                </Button>
-    <Button type="primary" @click="saveData()" v-if="saveButton">Save Data</Button>
-  </FormItem>
-  </Col>
-  <Col span="6">
-  <FormItem>
-    <Button type="primary" v-if="serverSideValidation" @click="serverSideValidation()">Server Side Validation</Button>
-  </FormItem>
-  </Col>
-</Row>
+      </FormItem>
+    </Row>
+    <Row>
+      <Col span="6">
+      <FormItem>
+        <Button type="primary" @click="handleSubmit('frmSettings')" v-if = "displaymessage">Create Connection</Button>
+        <Button type="primary" :loading="loadingData" v-on:click="insertCsvData(frmSettings.upldCSV)" v-if="validateButton">
+                      <span v-show="!loadingData">Validate Data</span>
+                      <span v-show ="loadingData">Loading...</span>
+                    </Button>
+        <Button type="primary" @click="saveData()" v-if="saveButton">Save Data</Button>
+      </FormItem>
+      </Col>
+      <Col span="6">
+      <FormItem>
+        <Button type="primary" v-if="serverSideValidation" @click="serverSideValidation()">Server Side Validation</Button>
+      </FormItem>
+      </Col>
+    </Row>
+  </div>
 <!-- <div>{{validatingData}}</div> -->
 </template>
 </Form>
@@ -619,8 +621,6 @@ export default {
       //   console.log("hiiiii",value)
       //   arr.push(type=value.type)
       // })
-
-      var newindex = index
           this.validateButton = true
           this.loadingData = false
           this.errmsg = [];
