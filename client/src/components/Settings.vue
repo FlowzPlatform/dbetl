@@ -55,11 +55,7 @@
   <button class="btn"><Icon type="ios-cloud-upload-outline"></Icon> Upload Icon</button>
   <input type="file" id="upldIcn" title="Upload icon" accept="image/*">
 </div>
-<h4>CSV File Upload</h4>
-<div class="upload-btn-wrapper">
-  <button class="btn"><Icon type="ios-cloud-upload-outline"></Icon> Upload CSV</button>
-  <input type="file" id="upldCSV" title="Upload CSV">
-</div>
+
 </FormItem>
 
 <FormItem>
@@ -133,10 +129,11 @@
     <Row>
       <Col span="10" v-if="frmSettings.rdoCrt == 'rbtCSV'">
       <h4>CSV File Upload</h4>
-      <div class="upload-btn-wrapper">
+      <div class="upload-btn-wrapper" v-on:click="uploadCsv()">
         <button class="btn"><Icon type="ios-cloud-upload-outline"></Icon> Upload CSV</button>
         <input type="file" id="upldCSV" title="Upload CSV">
       </div>
+
       </Col>
       <!--  <FormItem v-if="frmSettings.rdoCrt == 'rbtDB'" style="display:none;">
                             <h4>Select Database</h4>
@@ -204,7 +201,7 @@
 
       <Button type="primary" @click="modifyData()">Modify Data</Button>
     </div>
-    <div v-if="!showHandson">
+    <div v-if="!showHandson && displaymessage">
       <div class="schema-form ivu-table-wrapper">
         <div class="ivu-table ivu-table-border" style="display: block;white-space: nowrap;">
           <div class="ivu-table-body">
@@ -227,7 +224,7 @@
           </div>
         </div>
       </div>
-      <p style="color: grey;font-size: smaller;">Displaying Some Data As Reference</p>
+      <p style="color: grey;font-size: smaller;" >Displaying Some Data As Reference</p>
     </div>
     <!-- <div style="float: right;">
               <Page :total="frmSettings.upldCSV.length" :current="1"></Page>
@@ -235,8 +232,8 @@
   </FormItem>
 
   <FormItem>
-    <div class="schema-form ivu-table-wrapper">
-      <div class="ivu-table ivu-table-border">
+    <div class="schema-form ivu-table-wrapper" v-if="displaymessage">
+      <div class="ivu-table ivu-table-border" >
         <div class="ivu-table-body">
           <table>
             <colgroup>
@@ -358,7 +355,7 @@
 <Row>
   <Col span="6">
   <FormItem>
-    <Button type="primary" @click="handleSubmit('frmSettings')">Create Connection</Button>
+    <Button type="primary" @click="handleSubmit('frmSettings')" v-if = "displaymessage">Create Connection</Button>
     <Button type="primary" :loading="loadingData" v-on:click="insertCsvData(frmSettings.upldCSV)" v-if="validateButton">
                   <span v-show="!loadingData">Validate Data</span>
                   <span v-show ="loadingData">Loading...</span>
@@ -418,9 +415,10 @@ export default {
   },
   data() {
     return {
+      displaymessage: false,
       value: "",
       options: [],
-      validateButton: true,
+      validateButton: false,
       // parsedata: [],
       saveButton: false,
       serverSideValidation: false,
@@ -528,6 +526,75 @@ export default {
     }
   },
   methods: {
+    uploadCsv(){
+      let self = this
+      console.log("uploadCsv called....")
+      $(document).ready(function() {
+        $('#upldCSV').change(function() {
+          console.log("called")
+          let fileChooser = document.getElementById('upldCSV');
+          let file = fileChooser.files[0];
+
+          Papa.parse(file, {
+            header: true,
+            encoding: "UTF-8",
+            complete: function(results, file) {
+              console.log(results.data)
+              // console.log("Parsing complete:", results.data, file);
+              results.data.optType = [{
+                value: 'text',
+                label: 'Text'
+              }, {
+                value: 'email',
+                label: 'Email'
+              }, {
+                value: 'number',
+                label: 'Number'
+              }, {
+                value: 'boolean',
+                label: 'Boolean'
+              }, {
+                value: 'phone',
+                label: 'Phone'
+              }, {
+                value: 'date',
+                label: 'Date'
+              }]
+
+
+              self.frmSettings.upldCSV = results.data;
+              console.log("--------------------->",self.frmSettings.upldCSV,self.frmSettings.upldCSV)
+              self.headers = Object.keys(self.frmSettings.upldCSV[0]);
+
+              self.options = self.headers;
+              self.displaymessage = true
+              self.validateButton = true
+              console.log("self.options ", self.options);
+              _.forEach(self.headers, (f) => {
+                self.csvData.push({
+                  header: f,
+                  type: '',
+                  min: 0,
+                  max: 0,
+                  allowedValue: [],
+                  defaultValue: '',
+                  dependentOn: '',
+                  regEx: '',
+                  placeholder: '',
+                  optional: true,
+                  IsArray: '',
+                  transform: ''
+                })
+              })
+            },
+            error: function(error, file) {
+              console.log("Error", error);
+            }
+          });
+        });
+    });
+    },
+
     customLabel(option) {
       return `${option}`
     },
@@ -1202,72 +1269,11 @@ export default {
           })
         }
       });
-
-      $('#upldCSV').change(function() {
-        let fileChooser = document.getElementById('upldCSV');
-        let file = fileChooser.files[0];
-
-        Papa.parse(file, {
-          header: true,
-          encoding: "UTF-8",
-          complete: function(results, file) {
-            console.log(results.data)
-            // console.log("Parsing complete:", results.data, file);
-            results.data.optType = [{
-              value: 'text',
-              label: 'Text'
-            }, {
-              value: 'email',
-              label: 'Email'
-            }, {
-              value: 'number',
-              label: 'Number'
-            }, {
-              value: 'boolean',
-              label: 'Boolean'
-            }, {
-              value: 'phone',
-              label: 'Phone'
-            }, {
-              value: 'date',
-              label: 'Date'
-            }]
-
-
-            self.frmSettings.upldCSV = results.data;
-
-            self.headers = Object.keys(self.frmSettings.upldCSV[0]);
-
-            self.options = self.headers;
-            console.log("self.options ", self.options);
-            _.forEach(self.headers, (f) => {
-              self.csvData.push({
-                header: f,
-                type: '',
-                min: 0,
-                max: 0,
-                allowedValue: [],
-                defaultValue: '',
-                dependentOn: '',
-                regEx: '',
-                placeholder: '',
-                optional: true,
-                IsArray: '',
-                transform: ''
-              })
-            })
-          },
-          error: function(error, file) {
-            console.log("Error", error);
-          }
-        });
-      });
     });
   },
   created() {
     this.$on('on-schema-change', this.handleSchemaChange);
   }
-
 }
 </script>
 
