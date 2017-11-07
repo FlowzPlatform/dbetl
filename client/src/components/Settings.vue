@@ -182,28 +182,22 @@
     </Row>
 
   </FormItem>
+  <FormItem
+    label="Select Database"
+    :label-width="115"
+    v-if="frmSettings.optCrt && frmSettings.rdoCrt == 'rbtDB' && frmSettings.rdodb == 'rbtExstng'"
+    >
+    <!-- :rules="{required: true, message: 'Please select Database'}" -->
+      <!-- <Cascader v-if="formSchema._id" :data="CascaderData" filterable v-model='formSchema.database' disabled></Cascader> -->
+      <Cascader :data="CascaderData" filterable v-model='importDB' @on-change="setTranfer"></Cascader>
+  </FormItem>
+  <FormItem
+      v-if="frmSettings.optCrt && frmSettings.rdoCrt == 'rbtDB' && frmSettings.rdodb == 'rbtExstng' && importDB.length !== 0"  width="100%"
+      >
+      <Transfer :data="ImportSourceDt" :target-keys="ImportTargetDt" :render-format="render1" @on-change="handleChange1">
+      </Transfer>
+  </FormItem>
   </Col>
-
-
-  <div v-if="frmSettings.optCrt && frmSettings.rdoCrt == 'rbtDB' && frmSettings.rdodb == 'rbtExstng'">
-    <Tabs type="card" style="width: 100%;">
-      <TabPane label="mongo">
-        <Table border :columns="tabsData.mongoCols" :data="tabsData.mongoDt"></Table>
-      </TabPane>
-      <TabPane label="rethink">
-        <Table border :columns="tabsData.rethinkCols" :data="tabsData.rethinkDt"></Table>
-      </TabPane>
-      <TabPane label="elastic">
-        <Table border :columns="tabsData.elasticCols" :data="tabsData.elasticDt"></Table>
-      </TabPane>
-      <TabPane label="nedb">
-        <Table border :columns="tabsData.nedbCols" :data="tabsData.nedbDt"></Table>
-      </TabPane>
-      <TabPane label="mysqldb">
-        <Table border :columns="tabsData.mysqlCols" :data="tabsData.mysqlDt"></Table>
-      </TabPane>
-    </Tabs>
-  </div>
 </Row>
 <div v-if="frmSettings.rdoCrt == 'rbtCSV'">
     <div id="example1" class="hot handsontable htColumnHeaders"></div>
@@ -371,7 +365,7 @@
     <Row>
       <Col span="6">
       <FormItem>
-        <Button type="primary" @click="handleSubmit('frmSettings')" v-if = "displaymessage">Create Connection</Button>
+        
         <Button type="primary" :loading="loadingData" v-on:click="insertCsvData(frmSettings.upldCSV)" v-if="validateButton">
                       <span v-show="!loadingData">Validate Data</span>
                       <span v-show ="loadingData">Loading...</span>
@@ -386,6 +380,7 @@
       </Col>
     </Row>
   </div>
+  <Button type="primary" @click="handleSubmit('frmSettings')">Create Connection</Button>
 <!-- <div>{{validatingData}}</div> -->
 </Card>
 </template>
@@ -565,7 +560,11 @@ export default {
         mysqlDt: [],
         mysqlCols: []
       },
-      keys: []
+      keys: [],
+      CascaderData: [],
+      importDB: [],
+      ImportSourceDt: [],
+      ImportTargetDt: []
     }
   },
   methods: {
@@ -584,6 +583,42 @@ export default {
       } else {
         return 'yes'
       }
+    },
+    setTranfer (value ,sfd) {
+        // alert(value[0] + value[1])
+        this.ImportSourceDt = []
+        this.ImportTargetDt = []
+        schema.getByNameId(value[0], value[1]).then(response => {
+            // console.log('response.data', response.data)
+            this.sCurrent = response.data
+            for (let i = 0; i < this.sCurrent.length; i++) {
+                // console.log(sData[i])
+                this.ImportSourceDt.push({
+                    key: i.toString(),
+                    label: this.sCurrent[i].title,
+                    description: this.sCurrent[i]._id,
+                    // disabled: Math.random() * 3 < 1
+                });
+            }
+        })
+    },
+    render1 (item) {
+        return item.label;
+    },
+    handleChange1 (newTargetKeys, direction, moveKeys) {
+        // console.log(newTargetKeys);
+        // console.log(direction);
+        // console.log(moveKeys);
+        this.ImportTargetDt = newTargetKeys;
+    },
+    getIcon: function() {
+        if (this.conn_icon == 'load-a') {
+            return 'process'
+        } else if (this.conn_icon == 'checkmark') {
+            return 'created'
+        } else if (this.conn_icon == 'close') {
+            return 'rejected'
+        }
     },
     uploadCsv() {
       let self = this
@@ -1078,6 +1113,7 @@ export default {
 
 
     getsettingsAll: function(value) {
+      console.log('data', value)
       this.tabsData = {
         mongoCols: [],
         mongoDt: [],
@@ -1092,74 +1128,32 @@ export default {
       }
       api.request('get', '/settings')
         .then(response => {
+          this.CascaderData = []
           this.allSetting = response.data
-          _.forEach(this.allSetting, (dbInst, db) => {
-            if (dbInst.dbinstance.length != 0) {
-              this.tabsData[db + 'Cols'].push({
-                type: 'expand',
-                width: 50,
-                render: (h, params) => {
-                  return h(expandRow, {
-                    props: {
-                      row: {
-                        db: db,
-                        dbData: this.tabsData[db + 'Dt'][params.index]
-                      },
-                      id: this.tabsData[db + 'Dt'][params.index].id,
-                      index: params.index,
-                      db: 'mongo'
-                    }
-                  })
-                }
-              })
-              this.tabsData[db + 'Cols'].push({
-                title: 'Select',
-                width: 80,
-                align: 'center',
-                render: (h, params) => {
-                  return h('Checkbox', {
-                    props: {
-                      value: params.row.checked
-                    },
-                    on: {
-                      'on-change': (value) => {
-                        if (value == true) {
-                          this.check = value
-                          // console.log("this.selectSchema",this.selectSchema);
-                          // this.frmSettings.push(this.selectSchema);
-                        } else {
-                          this.check = value
-                        }
+          var result = response.data
+          // console.log('settings',result)
 
-                        // this.enableDbInstance(this.tabPane, params.index, value)
-                      }
-                    }
-                  })
+          for(var db in result){
+            var obj = {}
+            // if(result[db].dbdefault == 'true'){
+              // console.log('aaaaaaa',db)
+              obj.value = db,
+              obj.label = db,
+              obj.children = []
+              // console.log(result[db].dbinstance)
+              result[db].dbinstance.forEach(function(instance, i){
+                if(instance.isenable){
+                  // console.log(instance.cname)
+                  obj.children.push({label: instance.connection_name, value:instance.id})
                 }
               })
-              _.forEach(dbInst.dbinstance[0], (v, k) => {
-                this.tabsData[db + 'Cols'].push({
-                  title: k,
-                  key: k
-                })
-              })
-            }
-            this.tabsData[db + 'Dt'] = _.map(this.allSetting[db].dbinstance, m => {
-              return {
-                checked: true,
-                _expanded: false,
-                dbname: m.dbname,
-                host: m.host,
-                id: m.id,
-                isdefault: m.isdefault,
-                isenable: m.isenable,
-                notes: m.notes,
-                port: m.port,
-                rdoCrt: m.rdoCrt,
-                upldIcn: m.upldIcn
+              if(obj.children.length == 0 && obj.label != 'nedb'){
+                obj.disabled = true
               }
-            })
-          })
+            // }
+            // console.log(obj)
+            this.CascaderData.push(obj)
+          }
         })
         .catch(error => {
           console.log(error);
