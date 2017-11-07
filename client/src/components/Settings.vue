@@ -545,126 +545,176 @@ export default {
       // }
     },
     type(index) {
-      this.validateButton = true
-      this.errmsg = [];
-      this.data1 = [];
-      let headerSchema = {}
+      var arr = [];
+      // console.log("iiiiiiiiiiiiiiiiiii",this.csvData[index].type)
+      // console.log("dsav",this.csvData.length)
+      // _.forEach(this.csvData, function(value){
+      //   console.log("hiiiii",value)
+      //   arr.push(type=value.type)
+      // })
 
-      for (var [index, item] of this.headers.entries()) {
+      var newindex = index
+          this.validateButton = true
+          this.loadingData = false
+          this.errmsg = [];
+          this.data1 = [];
+          let headerSchema = {}
 
-        // console.log('item', item, index)
-        // let type
-        // switch(this.csvData[index].type){
-        //   case 'text':
-        //   type = 'string';
-        //   break;
-        //   case 'email':
-        //   type = 'email';
-        //   break;
-        //   case 'number':
-        //   type = 'number'
-        //   break;
-        //   case 'boolean':
-        //   type = 'boolean'
-        //   break;
-        //   case 'phone':
-        //   type = 'number'
-        //   break;
-        //   case 'date':
-        //   type = 'date'
-        //   break;
-        // }
+          for(var [index, item] of this.headers.entries()){
+            var self = this
+            let emailValidatorFunc = function( obj, value, fieldName ){
+              let re =/\S+@\S+\.\S+/;
+              if (value != undefined) {
+                if( re.test(value) != true ) return 'invalid email address';
+                return;
+              }
+            };
+            let dateValidatorFunc = function(obj, value, fieldName){
+              let date = moment(value);
+              let isValid = date.isValid();
+              if (isValid != true) return 'invalid date. please provide date in y-m-d or d-m-y format' ;
+              date._d= moment(new Date(date._d)).format('DD/MM/YYYY')
+              return;
+            }
 
-        let emailValidatorFunc = function(obj, value, fieldName) {
-          let re = /\S+@\S+\.\S+/;
-          // console.log("val   ", value);
-          if (value != undefined) {
-            if (re.test(value) != true) return 'invalid email address';
-            return;
+            let phoneValidatorFunc = function(obj , value , fieldName){
+              let re = /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/im ;
+              // console.log(value);
+              if (value != undefined) {
+                if( re.test(value) != true ) return 'invalid phone number';
+                return;
+              }
+            }
+            let getFunctionText = function(obj , value , fieldName) {
+              var func1 = allowedValueValidatorFunc(obj , value , fieldName)
+                 var func2 = regExValidatorFunc(obj , value , fieldName)
+                 if (func1 != undefined) {
+                   return func1
+                 }else if(func2 != undefined){
+                   return func2
+                 }else{
+                   return ;
+                 }
+            }
+            let getFunctionEmail = function(obj , value , fieldName) {
+              var func1 = emailValidatorFunc(obj , value , fieldName)
+                 var func2 = allowedValueValidatorFunc(obj , value , fieldName)
+                 if (func1 != undefined) {
+                   return func1
+                 }else if(func2 != undefined){
+                   return func2
+                 }else{
+                   return ;
+                 }
+            }
+             let getFunctionNumber = function(obj , value , fieldName) {
+               var func1 = allowedValueValidatorFunc(obj , value , fieldName)
+               var func2 = regExValidatorFunc(obj , value , fieldName)
+               if (func1 != undefined) {
+                 return func1
+               }else if(func2 != undefined){
+                 return func2
+               }else{
+                 return ;
+               }
+            }
+              let getFunctionPhone = function(obj , value , fieldName) {
+                  var func1 = allowedValueValidatorFunc(obj , value , fieldName)
+                  var func2 = regExValidatorFunc(obj , value , fieldName)
+                  var func3 = phoneValidatorFunc(obj , value , fieldName)
+                  if (func1 != undefined) {
+                    return func1
+                  }else if(func2 != undefined){
+                    return func2
+                  }else if (func3 != undefined) {
+                    return func3
+                  }else{
+                    return ;
+                  }
+               }
+               let getFunctionDate = function(obj , value , fieldName) {
+                     var func1 = allowedValueValidatorFunc(obj , value , fieldName)
+                     var func2 = regExValidatorFunc(obj , value , fieldName)
+                     var func3 = dateValidatorFunc(obj , value , fieldName)
+                     if (func1 != undefined) {
+                       return func1
+                     }else if(func2 != undefined){
+                       return func2
+                     }else if (func3 != undefined) {
+                       return func3
+                     }else{
+                       return ;
+                     }
+                }
+                let allowedValueValidatorFunc = function(obj , value , fieldName){
+                  // console.log("@@@@@@@@@@@@@@@",fieldName)
+                  var i;
+                  _.forEach(self.headers, function(value,key){
+                    if(fieldName == value){
+                      i = key;
+                    }
+                  })
+                  console.log("aaaaaaaaaaaaaaaaaa",self.csvData[i].allowedValue)
+                  if(self.csvData[i].allowedValue.length>0){
+                    if(value != undefined){
+                      let check = _.includes(self.csvData[i].allowedValue, value)
+                      if (!check) return 'invalid allowedValue';
+                      return;
+                    }
+                  }
+                };
+
+                let regExValidatorFunc = function(obj , value , fieldName){
+                  console.log("rrrrrrrrrrrrrrr")
+                  var i;
+                  _.forEach(self.headers, function(value,key){
+                    if(fieldName == value){
+                      i = key;
+                    }
+                  })
+                  if (self.csvData[i].regEx !== '') {
+                    if(value != undefined){
+                      let pttrn = new RegExp(self.csvData[i].regEx)
+                      if(pttrn.test(value) == false) return 'not match with regEx value'
+                      return;
+                    }
+                  }
+                };
+
+            if(this.csvData[index].optional == true){
+              if(this.csvData[index].type == 'text'){
+                headerSchema[item] = {type:'string'};
+              } else if(this.csvData[index].type == 'email'){
+                //headerSchema[item] = {type:'string',regEx:/^[a-z0-9_.]+[@][a-z]+[.][a-z][a-z]+$/};
+                headerSchema[item] = {type:'string' ,validator: emailValidatorFunc};
+              } else if(this.csvData[index].type == 'number'){
+                headerSchema[item] = {type:'number'};
+              } else if(this.csvData[index].type == 'boolean'){
+                headerSchema[item] = {type:'boolean'};
+              } else if(this.csvData[index].type == 'phone' ){
+                headerSchema[item] = {type:'string' , validator: phoneValidatorFunc };
+              } else if(this.csvData[index].type == 'date'){
+                headerSchema[item] = {type:'string',validator: dateValidatorFunc};
+              }
+            } else if(this.csvData[index].optional == false){
+              if(this.csvData[index].type == 'text'){
+                headerSchema[item] = {type:'string',max:this.csvData[index].max,validator: getFunctionText};
+              } else if(this.csvData[index].type == 'email'){
+                headerSchema[item] = {type:'string',validator: getFunctionEmail};
+              } else if(this.csvData[index].type == 'number'){
+                headerSchema[item] = {type:'string',max:this.csvData[index].max, min:this.csvData[index].min,validator: getFunctionNumber};
+              } else if(this.csvData[index].type == 'boolean'){
+                headerSchema[item] = {type:'boolean'};
+              } else if(this.csvData[index].type == 'phone'){
+                headerSchema[item] = {type:'string',validator: getFunctionPhone};
+              } else if(this.csvData[index].type == 'date'){
+                headerSchema[item] = {type:'string',validator: getFunctionDate};
+              }
+            }
+
           }
-        };
-
-        let dateValidatorFunc = function(obj, value, fieldName) {
-          let date = moment(value);
-          let isValid = date.isValid();
-          if (isValid != true) return 'invalid date. please provide date in y-m-d or d-m-y format';
-          return;
-        }
-
-        let phoneValidatorFunc = function(obj, value, fieldName) {
-          let re = /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/im;
-          // console.log(value);
-          if (value != undefined) {
-            if (re.test(value) != true) return 'invalid phone number';
-            return;
-          }
-        }
-
-
-        if (this.csvData[index].optional == true) {
-          if (this.csvData[index].type == 'text') {
-            headerSchema[item] = {
-              type: 'string'
-            };
-          } else if (this.csvData[index].type == 'email') {
-            //headerSchema[item] = {type:'string',regEx:/^[a-z0-9_.]+[@][a-z]+[.][a-z][a-z]+$/};
-            headerSchema[item] = {
-              type: 'string',
-              validator: emailValidatorFunc
-            };
-          } else if (this.csvData[index].type == 'number') {
-            headerSchema[item] = {
-              type: 'number'
-            };
-          } else if (this.csvData[index].type == 'boolean') {
-            headerSchema[item] = {
-              type: 'boolean'
-            };
-          } else if (this.csvData[index].type == 'phone') {
-            headerSchema[item] = {
-              type: 'string',
-              validator: phoneValidatorFunc
-            };
-          } else if (this.csvData[index].type == 'date') {
-            headerSchema[item] = {
-              type: 'date',
-              validator: dateValidatorFunc
-            };
-          }
-        } else {
-          if (this.csvData[index].type == 'text') {
-            headerSchema[item] = {
-              type: 'string',
-              max: this.csvData[index].max
-            };
-          } else if (this.csvData[index].type == 'email') {
-            headerSchema[item] = {
-              type: 'email'
-            };
-          } else if (this.csvData[index].type == 'number') {
-            headerSchema[item] = {
-              type: 'number',
-              max: this.csvData[index].max,
-              min: this.csvData[index].min
-            };
-          } else if (this.csvData[index].type == 'boolean') {
-            headerSchema[item] = {
-              type: 'boolean'
-            };
-          } else if (this.csvData[index].type == 'phone') {
-            headerSchema[item] = {
-              type: 'number'
-            };
-          } else if (this.csvData[index].type == 'date') {
-            headerSchema[item] = {
-              type: 'date'
-            };
-          }
-        }
-
-      }
-      this.complexSchema = headerSchema
-    },
+          this.complexSchema = headerSchema
+      },
     insertCsvData(data) {
       var self = this
       self.loadingData = true
@@ -843,6 +893,11 @@ export default {
       document.getElementById("hot-display-license-info").style.display = "none";
     },
     saveData() {
+      this.$Loading.start();
+      var self = this;
+      setTimeout(function(){
+        self.$Loading.finish();
+      },3000)
       var self = this;
       console.log(this.frmSettings.upldCSV)
       console.log("schema ", this.complexSchema)
