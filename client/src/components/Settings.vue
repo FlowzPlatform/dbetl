@@ -1,50 +1,44 @@
 <template>
 <div id="app">
   <h3>Add New Connection</h3>
-  <Steps :current="currentStep">
-    <Step title="1"></Step>
-    <Step title="2"></Step>
-  </Steps>
+  <Card :bordered="true">
+    <span slot="title" style="padding: 10px 10px;">
+      <!-- style="padding-top:10px;padding-bottom:10px" -->
+          <Steps :current="currentStep"  >
+              <Step title="1"></Step>
+              <Step title="2"></Step>
+          </Steps>
+      </span>
+  </Card>
   <Form ref="frmSettings" :model="frmSettings" :rules="frmRule" class="form">
-    <template v-if="currentStep == 1">
-
-            <Row :gutter="20">
-            <Col span="12">
-                <FormItem label="Connection Name" prop="connection_name">
-                    <Input placeholder="Connection Name" v-model.trim="frmSettings.connection_name"></Input>
-                </FormItem>
-                <FormItem label="Host" prop="host">
-                    <Input placeholder="localhost" v-model.trim="frmSettings.host"></Input>
-                </FormItem>
-                <FormItem label="username">
-                    <Input placeholder="Username" v-model.trim="frmSettings.username"></Input>
-                </FormItem>
-                <FormItem label="Select Database">
-                    <Select v-model="frmSettings.selectedDb" @on-change="clearIcon">
-                        <Option value="mongo" key="mdb">Mongo DB</Option>
-                        <Option value="rethink" key="rdb">Rethink DB</Option>
-                        <Option value="elastic" key="edb">ElasticSearch DB</Option>
-                        <Option value="nedb" key="ndb">Ne DB</Option>
-                        <Option value="mysql" key="mysql">MySQL DB</Option>
-                    </Select>
-                </FormItem>
-            <!--
-                <FormItem label="Notes">
-                    <Input type="textarea" v-model="frmSettings.notes"></Input>
-                </FormItem> -->
-
-
-                <FormItem label="Icon" v-if="frmSettings.selectedDb">
-                    <div class="demo-upload-list">
-                        <template>
-                            <img v-if="frmSettings.upldIcn" :src="frmSettings.upldIcn">
-                            <div v-else>
-                                <img v-if="frmSettings.selectedDb === 'mongo'" :src="mongo">
-                                <img v-if="frmSettings.selectedDb === 'rethink'" :src="rethink">
-                                <img v-if="frmSettings.selectedDb === 'elastic'" :src="elastic">
-                                <img v-if="frmSettings.selectedDb === 'nedb'" :src="nedb">
-                            </div>
-                        </template>
+    <template v-if="currentStep == 0">
+        <Card :bordered="true" style="">
+            <span slot="title">
+                <Row>
+                    <Col span="12">
+                        <FormItem label="Select Database" style="margin-bottom:0px">
+                            <Select v-model="frmSettings.selectedDb" @on-change="clearIcon(frmSettings.selectedDb)">
+                                <Option value="mongo" key="mdb">Mongo DB</Option>
+                                <Option value="rethink" key="rdb">Rethink DB</Option>
+                                <Option value="elastic" key="edb">ElasticSearch DB</Option>
+                                <Option value="nedb" key="ndb">Ne DB</Option>
+                                <Option value="mysql" key="mysql">MySQL DB</Option>
+                            </Select>
+                        </FormItem>
+                    </Col>
+                    <Col span="12">
+                        <FormItem label="Icon" v-if="frmSettings.selectedDb" style="margin-bottom:0px">
+                            <div class="demo-upload-list">
+                                <template>
+                                    <img v-if="frmSettings.upldIcn" :src="frmSettings.upldIcn">
+                                    <div v-else>
+                                        <img v-if="frmSettings.selectedDb === 'mongo'" :src="mongo">
+                                        <img v-if="frmSettings.selectedDb === 'rethink'" :src="rethink">
+                                        <img v-if="frmSettings.selectedDb === 'elastic'" :src="elastic">
+                                        <img v-if="frmSettings.selectedDb === 'nedb'" :src="nedb">
+                                        <img v-if="frmSettings.selectedDb === 'mysql'" :src="mysql">
+                                    </div>
+                                </template>
 </div>
 <Col v-if="loading" class="demo-spin-col" span="1">
 <Spin fix>
@@ -55,41 +49,62 @@
   <button class="btn"><Icon type="ios-cloud-upload-outline"></Icon> Upload Icon</button>
   <input type="file" id="upldIcn" title="Upload icon" accept="image/*">
 </div>
-
 </FormItem>
-
-<FormItem>
-  <Checkbox v-model="frmSettings.isenable" label="enable">Enable</Checkbox>
-  <Checkbox v-model="frmSettings.isdefault" label="default">is Default</Checkbox>
-</FormItem>
-</Col>
-<Col span="12">
-<FormItem label="Database Name" prop="dbname">
-  <Input placeholder="Flowz" v-model.trim="frmSettings.dbname"></Input>
-</FormItem>
-<FormItem label="Port" prop="port">
-  <Input placeholder="8080" v-model.trim="frmSettings.port"></Input>
-</FormItem>
-<FormItem label="Password">
-  <Input type="password" placeholder="Password" v-model.trim="frmSettings.password"></Input>
-</FormItem>
-
-<FormItem label="Notes">
-  <Input type="textarea" v-model.trim="frmSettings.notes"></Input>
-</FormItem>
-
-<Button type="primary" v-on:click="goToStep(2, 'frmSettings')">Continue
-                   <!-- <span v-if="!papapaserdata">Continue</span>
-                   <span v-else>Loading...</span> -->
-              </Button>
 </Col>
 </Row>
-
-<!-- </Form> -->
+</span>
+<Row style="margin-top:10px;">
+  <Col span="12" style="padding-left:10px;padding-right:10px">
+  <FormItem label="Connection Name" prop="connection_name">
+    <Input placeholder="Connection Name" v-model.trim="frmSettings.connection_name"></Input>
+  </FormItem>
+  <FormItem label="Host" prop="host">
+    <Input placeholder="localhost" v-model.trim="frmSettings.host"></Input>
+  </FormItem>
+  <FormItem label="username">
+    <Input placeholder="Username" v-model.trim="frmSettings.username"></Input>
+  </FormItem>
+  <!-- <FormItem>
+                        <h4>CSV File Upload</h4>
+                        <div class="upload-btn-wrapper">
+                            <button class="btn"><Icon type="ios-cloud-upload-outline"></Icon> Upload CSV</button>
+                            <input type="file" id="upldCSV" title="Upload CSV">
+                        </div>
+                    </FormItem> -->
+  <FormItem>
+    <Checkbox v-model="frmSettings.isenable" label="enable">Enable</Checkbox>
+    <Checkbox v-model="frmSettings.isdefault" label="default">is Default</Checkbox>
+  </FormItem>
+  </Col>
+  <Col span="12" style="padding-left:10px;padding-right:10px">
+  <FormItem label="Database Name" prop="dbname">
+    <Input placeholder="Flowz" v-model.trim="frmSettings.dbname"></Input>
+  </FormItem>
+  <FormItem label="Port" prop="port">
+    <Input placeholder="8080" v-model.trim="frmSettings.port"></Input>
+  </FormItem>
+  <FormItem label="Password">
+    <Input type="password" placeholder="Password" v-model.trim="frmSettings.password"></Input>
+  </FormItem>
+  <FormItem label="Notes">
+    <Input type="textarea" v-model.trim="frmSettings.notes"></Input>
+  </FormItem>
+  <Button type="primary" v-on:click="goToStep(1, 'frmSettings', frmSettings)">Continue
+                           <!-- <span v-if="!papapaserdata">Continue</span>
+                           <span v-else>Loading...</span> -->
+                          <span>
+                              <Icon  v-if="check_conn" :type="conn_icon" style="padding-left:5px;font-size:12px;"/>
+                          </span>
+                      </Button>
+  <!-- <i class="ivu-icon ivu-icon-checkmark" style="padding-left:10px;font-size:20px;color:#5cb85c"></i>  :class="getIcon()" -->
+  </Col>
+</Row>
+</Card>
 </template>
-<template v-if="currentStep == 2">
+<template v-if="currentStep == 1">
+  <Card :bordered="true" style="padding: 10px 10px;">
 <!-- <Form ref="frmSettings" :model="frmSettings" :rules="frmRule" class="form"> -->
-<Row :gutter="20">
+<Row>
   <Col span="12">
   <FormItem prop="rdoCrt">
     <RadioGroup v-model="frmSettings.rdoCrt" @on-change="getSchemaAll(frmSettings.rdoCrt)">
@@ -372,6 +387,7 @@
     </Row>
   </div>
 <!-- <div>{{validatingData}}</div> -->
+</Card>
 </template>
 </Form>
 </div>
@@ -418,7 +434,30 @@ export default {
     }
   },
   data() {
+    const validatePort = (rule, value, callback) => {
+      if (value === '') {
+        callback(new Error('Please enter port number'));
+      } else {
+        if ((this.frmSettings.selectedDb === 'rethink' && value === '9200') || (this.frmSettings.selectedDb === 'rethink' && value === '27017') || (this.frmSettings.selectedDb === 'rethink' && value === '8080') || (this.frmSettings.selectedDb ===
+            'mongo' && value === '9200')) {
+          callback(new Error('Please enter valid port'));
+        } else {
+          callback();
+        }
+      }
+    };
+    const validateConn_name = async(rule, value, callback) => {
+      var res = await this.validateName(value, this.frmSettings.selectedDb)
+      // console.log('res..// ', res)
+      if (res === 'yes') {
+        callback(new Error('Already Exist....'))
+      } else {
+        callback();
+      }
+    };
     return {
+      check_conn: false,
+      conn_icon: 'load-a',
       displaymessage: false,
       value: "",
       options: [],
@@ -428,7 +467,7 @@ export default {
       serverSideValidation: false,
       showHandson: false,
       expandValue: false,
-      currentStep: 1,
+      currentStep: 0,
       check: this.checked,
       expand: false,
       frmSettings: {
@@ -530,7 +569,23 @@ export default {
     }
   },
   methods: {
-    uploadCsv(){
+    validateName: async function(value, db) {
+      // console.log('value', value, db)
+      var _res = await api.request('get', '/settings?dbname=' + db)
+      // console.log('_res/// ', _res.data)
+      var flag = false
+      for (let i = 0; i < _res.data.length; i++) {
+        if (_res.data[i].connection_name === value) {
+          flag = true
+        }
+      }
+      if (!flag) {
+        return 'no'
+      } else {
+        return 'yes'
+      }
+    },
+    uploadCsv() {
       let self = this
       console.log("uploadCsv called....")
       $(document).ready(function() {
@@ -567,7 +622,7 @@ export default {
 
 
               self.frmSettings.upldCSV = results.data;
-              console.log("--------------------->",self.frmSettings.upldCSV,self.frmSettings.upldCSV)
+              console.log("--------------------->", self.frmSettings.upldCSV, self.frmSettings.upldCSV)
               self.headers = Object.keys(self.frmSettings.upldCSV[0]);
 
               self.options = self.headers;
@@ -596,7 +651,7 @@ export default {
             }
           });
         });
-    });
+      });
     },
 
     customLabel(option) {
@@ -623,167 +678,202 @@ export default {
       //   console.log("hiiiii",value)
       //   arr.push(type=value.type)
       // })
-          this.validateButton = true
-          this.loadingData = false
-          this.errmsg = [];
-          this.data1 = [];
-          let headerSchema = {}
+      this.validateButton = true
+      this.loadingData = false
+      this.errmsg = [];
+      this.data1 = [];
+      let headerSchema = {}
 
-          for(var [index, item] of this.headers.entries()){
-            var self = this
-            let emailValidatorFunc = function( obj, value, fieldName ){
-              let re =/\S+@\S+\.\S+/;
-              if (value != undefined) {
-                if( re.test(value) != true ) return 'invalid email address';
-                return;
-              }
-            };
-            let dateValidatorFunc = function(obj, value, fieldName){
-              let date = moment(value);
-              let isValid = date.isValid();
-              if (isValid != true) return 'invalid date. please provide date in y-m-d or d-m-y format' ;
-              date._d= moment(new Date(date._d)).format('DD/MM/YYYY')
+      for (var [index, item] of this.headers.entries()) {
+        var self = this
+        let emailValidatorFunc = function(obj, value, fieldName) {
+          let re = /\S+@\S+\.\S+/;
+          if (value != undefined) {
+            if (re.test(value) != true) return 'invalid email address';
+            return;
+          }
+        };
+        let dateValidatorFunc = function(obj, value, fieldName) {
+          let date = moment(value);
+          let isValid = date.isValid();
+          if (isValid != true) return 'invalid date. please provide date in y-m-d or d-m-y format';
+          date._d = moment(new Date(date._d)).format('DD/MM/YYYY')
+          return;
+        }
+
+        let phoneValidatorFunc = function(obj, value, fieldName) {
+          let re = /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/im;
+          // console.log(value);
+          if (value != undefined) {
+            if (re.test(value) != true) return 'invalid phone number';
+            return;
+          }
+        }
+        let getFunctionText = function(obj, value, fieldName) {
+          var func1 = allowedValueValidatorFunc(obj, value, fieldName)
+          var func2 = regExValidatorFunc(obj, value, fieldName)
+          if (func1 != undefined) {
+            return func1
+          } else if (func2 != undefined) {
+            return func2
+          } else {
+            return;
+          }
+        }
+        let getFunctionEmail = function(obj, value, fieldName) {
+          var func1 = emailValidatorFunc(obj, value, fieldName)
+          var func2 = allowedValueValidatorFunc(obj, value, fieldName)
+          if (func1 != undefined) {
+            return func1
+          } else if (func2 != undefined) {
+            return func2
+          } else {
+            return;
+          }
+        }
+        let getFunctionNumber = function(obj, value, fieldName) {
+          var func1 = allowedValueValidatorFunc(obj, value, fieldName)
+          var func2 = regExValidatorFunc(obj, value, fieldName)
+          if (func1 != undefined) {
+            return func1
+          } else if (func2 != undefined) {
+            return func2
+          } else {
+            return;
+          }
+        }
+        let getFunctionPhone = function(obj, value, fieldName) {
+          var func1 = allowedValueValidatorFunc(obj, value, fieldName)
+          var func2 = regExValidatorFunc(obj, value, fieldName)
+          var func3 = phoneValidatorFunc(obj, value, fieldName)
+          if (func1 != undefined) {
+            return func1
+          } else if (func2 != undefined) {
+            return func2
+          } else if (func3 != undefined) {
+            return func3
+          } else {
+            return;
+          }
+        }
+        let getFunctionDate = function(obj, value, fieldName) {
+          var func1 = allowedValueValidatorFunc(obj, value, fieldName)
+          var func2 = regExValidatorFunc(obj, value, fieldName)
+          var func3 = dateValidatorFunc(obj, value, fieldName)
+          if (func1 != undefined) {
+            return func1
+          } else if (func2 != undefined) {
+            return func2
+          } else if (func3 != undefined) {
+            return func3
+          } else {
+            return;
+          }
+        }
+        let allowedValueValidatorFunc = function(obj, value, fieldName) {
+          // console.log("@@@@@@@@@@@@@@@",fieldName)
+          var i;
+          _.forEach(self.headers, function(value, key) {
+            if (fieldName == value) {
+              i = key;
+            }
+          })
+          console.log("aaaaaaaaaaaaaaaaaa", self.csvData[i].allowedValue)
+          if (self.csvData[i].allowedValue.length > 0) {
+            if (value != undefined) {
+              let check = _.includes(self.csvData[i].allowedValue, value)
+              if (!check) return 'invalid allowedValue';
               return;
             }
-
-            let phoneValidatorFunc = function(obj , value , fieldName){
-              let re = /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/im ;
-              // console.log(value);
-              if (value != undefined) {
-                if( re.test(value) != true ) return 'invalid phone number';
-                return;
-              }
-            }
-            let getFunctionText = function(obj , value , fieldName) {
-              var func1 = allowedValueValidatorFunc(obj , value , fieldName)
-                 var func2 = regExValidatorFunc(obj , value , fieldName)
-                 if (func1 != undefined) {
-                   return func1
-                 }else if(func2 != undefined){
-                   return func2
-                 }else{
-                   return ;
-                 }
-            }
-            let getFunctionEmail = function(obj , value , fieldName) {
-              var func1 = emailValidatorFunc(obj , value , fieldName)
-                 var func2 = allowedValueValidatorFunc(obj , value , fieldName)
-                 if (func1 != undefined) {
-                   return func1
-                 }else if(func2 != undefined){
-                   return func2
-                 }else{
-                   return ;
-                 }
-            }
-             let getFunctionNumber = function(obj , value , fieldName) {
-               var func1 = allowedValueValidatorFunc(obj , value , fieldName)
-               var func2 = regExValidatorFunc(obj , value , fieldName)
-               if (func1 != undefined) {
-                 return func1
-               }else if(func2 != undefined){
-                 return func2
-               }else{
-                 return ;
-               }
-            }
-              let getFunctionPhone = function(obj , value , fieldName) {
-                  var func1 = allowedValueValidatorFunc(obj , value , fieldName)
-                  var func2 = regExValidatorFunc(obj , value , fieldName)
-                  var func3 = phoneValidatorFunc(obj , value , fieldName)
-                  if (func1 != undefined) {
-                    return func1
-                  }else if(func2 != undefined){
-                    return func2
-                  }else if (func3 != undefined) {
-                    return func3
-                  }else{
-                    return ;
-                  }
-               }
-               let getFunctionDate = function(obj , value , fieldName) {
-                     var func1 = allowedValueValidatorFunc(obj , value , fieldName)
-                     var func2 = regExValidatorFunc(obj , value , fieldName)
-                     var func3 = dateValidatorFunc(obj , value , fieldName)
-                     if (func1 != undefined) {
-                       return func1
-                     }else if(func2 != undefined){
-                       return func2
-                     }else if (func3 != undefined) {
-                       return func3
-                     }else{
-                       return ;
-                     }
-                }
-                let allowedValueValidatorFunc = function(obj , value , fieldName){
-                  // console.log("@@@@@@@@@@@@@@@",fieldName)
-                  var i;
-                  _.forEach(self.headers, function(value,key){
-                    if(fieldName == value){
-                      i = key;
-                    }
-                  })
-                  console.log("aaaaaaaaaaaaaaaaaa",self.csvData[i].allowedValue)
-                  if(self.csvData[i].allowedValue.length>0){
-                    if(value != undefined){
-                      let check = _.includes(self.csvData[i].allowedValue, value)
-                      if (!check) return 'invalid allowedValue';
-                      return;
-                    }
-                  }
-                };
-
-                let regExValidatorFunc = function(obj , value , fieldName){
-                  console.log("rrrrrrrrrrrrrrr")
-                  var i;
-                  _.forEach(self.headers, function(value,key){
-                    if(fieldName == value){
-                      i = key;
-                    }
-                  })
-                  if (self.csvData[i].regEx !== '') {
-                    if(value != undefined){
-                      let pttrn = new RegExp(self.csvData[i].regEx)
-                      if(pttrn.test(value) == false) return 'not match with regEx value'
-                      return;
-                    }
-                  }
-                };
-
-            if(this.csvData[index].optional == true){
-              if(this.csvData[index].type == 'text'){
-                headerSchema[item] = {type:'string'};
-              } else if(this.csvData[index].type == 'email'){
-                //headerSchema[item] = {type:'string',regEx:/^[a-z0-9_.]+[@][a-z]+[.][a-z][a-z]+$/};
-                headerSchema[item] = {type:'string' ,validator: emailValidatorFunc};
-              } else if(this.csvData[index].type == 'number'){
-                headerSchema[item] = {type:'number'};
-              } else if(this.csvData[index].type == 'boolean'){
-                headerSchema[item] = {type:'boolean'};
-              } else if(this.csvData[index].type == 'phone' ){
-                headerSchema[item] = {type:'string' , validator: phoneValidatorFunc };
-              } else if(this.csvData[index].type == 'date'){
-                headerSchema[item] = {type:'string',validator: dateValidatorFunc};
-              }
-            } else if(this.csvData[index].optional == false){
-              if(this.csvData[index].type == 'text'){
-                headerSchema[item] = {type:'string',max:this.csvData[index].max,validator: getFunctionText};
-              } else if(this.csvData[index].type == 'email'){
-                headerSchema[item] = {type:'string',validator: getFunctionEmail};
-              } else if(this.csvData[index].type == 'number'){
-                headerSchema[item] = {type:'string',max:this.csvData[index].max, min:this.csvData[index].min,validator: getFunctionNumber};
-              } else if(this.csvData[index].type == 'boolean'){
-                headerSchema[item] = {type:'boolean'};
-              } else if(this.csvData[index].type == 'phone'){
-                headerSchema[item] = {type:'string',validator: getFunctionPhone};
-              } else if(this.csvData[index].type == 'date'){
-                headerSchema[item] = {type:'string',validator: getFunctionDate};
-              }
-            }
-
           }
-          this.complexSchema = headerSchema
-      },
+        };
+
+        let regExValidatorFunc = function(obj, value, fieldName) {
+          console.log("rrrrrrrrrrrrrrr")
+          var i;
+          _.forEach(self.headers, function(value, key) {
+            if (fieldName == value) {
+              i = key;
+            }
+          })
+          if (self.csvData[i].regEx !== '') {
+            if (value != undefined) {
+              let pttrn = new RegExp(self.csvData[i].regEx)
+              if (pttrn.test(value) == false) return 'not match with regEx value'
+              return;
+            }
+          }
+        };
+
+        if (this.csvData[index].optional == true) {
+          if (this.csvData[index].type == 'text') {
+            headerSchema[item] = {
+              type: 'string'
+            };
+          } else if (this.csvData[index].type == 'email') {
+            //headerSchema[item] = {type:'string',regEx:/^[a-z0-9_.]+[@][a-z]+[.][a-z][a-z]+$/};
+            headerSchema[item] = {
+              type: 'string',
+              validator: emailValidatorFunc
+            };
+          } else if (this.csvData[index].type == 'number') {
+            headerSchema[item] = {
+              type: 'number'
+            };
+          } else if (this.csvData[index].type == 'boolean') {
+            headerSchema[item] = {
+              type: 'boolean'
+            };
+          } else if (this.csvData[index].type == 'phone') {
+            headerSchema[item] = {
+              type: 'string',
+              validator: phoneValidatorFunc
+            };
+          } else if (this.csvData[index].type == 'date') {
+            headerSchema[item] = {
+              type: 'string',
+              validator: dateValidatorFunc
+            };
+          }
+        } else if (this.csvData[index].optional == false) {
+          if (this.csvData[index].type == 'text') {
+            headerSchema[item] = {
+              type: 'string',
+              max: this.csvData[index].max,
+              validator: getFunctionText
+            };
+          } else if (this.csvData[index].type == 'email') {
+            headerSchema[item] = {
+              type: 'string',
+              validator: getFunctionEmail
+            };
+          } else if (this.csvData[index].type == 'number') {
+            headerSchema[item] = {
+              type: 'string',
+              max: this.csvData[index].max,
+              min: this.csvData[index].min,
+              validator: getFunctionNumber
+            };
+          } else if (this.csvData[index].type == 'boolean') {
+            headerSchema[item] = {
+              type: 'boolean'
+            };
+          } else if (this.csvData[index].type == 'phone') {
+            headerSchema[item] = {
+              type: 'string',
+              validator: getFunctionPhone
+            };
+          } else if (this.csvData[index].type == 'date') {
+            headerSchema[item] = {
+              type: 'string',
+              validator: getFunctionDate
+            };
+          }
+        }
+
+      }
+      this.complexSchema = headerSchema
+    },
     insertCsvData(data) {
       var self = this
       self.loadingData = true
@@ -964,20 +1054,20 @@ export default {
     saveData() {
       this.$Loading.start();
       var self = this;
-      setTimeout(function(){
+      setTimeout(function() {
         self.$Loading.finish();
-      },3000)
+      }, 3000)
       var self = this;
       console.log(this.frmSettings.upldCSV)
       console.log("schema ", this.complexSchema)
-      axios.post(baseUrl+"generatejsondatafile", this.frmSettings.upldCSV)
+      axios.post(baseUrl + "generatejsondatafile", this.frmSettings.upldCSV)
         .then(function(response) {
           console.log(response);
           if (response.status == 201) {
             self.$Message.success(response.data);
             self.saveButton = false;
-            self.serverSideValidation=true;
-          }else{
+            self.serverSideValidation = true;
+          } else {
             self.$Message.error("Something went wrong, Please try again later")
           }
         })
@@ -985,6 +1075,7 @@ export default {
           console.log(error);
         });
     },
+
 
     getsettingsAll: function(value) {
       this.tabsData = {
@@ -1045,158 +1136,6 @@ export default {
                     }
                   })
                 }
-            })
-            }
-            else{
-                  console.log('true')
-                  this.broadcast('table-expand', 'giveMeData', this)
-                }
-        },
-        acceptData: function(data) {
-            console.log('accept data call')
-            console.log('data', data.data)
-            var sdata = data.data
-            this.frmSettings.schemaData.push(sdata)
-        },
-        goToStep: function(step, name, data) {
-          var self = this
-          this.$refs[name].validate((valid) => {
-            if (valid) {
-                this.check_conn = true
-                this.conn_icon = 'load-a'
-                api.request('get', '/Settings?dbname=' + data.selectedDb).then(function(_res) {
-                  var flag = false
-                  var c_name = ''
-                  _.map(_res.data, function(instance) { 
-                    if(instance.host == data.host && instance.port == data.port && instance.dbname == data.dbname){
-                        flag = true
-                        c_name = instance.connection_name
-                    }
-                  })
-                  // console.log('flag = ', flag, c_name)
-                  if (!flag){
-                    api.request('post', '/settings?check=' + data.selectedDb, data)
-                      .then(response => {
-                        // console.log('CheckConnection', response.data)
-                        if(response.data.result){
-                            self.conn_icon = 'checkmark'
-                            self.currentStep = step;
-                        } else {
-                            self.conn_icon = 'close'
-                            self.$Notice.error({title: 'Connection Not Establish...!', desc: 'Please Check Your Database..'})
-                        }
-                      })
-                      .catch(error => {
-                        console.log(error)
-                        self.$Notice.error({title: 'Error!', desc: 'Connection Error...'})
-                      })
-                  } else {
-                    self.conn_icon = 'close'
-                    self.$Notice.error({title: 'Connection already Exist!', desc: 'with connection name :: ' + c_name})
-                  }
-
-                })
-            }
-          })
-        },
-        clearIcon(value) {
-            this.frmSettings.upldIcn = ''
-            // alert(value)
-            if (value === 'mongo') {
-              this.frmSettings.port = '27017'
-            } else if (value === 'rethink') {
-              this.frmSettings.port = '28015'
-            } else if (value === 'elastic') {
-              this.frmSettings.port = '9200'
-            } else if (value === 'nedb') {
-              this.frmSettings.port = '8080'
-            } else if (value === 'mysql') {
-              this.frmSettings.port = '27017'
-            }
-        },
-        handleModalOk() {
-            console.log('OK');
-        },
-        makeObj(Obj) {
-            var s = {}
-            _.forEach(Obj, (v, k) => {
-                if (k === 'isenable' || k === 'connection_name' || k === 'host' || k === 'port' || k === 'dbname' || k === 'username' || k === 'password' || k === 'selectedDb' || k === 'upldIcn' || k === 'notes' || k === 'isdefault') {
-                    s[k] = v
-                }
-            })
-            return s
-        },
-        handleSubmit(name) {
-            console.log('before', this.frmSettings)
-            this.$refs[name].validate((valid) => {
-                if (valid) {
-                    let guid = (this.S4() + this.S4() + "-" + this.S4() + "-4" + this.S4().substr(0,3) + "-" + this.S4() + "-" + this.S4() + this.S4() + this.S4()).toLowerCase();
-                    // var s = this.frmSettings
-                    let obj = this.makeObj(this.frmSettings)
-                    // delete obj.optCrt
-                    // delete obj.rdoCrt
-                    // delete obj.rdodb
-                    // delete obj.rdosync
-                    // delete obj.keep_sync
-                    // delete obj.schemaData
-                    // let dbData = obj.Database
-                    // delete obj.Database
-                    obj.id = guid;
-                    // console.log('Obj', obj)
-                    api.request('post', '/settings', obj)
-                        .then(response => {
-                            // this.$Message.success('Success');
-                            if(response.data == 'Exist'){
-                                this.$Notice.error({duration: 5, title:'Alredy Exist!!', desc:'Connection Alredy exist...'})
-                            }
-                            else {
-                                let Finalarr = []
-                                _.forEach(this.ImportTargetDt, (index) => {
-                                    // console.log(index)
-                                    for(let i = 0; i < this.sCurrent.length; i++ ) {
-                                        if(i === parseInt(index)) {
-                                            // alert('match')
-                                            Finalarr.push(this.sCurrent[i])
-                                        }
-                                    }
-                                })
-                                if (Finalarr.length != 0) {
-                                    _.map(Finalarr, (d) => {
-                                        // delete d.id
-                                        // delete d._id
-                                        d.database[0] = obj.selectedDb
-                                        d.database[1] = obj.id
-                                    })
-                                    // console.log('Finalarr', Finalarr)
-                                    // this.$Notice.success({duration: 3, title:'Uploading Data..!!', desc:''})
-                                    // alert(this.frmSettings.optCrt)
-                                    api.request('post', '/addInputToJobQue', {data: Finalarr, option: this.frmSettings.optCrt}).then(res => {
-                                        console.log('import jobqueue......', res)
-                                        this.$Notice.success({duration: 3, title:'Connection Created...', desc:'Uploading Data..!!'})
-                                        this.$store.dispatch('getSchema')
-                                        this.$router.push('/db');
-                                    })
-                                    .catch(err => {
-                                        console.log('Error..', err)
-                                        this.$Notice.error({duration: 3, title:'Error in import Data..!!', desc:''})
-                                    })
-
-                                } else {
-                                    this.$Notice.success({duration: 3, title:'Success!!', desc:'Connection Created...'})
-                                    this.$router.push('/db');
-                                }
-                            }
-                        })
-                        .catch(error => {
-                            // this.$Message.error('Error!!');
-                            this.$Notice.error({duration: 3, title:'Error!!'})
-                            console.log(error)
-                            this.loading = false
-                        })
-                } else {
-                    // this.$Message.error('Error!');
-                    this.$Notice.error({duration: 2, title:'Error!!', desc:'Please enter inputs!'})
-                   
               })
               _.forEach(dbInst.dbinstance[0], (v, k) => {
                 this.tabsData[db + 'Cols'].push({
@@ -1262,15 +1201,61 @@ export default {
     getTableAll: function() {
 
     },
-    goToStep: function(step, name) {
+    goToStep: function(step, name, data) {
+      var self = this
       this.$refs[name].validate((valid) => {
         if (valid) {
-          this.currentStep = step;
+            this.check_conn = true
+            this.conn_icon = 'load-a'
+            api.request('get', '/Settings?dbname=' + data.selectedDb).then(function(_res) {
+              var flag = false
+              var c_name = ''
+              _.map(_res.data, function(instance) {
+                if(instance.host == data.host && instance.port == data.port && instance.dbname == data.dbname){
+                    flag = true
+                    c_name = instance.connection_name
+                }
+              })
+              // console.log('flag = ', flag, c_name)
+              if (!flag){
+                api.request('post', '/settings?check=' + data.selectedDb, data)
+                  .then(response => {
+                    // console.log('CheckConnection', response.data)
+                    if(response.data.result){
+                        self.conn_icon = 'checkmark'
+                        self.currentStep = step;
+                    } else {
+                        self.conn_icon = 'close'
+                        self.$Notice.error({title: 'Connection Not Establish...!', desc: 'Please Check Your Database..'})
+                    }
+                  })
+                  .catch(error => {
+                    console.log(error)
+                    self.$Notice.error({title: 'Error!', desc: 'Connection Error...'})
+                  })
+              } else {
+                self.conn_icon = 'close'
+                self.$Notice.error({title: 'Connection already Exist!', desc: 'with connection name :: ' + c_name})
+              }
+
+            })
         }
       })
     },
     clearIcon(value) {
-      this.frmSettings.upldIcn = ''
+        this.frmSettings.upldIcn = ''
+        // alert(value)
+        if (value === 'mongo') {
+          this.frmSettings.port = '27017'
+        } else if (value === 'rethink') {
+          this.frmSettings.port = '28015'
+        } else if (value === 'elastic') {
+          this.frmSettings.port = '9200'
+        } else if (value === 'nedb') {
+          this.frmSettings.port = '8080'
+        } else if (value === 'mysql') {
+          this.frmSettings.port = '27017'
+        }
     },
     handleModalOk() {
       console.log('OK');
@@ -1432,6 +1417,24 @@ export default {
 </script>
 
 <style>
+
+
+.ivu-card-body {
+  padding: 0px;
+}
+
+.process {
+  color: rgb(45, 183, 245)
+}
+
+.created {
+  color: #5cb85c
+}
+
+.rejected {
+  color: #ff5500
+}
+
 .no-margin {
   margin: 0px;
 }
@@ -1531,5 +1534,11 @@ export default {
 
 #example1 {
   width: 100%!important;
+}
+
+.ivu-card-head {
+  border-bottom: 1px solid #e9eaec;
+  /*padding: 13px 16px;*/
+  line-height: 1;
 }
 </style>

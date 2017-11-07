@@ -3,7 +3,72 @@
         "dbinstance": []
     },
     "rethink": {
-        "dbinstance": []
+        "dbinstance": [
+            {
+                "isenable": true,
+                "connection_name": "new",
+                "host": "localhost",
+                "port": "28015",
+                "dbname": "Flowz",
+                "username": "",
+                "password": "",
+                "upldIcn": "",
+                "upldCSV": [
+                    {
+                        "_id": "1",
+                        "entity__property__optional": "true",
+                        "email": "shraddha@officebrain.c",
+                        "phone": "7894561230",
+                        "date": "08/08/2016"
+                    },
+                    {
+                        "_id": "2",
+                        "entity__property__optional": "true",
+                        "email": "ashwin",
+                        "phone": "7412589630",
+                        "date": "05/05/05"
+                    },
+                    {
+                        "_id": "3",
+                        "entity__property__optional": "false",
+                        "email": "om@ddd.lvo",
+                        "phone": "9874563210",
+                        "date": "05/05/05"
+                    },
+                    {
+                        "_id": "4",
+                        "entity__property__optional": "false",
+                        "email": "sanjaom",
+                        "phone": "weqqw",
+                        "date": "05/05/14"
+                    },
+                    {
+                        "_id": "5",
+                        "entity__property__optional": "false",
+                        "email": "shraddha@officebrain.c",
+                        "phone": "7894561230",
+                        "date": "05/05/05"
+                    },
+                    {
+                        "_id": "6",
+                        "entity__property__optional": "true",
+                        "email": "om@ddd.lvo",
+                        "phone": "7894561230",
+                        "date": "05/05/05"
+                    },
+                    {
+                        "_id": ""
+                    }
+                ],
+                "rdodb": "",
+                "rdosync": "",
+                "keep_sync": "",
+                "notes": "",
+                "schemaData": [],
+                "isdefault": false,
+                "id": "c944a796-b0b7-411b-0ed4-ab196a11dca6"
+            }
+        ]
     },
     "elastic": {
         "dbinstance": []
