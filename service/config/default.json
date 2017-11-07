@@ -8,10 +8,12 @@
   },
   "rethinkdb": {
     "db": "FlowzEngine",
-    "servers": [{
-      "host": "localhost",
-      "port": "28015"
-    }]
+    "servers": [
+      {
+        "host": "localhost",
+        "port": "28015"
+      }
+    ]
   },
   "scheduler_table": "scheduler",
   "qJobTimeout": 3600000,
@@ -19,7 +21,5 @@
   "import": "importSchema",
   "instance_table": "flowzinstance",
   "approvar_table": "approvalClass",
-  "awsAccessKeyId": "AKIAIPFZEFM5QMKVKC2A",
-  "awsSecretAccessKey": "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",
-  "awsBucket" : "flowz-k-8/flowzCsvDataFiles"
+  "mongodb": "mongodb://localhost:3001/flowzPDM"
 }
