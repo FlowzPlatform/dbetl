@@ -70,9 +70,36 @@ export default {
                         title: 'Database Name',
                         key: 'dbname'
                     },
-                    {   
+                    {
                         title: 'Notes',
                         key: 'notes'
+                    },
+                    {
+                      title: 'Import',
+                      key: 'import',
+                      render: (h, params) => {
+                        return h('div', [
+                          h('Button', {
+                            props: {
+                              type: 'text',
+                              size: 'large',
+                              icon: 'upload'
+                            },
+                            style: {
+                              // color: '#CC0000',
+                              marginRight: '3px',
+                              padding: '0px',
+                              fontSize: '20px'
+                            },
+                            on: {
+                              click: () => {
+                                // alert(this.tabPane)
+                                this.import(params.row.id)
+                              }
+                            }
+                          }, '')
+                        ])
+                      }
                     },
                     {
                       title: 'Action',
@@ -88,7 +115,7 @@ export default {
                               icon: 'trash-b'
                             },
                             style: {
-                              color: '#CC0000',
+                              // color: '#CC0000',
                               marginRight: '3px',
                               padding: '0px',
                               fontSize: '20px'
@@ -139,9 +166,36 @@ export default {
                         title: 'Database Name',
                         key: 'dbname'
                     },
-                    {   
+                    {
                         title: 'Notes',
                         key: 'notes'
+                    },
+                    {
+                      title: 'Import',
+                      key: 'import',
+                      render: (h, params) => {
+                        return h('div', [
+                          h('Button', {
+                            props: {
+                              type: 'text',
+                              size: 'large',
+                              icon: 'upload'
+                            },
+                            style: {
+                              // color: '#CC0000',
+                              marginRight: '3px',
+                              padding: '0px',
+                              fontSize: '20px'
+                            },
+                            on: {
+                              click: () => {
+                                // alert(params)
+                                this.import(params.row.id)
+                              }
+                            }
+                          }, '')
+                        ])
+                      }
                     },
                     {
                       title: 'Action',
@@ -208,9 +262,36 @@ export default {
                         title: 'Database Name',
                         key: 'dbname'
                     },
-                    {   
+                    {
                         title: 'Notes',
                         key: 'notes'
+                    },
+                    {
+                      title: 'Import',
+                      key: 'import',
+                      render: (h, params) => {
+                        return h('div', [
+                          h('Button', {
+                            props: {
+                              type: 'text',
+                              size: 'large',
+                              icon: 'upload'
+                            },
+                            style: {
+                              // color: '#CC0000',
+                              marginRight: '3px',
+                              padding: '0px',
+                              fontSize: '20px'
+                            },
+                            on: {
+                              click: () => {
+                                // alert(this.tabPane)
+                                this.import(params.row.id)
+                              }
+                            }
+                          }, '')
+                        ])
+                      }
                     },
                     {
                       title: 'Action',
@@ -260,7 +341,7 @@ export default {
                                 }
                             })
                         }
-                    },  
+                    },
                     {
                         title: 'Connection Name',
                         key: 'connection_name'
@@ -277,9 +358,36 @@ export default {
                         title: 'Database Name',
                         key: 'dbname'
                     },
-                    {   
+                    {
                         title: 'Notes',
                         key: 'notes'
+                    },
+                    {
+                      title: 'Import',
+                      key: 'import',
+                      render: (h, params) => {
+                        return h('div', [
+                          h('Button', {
+                            props: {
+                              type: 'text',
+                              size: 'large',
+                              icon: 'upload'
+                            },
+                            style: {
+                              // color: '#CC0000',
+                              marginRight: '3px',
+                              padding: '0px',
+                              fontSize: '20px'
+                            },
+                            on: {
+                              click: () => {
+                                // alert(this.tabPane)
+                                this.import(params.row.id)
+                              }
+                            }
+                          }, '')
+                        ])
+                      }
                     },
                     {
                       title: 'Action',
@@ -329,7 +437,7 @@ export default {
                                 }
                             })
                         }
-                    },  
+                    },
                     {
                         title: 'Connection Name',
                         key: 'connection_name'
@@ -346,9 +454,36 @@ export default {
                         title: 'Database Name',
                         key: 'dbname'
                     },
-                    {   
+                    {
                         title: 'Notes',
                         key: 'notes'
+                    },
+                    {
+                      title: 'Import',
+                      key: 'import',
+                      render: (h, params) => {
+                        return h('div', [
+                          h('Button', {
+                            props: {
+                              type: 'text',
+                              size: 'large',
+                              icon: 'upload'
+                            },
+                            style: {
+                              // color: '#CC0000',
+                              marginRight: '3px',
+                              padding: '0px',
+                              fontSize: '20px'
+                            },
+                            on: {
+                              click: () => {
+                                // alert(this.tabPane)
+                                this.import(params.row.id)
+                              }
+                            }
+                          }, '')
+                        ])
+                      }
                     },
                     {
                       title: 'Action',
@@ -387,7 +522,12 @@ export default {
         addSettings (){
             this.$router.push('db/'+this.tabPane+'/new')
         },
+        import (id){
+          console.log(id)
+          this.$router.push('Dbsetting/import/'+id)
+        },
         instanceRemove (db, index) {
+          console.log(index,db)
             this.$Modal.confirm({
                 title: 'Confirm',
                 content: '<p>Are you sure you want to delete Connection?</p>',
@@ -418,7 +558,7 @@ export default {
                         .then(response => {
                           var result = response.data
                           this[db+'Dt'][index].isenable = value
-                          
+
                           this.$Notice.success({duration:3, title:'Success!!', desc:'Connection Enable Successfully..'})
                           this.$store.dispatch('getSchema')
                           console.log('result put ',result)
