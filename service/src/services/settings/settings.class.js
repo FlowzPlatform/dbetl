@@ -57,7 +57,6 @@ var check_Connection = async(function(db, data) {
       //   return 'true'
       // }
     // });
-  }
   else if(db == 'rethink') {
     // console.log("RethinkDB..............");
     var r = await (require('rethinkdbdash')({

@@ -1,9 +1,37 @@
 {
     "mongo": {
-        "dbinstance": []
+        "dbinstance": [
+            {
+                "isenable": true,
+                "connection_name": "MongoConn",
+                "host": "localhost",
+                "port": "27017",
+                "dbname": "FlowzEngine",
+                "username": "",
+                "password": "",
+                "upldIcn": "",
+                "notes": "",
+                "isdefault": false,
+                "id": "81a40d7b-78c6-447b-e032-1133568446a6"
+            }
+        ]
     },
     "rethink": {
-        "dbinstance": []
+        "dbinstance": [
+            {
+                "isenable": true,
+                "connection_name": "RethinkConn",
+                "host": "localhost",
+                "port": "28015",
+                "dbname": "FlowzEngine",
+                "username": "",
+                "password": "",
+                "upldIcn": "",
+                "notes": "",
+                "isdefault": false,
+                "id": "09d04ac4-7ddc-46ab-d8de-234724f3081a"
+            }
+        ]
     },
     "elastic": {
         "dbinstance": []

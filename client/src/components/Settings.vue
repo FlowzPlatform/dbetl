@@ -133,6 +133,34 @@
                                     <Radio label="rbtExstng"><span>Existing Database</span></Radio>
                                 </RadioGroup>
                             </FormItem>
+                            <FormItem label="Configuration" v-if="frmSettings.rdoCrt == 'rbtDB' && frmSettings.rdodb == 'rbtCrnt'" ><br>
+                                <Form ref="frmConfig" :model="frmConfig" :rules="frmConfigRule" class="form" label-position="left">
+                                    <Row :gutter="4">
+                                        <Col span="6">
+                                            <FormItem label="Connection Name" prop="connection_name">
+                                                <Input placeholder="Connection Name" v-model.trim="frmConfig.connection_name"></Input>
+                                            </FormItem>
+                                            <FormItem label="Host" prop="host">
+                                                <Input placeholder="localhost" v-model.trim="frmConfig.host"></Input>
+                                            </FormItem><br>
+                                            <FormItem>
+                                                <Button type="primary" :loading="loadingConf" @click="loadingConf = true, handleUploadData('frmConfig')">
+                                                    <span v-if="!loadingConf">Check</span>
+                                                    <span v-else>Checking...</span>
+                                                </Button>
+                                            </FormItem>
+                                        </Col>
+                                        <Col span="6">
+                                            <FormItem label="Database Name" prop="dbname">
+                                                <Input placeholder="Flowz" v-model.trim="frmConfig.dbname"></Input>
+                                            </FormItem>
+                                            <FormItem label="Port" prop="port">
+                                                <Input placeholder="8080" v-model.trim="frmConfig.port"></Input>
+                                            </FormItem>
+                                        </Col>
+                                    </Row>
+                                </Form>
+                            </FormItem>
                             <FormItem label="Create with" v-if="frmSettings.rdoCrt == 'rbtDB' && frmSettings.rdodb == 'rbtExstng'" >
                                 <Select v-model="frmSettings.optCrt" @on-change="getsettingsAll(frmSettings.optCrt)">
                                     <Option value="schema" key="schema">Only Schema</Option>
@@ -426,6 +454,31 @@ export default{
           currentStep: 0,
           check: this.checked,
           expand: false,
+          loadingConf: false,
+          frmConfig: {
+              connection_name: '',
+              host: 'localhost',
+              port: '',
+              dbname: '',
+              username: '',
+              password: ''
+          },
+          frmConfigRule: {
+            connection_name: [
+                { required: true, message: 'Please enter connection name', trigger: 'blur' },
+                { validator: validateConn_name, trigger: 'blur' }
+            ],
+            host: [
+                { required: true, message: 'Please enter host name', trigger: 'blur' },
+            ],
+            port: [
+                // { required: true, message: 'Please enter port number', trigger: 'blur' },
+                { validator: validatePort, trigger: 'blur' }
+            ],
+            dbname: [
+                { required: true, message: 'Please enter database name', trigger: 'blur' }
+            ],
+          },
           frmSettings: {
               isenable: true,
               connection_name: '',
@@ -842,6 +895,28 @@ export default{
           console.log(this.frmSettings.upldCSV)
         },
 
+        handleUploadData(data) {
+            let self = this
+            this.$refs[data].validate((valid) => {
+                if (valid) {
+                    api.request('post', '/settings?check=' + self.frmSettings.selectedDb, self.frmConfig)
+                      .then(response => {
+                        if(response.data.result){
+                            // Make logic for get all collections and data from configured database
+                            self.$Notice.success({title: 'Importing Current Database.', desc: 'Your Data is import successfully..!'})
+                        } else {
+                            self.$Notice.error({title: 'Importing Current Database Faild.', desc: 'Please Check Your Database..!'})
+                        }
+                      })
+                      .catch(error => {
+                        console.log('Error : ', error)
+                        self.$Notice.error({title: 'Error!', desc: 'Connection Error...'})
+                      })
+                }
+                this.loadingConf = false
+            })
+        },
+
         getsettingsAll : function (value) {
              this.tabsData = {
                 mongoCols: [],
@@ -1055,7 +1130,6 @@ export default{
             return s
         },
         handleSubmit(name) {
-            console.log('before', this.frmSettings)
             this.$refs[name].validate((valid) => {
                 if (valid) {
                     let guid = (this.S4() + this.S4() + "-" + this.S4() + "-4" + this.S4().substr(0,3) + "-" + this.S4() + "-" + this.S4() + this.S4() + this.S4()).toLowerCase();
