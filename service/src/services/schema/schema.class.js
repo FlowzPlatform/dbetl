@@ -37,7 +37,7 @@ _.forEach(file, function (dbs, i) {
   var flag = false
   _.forEach(dbs.dbinstance, function(instance) {
     // console.log(instance)
-    if (instance.isenable) {
+    if (instance.isdefault) {
       flag = true
       // console.log('qqqq', instance.connection_name)
     }
@@ -64,7 +64,7 @@ let readfile = async(function () {
     _.forEach(file, function (dbs, i) {
       var flag = false
       _.forEach(dbs.dbinstance, function(instance) {
-        if (instance.isenable) {
+        if (instance.isdefault) {
           flag = true
         }
       })
@@ -131,6 +131,7 @@ class Service {
       }
       else{
         var instance = []
+        // console.log(dbapi)
         dbapi.forEach(function (db) {
           let _promise = new Promise((resolve, reject) => {
             db.api.getSchema().then((data) => {
@@ -141,7 +142,7 @@ class Service {
         });
 
         var _data = Promise.all(instance).then(function (response) {
-          // console.log('response', response.length)
+          // console.log('response', response)
             // _.map(response,function(d){ 
             //   console.log('d',d)
             // });
@@ -225,7 +226,7 @@ class Service {
     // var instance = []
     if (params.query.type !== undefined) {
       var instance = []
-      console.log("234")
+      // console.log("234")
       dbapi.forEach(function (db) {
         let _promise = new Promise((resolve, reject) => {
           db.api.getThisSchemaType(id, params.query.type).then((data) => {
@@ -355,8 +356,8 @@ class Service {
 
   create(data, params) {
     console.log('create feathers...');
-    var _dbindex = _.findIndex(dbapi, { 'db': data.database[0] });
-    var dbdata = dbapi[_dbindex].api.postSchema(data);
+    // var _dbindex = _.findIndex(dbapi, { 'db': data.database[0] });
+    var dbdata = dbapi[0].api.postSchema(data);
     return Promise.resolve(dbdata);
   }
 

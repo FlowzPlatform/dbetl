@@ -73,7 +73,13 @@
                     </FormItem> -->
   <FormItem>
     <Checkbox v-model="frmSettings.isenable" label="enable">Enable</Checkbox>
-    <Checkbox v-model="frmSettings.isdefault" label="default">is Default</Checkbox>
+    <!-- {{checkdefault}} -->
+    <span v-if="checkdefault">
+      <Checkbox v-model="frmSettings.isdefault" label="default" disabled>is Default</Checkbox>
+    </span>
+    <span v-else>
+      <Checkbox v-model="frmSettings.isdefault" label="default">is Default</Checkbox>
+    </span>
   </FormItem>
   </Col>
   <Col span="12" style="padding-left:10px;padding-right:10px">
@@ -451,6 +457,7 @@ export default {
       }
     };
     return {
+      checkdefault: false,
       check_conn: false,
       conn_icon: 'load-a',
       displaymessage: false,
@@ -467,10 +474,10 @@ export default {
       expand: false,
       frmSettings: {
         isenable: true,
-        connection_name: '',
-        host: '',
+        connection_name: 'aaaa',
+        host: 'localhost',
         port: '',
-        dbname: '',
+        dbname: 'qqq',
         username: '',
         password: '',
         selectedDb: '',
@@ -493,7 +500,11 @@ export default {
           required: true,
           message: 'Please enter connection name',
           trigger: 'blur'
-        }],
+        },
+        { 
+          validator: validateConn_name,
+          trigger: 'blur' }
+        ],
         host: [{
           required: true,
           message: 'Please enter host name',
@@ -503,7 +514,7 @@ export default {
           required: true,
           message: 'Please enter port number',
           trigger: 'blur'
-        }, ],
+        }, { validator: validatePort, trigger: 'blur' }],
         dbname: [{
           required: true,
           message: 'Please enter database name',
@@ -568,6 +579,20 @@ export default {
     }
   },
   methods: {
+    checkdefaultfun: async function() {
+      // console.log('................')
+      var _res = await api.request('get', '/settings')
+      var dbins_l = 0
+      for(let db in _res.data) {
+        dbins_l += _res.data[db].dbinstance.length
+      }
+      // console.log(dbins_l)
+      if(dbins_l === 0) {
+        // return false
+        this.checkdefault = true
+        this.frmSettings.isdefault = true
+      }
+    },
     validateName: async function(value, db) {
       // console.log('value', value, db)
       var _res = await api.request('get', '/settings?dbname=' + db)
@@ -1316,6 +1341,7 @@ export default {
                   title: 'Success!!',
                   desc: 'Connection Created...'
                 })
+                this.$store.dispatch('getSchema')
                 this.$router.push('/db');
 
               }
@@ -1370,6 +1396,7 @@ export default {
     }
   },
   mounted() {
+    this.checkdefaultfun()
     this.frmSettings.selectedDb = this.$route.params.db;
     this.$on('schemaData', this.acceptData)
     this.$on('expandTrue', this.expands)
