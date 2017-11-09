@@ -34,7 +34,7 @@
                 "keep_sync": "",
                 "notes": "",
                 "schemaData": [],
-                "isdefault": true,
+                "isdefault": false,
                 "id": "8d2a66b0-b290-449e-cb20-5d7dc641cdf9"
             },
             {
@@ -127,7 +127,7 @@
                 "keep_sync": "",
                 "notes": "",
                 "schemaData": [],
-                "isdefault": false,
+                "isdefault": true,
                 "id": "7cbafa04-0855-4c19-87da-329cf2f21bf3"
             }
         ]

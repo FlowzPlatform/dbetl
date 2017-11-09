@@ -117,6 +117,61 @@ var check_Connection = async(function(db, data) {
   }
 })
 
+var getConnectionData = async( function( db, data) {
+  // console.log('getConnectionData..............')
+  if (db == 'mongo') {
+    var mongoDB; 
+    if(data.username != "" && data.password != "") {
+      mongoDB = 'mongodb://' + data.username + ':' + data.password + '@' + data.host + ':' + data.port + '/' + data.dbname;
+    } else {
+      mongoDB = 'mongodb://' + data.host + ':' + data.port + '/' + data.dbname;
+    }
+    // console.log(mongoDB)
+    var conn = await (MongoClient.connect(mongoDB))
+    var result = await (conn.collection('schema').find().toArray())
+    // console.log('Data........', result)
+    return result
+  } else if (db == 'rethink') {
+    // console.log('match found rethink')
+    var connection = require('rethinkdbdash')({
+        username: data.username,
+        password: data.password,
+        port: data.port,
+        host: data.host,
+        db: data.dbname
+    });
+    // console.log('conn.......', connection)
+    var result = await (connection.table('schema').run())
+    // console.log('result............', result)
+    return result
+  } else if (db == 'elastic') {
+    // console.log('match found rethink')
+    var connection = new elasticsearch.Client({
+        host: data.host + ':' + data.port,
+        log: 'error'
+      });
+    var data = [];
+    var result = await( 
+    connection.search({
+        index: data.dbname,
+        type: 'schema',
+        body: {
+            query: {
+                match_all: { }
+            },
+        }
+    }))
+    result.hits.hits.forEach(function(hit){
+        var item =  hit._source;
+        item._id = hit._id;
+        data.push(item);
+    })
+    return data;
+  } else {
+    return 'not_found_db'
+  }
+})
+
 var getAllSettings = async(function() {
   let result = new Promise((resolve, reject) => {
         fs.readFile(path.join(__dirname, '../DBConnection/db.json'),function (err, data) {
@@ -212,7 +267,11 @@ class Service {
       var _res = check_Connection(params.query.check, data)
       return Promise.resolve(_res).then(function(res){
         // console.log('result.................', res)
-        return {result: true}
+        var abc = getConnectionData(params.query.check, data)
+        return Promise.resolve(abc).then(function(__res){
+          return {result: true, data: __res}
+        })
+        // return {result: true}
       })
       .catch(function(err){
         // console.log('Error..............', err)
