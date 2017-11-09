@@ -19,13 +19,21 @@ var MongoClient = require('mongodb').MongoClient;
 var check_Connection = async(function(db, data) {
   // console.log('data..', data, 'db', db)
   if(db == 'mongo') {
-    // console.log("MongoDB..............");
+    console.log("MongoDB..............");
     var _res;
-    if(data.username != "" && data.password != "")
-    {
-      _res = await (MongoClient.connect('mongodb://'+data.username+':'+data.password+'@'+data.host+':'+data.port+'/'+data.dbname))
+    if(data.username != undefined && data.password != undefined) {
+      // console.log('.............')
+      if (data.username != "" && data.password != "") {
+        _res = await (MongoClient.connect('mongodb://'+data.username+':'+data.password+'@'+data.host+':'+data.port+'/'+data.dbname))
+      } else {
+        _res = await (MongoClient.connect('mongodb://'+data.host+':'+data.port+'/'+data.dbname))
+      }
     } else {
-      _res = await (MongoClient.connect('mongodb://'+data.host+':'+data.port+'/'+data.dbname))
+      // console.log('.............111')
+      if (data.dbname != undefined) {
+      } else {
+        _res = await (MongoClient.connect('mongodb://'+data.host+':'+data.port))
+      }
     }
     return _res
   }
@@ -236,9 +244,11 @@ class Service {
         }else{
           //check connection is isdefault true
             if(data.isdefault){
-              _.forEach(res[selectDB].dbinstance, function(inst){
-                inst.isdefault = false
-              })    
+              _.forEach(res, (v, k) => {
+                _.forEach(res[k].dbinstance, function(inst){
+                  inst.isdefault = false
+                })    
+              })
             }
             // console.log(res[selectDB].dbinstance)
             res[selectDB].dbinstance.push(data)
@@ -257,7 +267,7 @@ class Service {
   }
 
   update (id, data, params) {
-    console.log('Inside Update Settings...', id, data, params.query)
+    console.log('Inside Update Settings...')
     var updatedb = params.query.db
     let result = new Promise((resolve, reject) => {
         fs.readFile(path.join(__dirname, '../DBConnection/db.json'),function (err, data) {
@@ -281,7 +291,32 @@ class Service {
   }
 
   patch (id, data, params) {
-    return Promise.resolve(data);
+    console.log('Inside patch Settings...')
+    var updatedb = params.query.db
+    let result = new Promise((resolve, reject) => {
+        fs.readFile(path.join(__dirname, '../DBConnection/db.json'),function (err, data) {
+          if (err) return console.log(err);
+              resolve(JSON.parse(data));
+          });
+    });
+    var _data = Promise.resolve(result).then(function(res){
+        var index_instance = _.findKey(res[updatedb].dbinstance, {id: id});
+        // console.log('instance', index_instance)
+        for(let db in res) {
+          for(let [inx, inst] of res[db].dbinstance.entries()) {
+            inst.isdefault = false
+          }
+        }
+        res[updatedb].dbinstance[index_instance].isdefault = data.isdefault
+        let result1 = new Promise((resolve, reject) => {
+            jsonfile.writeFile(path.join(__dirname, '../DBConnection/db.json'), res, {spaces: 4}, function(err) {
+                if (err) return 'Error';
+                resolve(res);
+            });
+          });
+        return Promise.resolve(result1);
+    });
+    return _data;
   }
 
   remove (id, params) {

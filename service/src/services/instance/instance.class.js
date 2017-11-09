@@ -576,7 +576,7 @@ class Service {
   }
 
   create(data, params) {
-    console.log('.................................Create feathers...............................');
+    console.log('.................................Create feathers...............................', data);
     var flag = false
     //var mainDt = data.data
     for(let value in data.data[0]) {
@@ -586,7 +586,7 @@ class Service {
             flag = true
         }
     }
-    // console.log('Flag create', flag)
+    console.log('Flag create', flag)
     if(!flag) {
         // var response = saveData(data.data[0], 'single')
         // var _data = Promise.resolve(response).then(function(d) {

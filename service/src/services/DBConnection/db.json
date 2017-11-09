@@ -1,26 +1,138 @@
 {
-  "mongo": {
-    "dbinstance": []
-  },
-  "rethink": {
-    "dbinstance": [{
-      "isenable": true,
-      "connection_name": "Rethink",
-      "host": "localhost",
-      "port": "28015",
-      "dbname": "FlowzEngine",
-      "username": "",
-      "password": "",
-      "upldIcn": "",
-      "notes": "",
-      "isdefault": false,
-      "id": "f613518b-200b-46ca-bebd-90db7d45c553"
-    }]
-  },
-  "elastic": {
-    "dbinstance": []
-  },
-  "nedb": {
-    "dbinstance": []
-  }
+    "mongo": {
+        "dbinstance": [
+            {
+                "isenable": true,
+                "connection_name": "aaaa111",
+                "host": "localhost",
+                "port": "27017",
+                "dbname": "qqq",
+                "username": "",
+                "password": "",
+                "upldIcn": "",
+                "upldCSV": [],
+                "rdodb": "",
+                "rdosync": "",
+                "keep_sync": "",
+                "notes": "",
+                "schemaData": [],
+                "isdefault": false,
+                "id": "a01974ee-e1a5-4bf7-4cb6-6f3661527055"
+            },
+            {
+                "isenable": true,
+                "connection_name": "aaaa",
+                "host": "localhost",
+                "port": "27017",
+                "dbname": "qqq11",
+                "username": "",
+                "password": "",
+                "upldIcn": "",
+                "upldCSV": [],
+                "rdodb": "",
+                "rdosync": "",
+                "keep_sync": "",
+                "notes": "",
+                "schemaData": [],
+                "isdefault": true,
+                "id": "8d2a66b0-b290-449e-cb20-5d7dc641cdf9"
+            },
+            {
+                "isenable": true,
+                "connection_name": "aaaa",
+                "host": "localhost",
+                "port": "27017",
+                "dbname": "qqq33",
+                "username": "",
+                "password": "",
+                "upldIcn": "",
+                "upldCSV": [],
+                "rdodb": "",
+                "rdosync": "",
+                "keep_sync": "",
+                "notes": "",
+                "schemaData": [],
+                "isdefault": false,
+                "id": "dbbb8961-d212-4ea1-f64e-476fe26e4c4f"
+            },
+            {
+                "isenable": true,
+                "connection_name": "aaaa",
+                "host": "localhost",
+                "port": "27017",
+                "dbname": "qqq55",
+                "username": "",
+                "password": "",
+                "upldIcn": "",
+                "upldCSV": [],
+                "rdodb": "",
+                "rdosync": "",
+                "keep_sync": "",
+                "notes": "",
+                "schemaData": [],
+                "isdefault": false,
+                "id": "602a8d65-5ffd-46a8-0f6f-ca950e5755f1"
+            }
+        ]
+    },
+    "rethink": {
+        "dbinstance": [
+            {
+                "isenable": true,
+                "connection_name": "Rethink",
+                "host": "localhost",
+                "port": "28015",
+                "dbname": "FlowzEngine",
+                "username": "",
+                "password": "",
+                "upldIcn": "",
+                "notes": "",
+                "isdefault": false,
+                "id": "f613518b-200b-46ca-bebd-90db7d45c553"
+            },
+            {
+                "isenable": true,
+                "connection_name": "aaa1",
+                "host": "localhost",
+                "port": "28015",
+                "dbname": "qqq",
+                "username": "",
+                "password": "",
+                "upldIcn": "",
+                "upldCSV": [],
+                "rdodb": "",
+                "rdosync": "",
+                "keep_sync": "",
+                "notes": "",
+                "schemaData": [],
+                "isdefault": false,
+                "id": "8c92cd19-5bd8-4e17-1077-693609619528"
+            }
+        ]
+    },
+    "elastic": {
+        "dbinstance": [
+            {
+                "isenable": true,
+                "connection_name": "aaaa",
+                "host": "localhost",
+                "port": "9200",
+                "dbname": "qqqss",
+                "username": "",
+                "password": "",
+                "upldIcn": "",
+                "upldCSV": [],
+                "rdodb": "",
+                "rdosync": "",
+                "keep_sync": "",
+                "notes": "",
+                "schemaData": [],
+                "isdefault": false,
+                "id": "7cbafa04-0855-4c19-87da-329cf2f21bf3"
+            }
+        ]
+    },
+    "nedb": {
+        "dbinstance": []
+    }
 }
