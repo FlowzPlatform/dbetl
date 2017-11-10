@@ -1764,7 +1764,7 @@ String.prototype.formatDate = function (format) {
   overflow: auto;
   min-height: 300px;
   width: 100%;
-  margin-left: 10px;
+  margin-left: 10px; 
   padding: 10px;
 }
 .transform-function {
