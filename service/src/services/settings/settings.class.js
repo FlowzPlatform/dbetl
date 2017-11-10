@@ -126,10 +126,20 @@ var getConnectionData = async( function( db, data) {
     } else {
       mongoDB = 'mongodb://' + data.host + ':' + data.port + '/' + data.dbname;
     }
-    // console.log(mongoDB)
     var conn = await (MongoClient.connect(mongoDB))
-    var result = await (conn.collection('schema').find().toArray())
-    // console.log('Data........', result)
+    // console.log('conn', conn);
+    // var collections = await (conn.listCollections().toArray());
+    // console.log('collections', collections)
+        
+    var result = await (conn.listCollections().toArray())
+    for( let [inx, obj] of result.entries()) {
+      for( let k in obj) {
+        if(k !== 'name') {
+          delete obj[k]
+        }
+      }
+    }
+    // console.log('Data........................', result)
     return result
   } else if (db == 'rethink') {
     // console.log('match found rethink')
@@ -141,32 +151,40 @@ var getConnectionData = async( function( db, data) {
         db: data.dbname
     });
     // console.log('conn.......', connection)
-    var result = await (connection.table('schema').run())
+    // var result = await (connection.table('schema').run())
+    var result = await (connection.db(data.dbname).tableList())
+    for(let [inx, val] of result.entries()) {
+      result[inx] = { name: val}
+    }
     // console.log('result............', result)
     return result
   } else if (db == 'elastic') {
     // console.log('match found rethink')
     var connection = new elasticsearch.Client({
-        host: data.host + ':' + data.port,
+        host: data.host + ':' + data.port + '/' + data.dbname,
         log: 'error'
       });
-    var data = [];
+    var data1 = [];
     var result = await( 
     connection.search({
-        index: data.dbname,
-        type: 'schema',
         body: {
-            query: {
-                match_all: { }
-            },
+          aggs: {
+            typesAgg: {
+              terms: {
+                field: '_type',
+                size: 200
+              }
+            }
+          },
+          size: 0
         }
     }))
-    result.hits.hits.forEach(function(hit){
-        var item =  hit._source;
-        item._id = hit._id;
-        data.push(item);
-    })
-    return data;
+    console.log('result........', result.aggregations.typesAgg.buckets)
+    for(let [i, obj] of result.aggregations.typesAgg.buckets.entries()) {
+      data1.push({ name: obj.key})
+    }
+    // console.log(data1)
+    return data1;
   } else {
     return 'not_found_db'
   }
