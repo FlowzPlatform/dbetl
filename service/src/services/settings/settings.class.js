@@ -101,7 +101,7 @@ var check_Connection = async(function(db, data) {
     }).ping({
       requestTimeout: 1000
     }))
-    console.log(client)
+    // console.log(client)
     return client
     // , function (error) {
     //   if (error) {
@@ -161,8 +161,7 @@ var getConnectionData = async( function( db, data) {
   } else if (db == 'elastic') {
     // console.log('match found rethink')
     var connection = new elasticsearch.Client({
-        host: data.host + ':' + data.port + '/' + data.dbname,
-        log: 'error'
+        host: data.host + ':' + data.port + '/' + data.dbname
       });
     var data1 = [];
     var result = await( 
@@ -179,9 +178,18 @@ var getConnectionData = async( function( db, data) {
           size: 0
         }
     }))
-    console.log('result........', result.aggregations.typesAgg.buckets)
+    var conn = new elasticsearch.Client({
+        host: data.host + ':' + data.port
+      });
+    // console.log('result........', result.aggregations.typesAgg.buckets)
     for(let [i, obj] of result.aggregations.typesAgg.buckets.entries()) {
-      data1.push({ name: obj.key})
+      var mapping = await (
+        conn.indices.getMapping({
+          index: data.dbname,
+          type: obj.key
+      }))
+      // console.log('..............', mapping[data.dbname].mappings[obj.key].properties)
+      data1.push({ name: obj.key, columns: mapping[data.dbname].mappings[obj.key].properties})
     }
     // console.log(data1)
     return data1;
