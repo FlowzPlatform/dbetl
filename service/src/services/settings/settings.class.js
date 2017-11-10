@@ -117,6 +117,79 @@ var check_Connection = async(function(db, data) {
   }
 })
 
+var getConnectionData = async( function( db, data) {
+  // console.log('getConnectionData..............')
+  if (db == 'mongo') {
+    var mongoDB; 
+    if(data.username != "" && data.password != "") {
+      mongoDB = 'mongodb://' + data.username + ':' + data.password + '@' + data.host + ':' + data.port + '/' + data.dbname;
+    } else {
+      mongoDB = 'mongodb://' + data.host + ':' + data.port + '/' + data.dbname;
+    }
+    var conn = await (MongoClient.connect(mongoDB))
+    // console.log('conn', conn);
+    // var collections = await (conn.listCollections().toArray());
+    // console.log('collections', collections)
+        
+    var result = await (conn.listCollections().toArray())
+    for( let [inx, obj] of result.entries()) {
+      for( let k in obj) {
+        if(k !== 'name') {
+          delete obj[k]
+        }
+      }
+    }
+    // console.log('Data........................', result)
+    return result
+  } else if (db == 'rethink') {
+    // console.log('match found rethink')
+    var connection = require('rethinkdbdash')({
+        username: data.username,
+        password: data.password,
+        port: data.port,
+        host: data.host,
+        db: data.dbname
+    });
+    // console.log('conn.......', connection)
+    // var result = await (connection.table('schema').run())
+    var result = await (connection.db(data.dbname).tableList())
+    for(let [inx, val] of result.entries()) {
+      result[inx] = { name: val}
+    }
+    // console.log('result............', result)
+    return result
+  } else if (db == 'elastic') {
+    // console.log('match found rethink')
+    var connection = new elasticsearch.Client({
+        host: data.host + ':' + data.port + '/' + data.dbname,
+        log: 'error'
+      });
+    var data1 = [];
+    var result = await( 
+    connection.search({
+        body: {
+          aggs: {
+            typesAgg: {
+              terms: {
+                field: '_type',
+                size: 200
+              }
+            }
+          },
+          size: 0
+        }
+    }))
+    console.log('result........', result.aggregations.typesAgg.buckets)
+    for(let [i, obj] of result.aggregations.typesAgg.buckets.entries()) {
+      data1.push({ name: obj.key})
+    }
+    // console.log(data1)
+    return data1;
+  } else {
+    return 'not_found_db'
+  }
+})
+
 var getAllSettings = async(function() {
   let result = new Promise((resolve, reject) => {
         fs.readFile(path.join(__dirname, '../DBConnection/db.json'),function (err, data) {
@@ -212,7 +285,11 @@ class Service {
       var _res = check_Connection(params.query.check, data)
       return Promise.resolve(_res).then(function(res){
         // console.log('result.................', res)
-        return {result: true}
+        var abc = getConnectionData(params.query.check, data)
+        return Promise.resolve(abc).then(function(__res){
+          return {result: true, data: __res}
+        })
+        // return {result: true}
       })
       .catch(function(err){
         // console.log('Error..............', err)
