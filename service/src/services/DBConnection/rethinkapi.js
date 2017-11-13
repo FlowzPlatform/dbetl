@@ -31,7 +31,7 @@ db.rethink.dbinstance.forEach(function (instance, inx) {
                 }).run();
             });
         });
-      r.push({ id: instance.id, conn: connection })
+      r.push({ id: instance.id, conn: connection ,dbname: instance.dbname})
     }
     if (instance.isdefault) {
 
@@ -62,6 +62,18 @@ db.rethink.dbinstance.forEach(function (instance, inx) {
   })
 
 module.exports = {
+  generateInstanceTable: async(function (ins_id, title){
+    // console.log('Rethink generate instance collection..........', ins_id, title);
+    for(let [i, db_i] of r.entries()) {
+      if(db_i.id == ins_id) {
+        console.log(r[i].conn)
+        var res = await (r[i].conn.tableCreate(title))
+        // console.log('res......generateInstanceTable........', res)
+        return res
+      }
+    }
+  }),
+
   choose: async(function () {
     console.log('===================RETHINKDB=================');
   }),
@@ -246,30 +258,37 @@ module.exports = {
     // return res;
   }),
 
-  getflowsInstance: async(function () {
+  getflowsInstance: async(function (tableName, inst_id) {
     console.log('rethink get flowsInstance');
-    var flowsInstance = async(function () {
-      var result = []
-      _.forEach(r, function (dbinstance) {
-          var data = await (dbinstance.conn.table('flowsinstance').run())
-          _.forEach(data, function (instance) {
-            result.push(instance)
-          })
-        })
-      return result;
-    });
-    var res = await (flowsInstance())
-    return res;
-    // var flowsInstance = await (r.table('flowsinstance')
-    //   .run()
-    //   .then(function (response) {
-    //     // console.log('getflowsInstance:',response);
-    //     return response;
-    //   })
-    //   .error(function (err) {
-    //     console.log('Error:', err);
-    //   }));
-    // return flowsInstance;
+    for (let [i, inst] of r.entries()) {
+        if ( inst.id == inst_id ) {
+          var res = await (inst.conn.table(tableName).run())
+          // console.log('rethink r', res)
+          return res
+        }
+      }
+    // var flowsInstance = async(function () {
+    //   var result = []
+    //   _.forEach(r, function (dbinstance) {
+    //       var data = await (dbinstance.conn.table('flowsinstance').run())
+    //       _.forEach(data, function (instance) {
+    //         result.push(instance)
+    //       })
+    //     })
+    //   return result;
+    // });
+    // var res = await (flowsInstance())
+    // return res;
+    // // var flowsInstance = await (r.table('flowsinstance')
+    // //   .run()
+    // //   .then(function (response) {
+    // //     // console.log('getflowsInstance:',response);
+    // //     return response;
+    // //   })
+    // //   .error(function (err) {
+    // //     console.log('Error:', err);
+    // //   }));
+    // // return flowsInstance;
   }),
 
   getThisflowsInstance: async(function (id) {
@@ -314,7 +333,7 @@ module.exports = {
     // return schema;
   }),
   
-  postflowsInstance: async(function (data, dbid) {
+  postflowsInstance: async(function (data, dbid, tableName) {
     console.log('....................rethink post flowsInstance........................');
     console.log('guid', dbid)
     // var selectedDB = _.find(r, (d) => {
@@ -329,11 +348,11 @@ module.exports = {
     }
     // var _data = JSON.parse(data);
     // console.log('data:',_data);
-    var flowsInstance = await (selectedDB.conn.table("flowsinstance").insert(data).run());
+    var flowsInstance = await (selectedDB.conn.table(tableName).insert(data).run());
     // console.log('########## from postSchema',flowsInstance);
 
     var _id = flowsInstance.generated_keys[0];
-    selectedDB.conn.table("flowsinstance").get(_id).update({ '_id': _id }).run();
+    selectedDB.conn.table(tableName).get(_id).update({ '_id': _id }).run();
     return flowsInstance.generated_keys[0];
   }),
 

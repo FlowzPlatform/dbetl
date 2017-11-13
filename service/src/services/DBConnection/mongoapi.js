@@ -55,6 +55,19 @@ db1.mongo.dbinstance.forEach(function (instance, inx) {
 // console.log('Success!!!!!!!!!!!!! Mongo');
 
 module.exports = {
+  generateInstanceTable: async(function (ins_id, title){
+    console.log('Mongo generate instance collection..........', ins_id, title);
+    // for(let [i, db_i] of db.entries()) {
+    //   if(db_i.id == ins_id) {
+    //     console.log(db[i].conn)
+    //     var res = await (db[i].conn.createCollection(title))
+    //     console.log('res......generateInstanceTable........', res)
+    //     return res
+    //   }
+    // }
+    return 'success'
+  }),
+
   choose: async(function () {
     console.log('===================MONGODB=================');
   }),
@@ -225,20 +238,27 @@ module.exports = {
       return res;
     }
   }),
-  getflowsInstance: async(function () {
+  getflowsInstance: async(function (collName, inst_id) {
     console.log('mongo get flowsInstance');
-    var flowsInstance = async(function () {
-      var result = []
-      _.forEach(db, function (dbinstance) {
-        var r = await (dbinstance.conn.collection('flows-instance').find().toArray())
-        _.forEach(r, function (instance) {
-          result.push(instance)
-        })
-      })
-      return result;
-    });
-    var res = await (flowsInstance())
-    return res;
+    // var flowsInstance = async(function (collName, inst_id) {
+      for (let [i, inst] of db.entries()) {
+        if ( inst.id == inst_id ) {
+          var r = await (inst.conn.collection(collName).find().toArray())
+          // console.log('mongo r', r)
+          return r
+        }
+      }
+      // var result = []
+      // _.forEach(db, function (dbinstance) {
+      //   var r = await (dbinstance.conn.collection('flows-instance').find().toArray())
+      //   _.forEach(r, function (instance) {
+      //     result.push(instance)
+      //   })
+      // })
+      // return result;
+    // });
+    // var res = await (flowsInstance(collName, inst_id))
+    // return res;
     // var flowsInstance = await (db.collection('flows-instance').find().toArray());
     // // console.log('flowsInstance',flowsInstance);
     // return flowsInstance;
@@ -280,7 +300,7 @@ module.exports = {
     // console.log(schema)
     return schema.ops;
   }),
-  postflowsInstance: async(function (data, dbid) {
+  postflowsInstance: async(function (data, dbid, collName) {
     console.log('...................mongo post flowsInstance...................');
     // data.Schemaid = data._id
     // delete data._id
@@ -298,7 +318,7 @@ module.exports = {
       } 
     }
     // console.log('selectedDB', selectedDB)
-    var schema = await (selectedDB.conn.collection('flows-instance').insert(data));
+    var schema = await (selectedDB.conn.collection(collName).insert(data));
     console.log('Generated Id:', schema.ops[0]._id)
     return schema.ops[0]._id;
     // var flowsInstance = await (db.collection('flows-instance').insert(data));
