@@ -451,6 +451,145 @@ var UUID = async(function generateUUID() {
 });
 
 module.exports = {
+  generateInstanceTable: async(function (data){
+    console.log('mysql generate instance collection..........');
+
+      var selectedDB;
+      for (let i = 0; i< db.length; i++) {
+        if (db[i].id == data.database[1]) {
+          selectedDB = db[i]
+        }  
+      }
+
+      table_name = data.title.replace(' ', '_');
+      fields="";
+      
+      _.forEach(data.entity, function (entity,index) {
+
+        var isLastElement = index == data.entity.length -1;
+        if(entity.name !="id" && entity.name != "_id")
+        {
+          if(isLastElement)
+            fields += entity.name.replace(' ', '_')+" Text";
+          else
+            fields += entity.name.replace(' ', '_')+" Text,";
+        }
+        if(isLastElement)
+        {
+          var createTableQuery = await(getQuery('mysql','create','createTable'));
+          createTableQuery = createTableQuery.replace('{{ table_name }}',table_name);
+          createTableQuery = createTableQuery.replace('{{ fields }}',fields);
+          createTableQuery = createTableQuery.replace(',)',')');
+          
+          selectedDB.conn.query(createTableQuery);
+          
+          var alterTableAndAddPrimaryKey = await(getQuery('mysql','alter','alterTableAndAddPrimaryKey'));
+          alterTableAndAddPrimaryKey = alterTableAndAddPrimaryKey.replace('{{ table_name }}',table_name);
+          alterTableAndAddPrimaryKey = alterTableAndAddPrimaryKey.replace('{{ field }}','id');
+          alterTableAndAddPrimaryKey = alterTableAndAddPrimaryKey.replace('{{ primary_field }}','id');
+
+          
+          selectedDB.conn.query(alterTableAndAddPrimaryKey);
+
+          var alterTableAndAddField = await(getQuery('mysql','alter','alterTableAndAddField'));
+          alterTableAndAddField = alterTableAndAddField.replace('{{ table_name }}',table_name);
+          alterTableAndAddField = alterTableAndAddField.replace('{{ field }}','Schemaid');
+          alterTableAndAddField = alterTableAndAddField.replace('{{ type }}','Varchar(255)');
+          alterTableAndAddField = alterTableAndAddField.replace('{{ after }}','');
+
+          selectedDB.conn.query(alterTableAndAddField);
+
+          // var alterTableAndAddField = await(getQuery('mysql','alter','alterTableAndAddField'));
+          // alterTableAndAddField = alterTableAndAddField.replace('{{ table_name }}',table_name);
+          // alterTableAndAddField = alterTableAndAddField.replace('{{ field }}','_id');
+          // alterTableAndAddField = alterTableAndAddField.replace('{{ type }}','Varchar(255) NOT NULL');
+          // alterTableAndAddField = alterTableAndAddField.replace('{{ after }}','AFTER id');
+
+          // selectedDB.conn.query(alterTableAndAddField);
+        } 
+      });
+    return 'success';
+  }),
+  updateInstanceTable: async(function (data){
+    console.log('mysql generate instance collection..........');
+
+    var selectedDB;
+    for (let i = 0; i< db.length; i++) {
+      if (db[i].id == data.database[1]) {
+        selectedDB = db[i]
+      }  
+    }
+    if(data.old_title != data.title)
+      {
+        var commonRename = await(getQuery('mysql','rename','commonRename'));
+        commonRename = commonRename.replace('{{ old_table_name }}',data.old_title);
+        commonRename = commonRename.replace('{{ new_table_name }}',data.title.replace(' ', '_'));
+  
+        selectedDB.conn.query(commonRename);
+      }
+  
+  var updateSchemaData = async(function () {
+        var promises = []
+  
+        table_name = data.title.replace(' ', '_');
+        
+        new_fields=[]
+        
+        _.forEach(data.entity, function (entity,index) {
+  
+          if(entity.name != 'id' && entity.name != '_id')
+          {
+            new_fields.push(entity.name.replace(' ', '_'));
+            
+            var checkColumn = await(getQuery('mysql','select','checkColumn'));
+            checkColumn = checkColumn.replace('{{ table_name }}','information_schema.COLUMNS');
+            checkColumn = checkColumn.replace('{{ tableName }}',table_name);
+            checkColumn = checkColumn.replace('{{ fields }}','*');
+            checkColumn = checkColumn.replace('{{ database_name }}',dbName.dbname);
+            checkColumn = checkColumn.replace('{{ column_name }}',entity.name.replace(' ', '_'));
+  
+            
+            var process = new Promise((resolve, reject) => {
+              schemaDb.conn.query(checkColumn, function (error, result, fields) {
+                error? reject(error) : result.length == 0 ? resolve(entity.name.replace(' ', '_')) : resolve('')
+              })
+            })
+          }
+  
+          promises.push(process); 
+        });
+      
+        return Promise.all(promises).then(content => {
+          return _.union(content)
+        });
+      })
+  
+      var updateSchemaDataResponse = await (updateSchemaData())
+      
+      _.forEach(updateSchemaDataResponse, function (field,index) {
+          if(field != "")
+          {
+            var alterTableAndAddField = await(getQuery('mysql','alter','alterTableAndAddField'));
+            alterTableAndAddField = alterTableAndAddField.replace('{{ table_name }}',table_name);
+            alterTableAndAddField = alterTableAndAddField.replace('{{ field }}',field);
+            alterTableAndAddField = alterTableAndAddField.replace('{{ type }}','TEXT NULL DEFAULT NULL');
+            alterTableAndAddField = alterTableAndAddField.replace('{{ after }}','');
+  
+            selectedDB.conn.query(alterTableAndAddField);
+          }
+      })
+  
+      difference = _.difference(data.old_fields,new_fields)
+  
+      _.forEach(difference, function (value,index) {
+        var dropField = await(getQuery('mysql','alter','dropField'));
+        dropField = dropField.replace('{{ table_name }}',table_name);
+        dropField = dropField.replace('{{ field }}',value);
+  
+        selectedDB.conn.query(dropField);
+      });
+      return 'success';
+  }),
   choose: async(function () {
     console.log('===================mysql=================');
   }),
@@ -610,30 +749,32 @@ module.exports = {
     var res = await (schemadata())
     return res;
   }),
-  getflowsInstance: async(function () {
-    console.log('mysql get flowsInstance');
+  getflowsInstance: async(function (title,instance_id) {
+    console.log('mysql get flowsInstance-------------------');
 
     var flowsInstance = async(function () {
       var result = []
       var promises = []
 
-      for(var dbinstance of db) {
-        var res = await (schemaTabledata(defaultDb[0]))
+      for(var dbinstance of db) 
+      {
+        // var res = await (schemaTabledata(defaultDb[0]))
+
         //instanceVal1 = {};
         
-        _.forEach(res, function (r) {
+        // _.forEach(res, function (r) {
 
-          let database_name = JSON.parse(r.database_name)
+          // let database_name = JSON.parse(r.database_name)
           
-          var dbName = await(getDatabaseName(database_name[1]));
+          var dbName = await(getDatabaseName(instance_id));
 
             instanceVal1 = [];
-            if(dbName.id == dbinstance.id)
+            if(instance_id == dbinstance.id)
             {
               var process = new Promise((resolve, reject) => {
                 
                 var commonSelect = await(getQuery('mysql','select','commonSelect'));
-                commonSelect = commonSelect.replace('{{ table_name }}',dbName.dbname+'.'+r.title.replace(' ', '_'));
+                commonSelect = commonSelect.replace('{{ table_name }}',dbName.dbname+'.'+title.replace(' ', '_'));
                 commonSelect = commonSelect.replace('{{ fields }}','*');
 
                 dbinstance.conn.query(commonSelect, function (error, results, fields) {
@@ -643,7 +784,7 @@ module.exports = {
                     instanceVal = {};         
                     //instanceVal['title'] = r.title;
                     // instanceVal['database'] = JSON.parse(r.database_name);
-                    instanceVal['Schemaid'] = r.id.toString();
+                    // instanceVal['Schemaid'] = rs.id.toString();
                     instanceVal['_id'] = rs.id.toString();
                     
                     _.forEach(rs, function (rs1,key) {
@@ -653,7 +794,11 @@ module.exports = {
                           instanceVal[key] = rs1;                        
                         }
                     })
-                    delete instanceVal['id']; 
+                    delete instanceVal['id'];
+                    if(instanceVal.Schemaid == null)
+                    {
+                     delete  instanceVal.Schemaid;
+                    }
                     instanceVal1.push(instanceVal);
                   })
                   resolve(instanceVal1)
@@ -661,7 +806,7 @@ module.exports = {
               })
               promises.push(process)
             }
-        })
+        // })
       }
       
       return Promise.all(promises).then(content => {
@@ -753,7 +898,7 @@ module.exports = {
                     instanceVal = {};         
       
                     // instanceVal['database'] = JSON.parse(r.database_name);
-                    instanceVal['Schemaid'] = r.id.toString();
+                    // instanceVal['Schemaid'] = r.id.toString();
                     instanceVal['_id'] = instance.id.toString();
                     
                     _.forEach(instance, function (rs1,key) {
@@ -763,6 +908,10 @@ module.exports = {
                           instanceVal[key] = rs1;                        
                         }
                     })
+                    if(instanceVal.Schemaid == null)
+                    {
+                      delete  instanceVal.Schemaid;
+                    }
                     instanceVal1.push(instanceVal);
                   })
                 }
@@ -955,7 +1104,7 @@ module.exports = {
     // end - insert data in property table
   }),
   postflowsInstance: async(function (data,dbid,_id) {
-    console.log('mysql post flowsInstance');
+    console.log('mysql post flowsInstance**********',data,dbid,_id);
     // var selectedDB = _.find(db, (d) => {
     //   return d.id == data.database[1]
     // })
@@ -976,7 +1125,7 @@ module.exports = {
 
     var res = await (schemadataWithId(id, defaultDb[0]))
 
-    table_name = res[0];
+    table_name = _id;//res[0];
 
     var schemadata = function () {
       var result = []
@@ -993,6 +1142,10 @@ module.exports = {
             let uuid = res;
 
             tableFields += key;
+            if(typeof data.Schemaid !== 'undefined')
+            {
+              tableFields += ",Schemaid";
+            }
 
             if(typeof d == 'object')
               {
@@ -1000,6 +1153,10 @@ module.exports = {
               }
               else{
                 tableValues += "'"+d+"'";
+              }
+              if(typeof data.Schemaid !== 'undefined')
+              {
+                tableValues += ",'"+data.Schemaid+"'";
               } 
           }
           else
@@ -1042,7 +1199,7 @@ module.exports = {
       //     k++; 
       //   }
       // })
-    
+
       return new Promise((resolve, reject) => {
         var commonInsert = await(getQuery('mysql','insert','commonInsert'));
         commonInsert = commonInsert.replace('{{ table_name }}',table_name);

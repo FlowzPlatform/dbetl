@@ -124,7 +124,7 @@ var checkFlagforGet = async(function(mObj) {
         }
       }
     }))
-    // }))  
+    // }))  alterTableAndAddField
   return flag
 })
 var checkDataObj = async(function(data, id, res) {
@@ -172,11 +172,11 @@ var checkDataObj = async(function(data, id, res) {
             if (!s) {
               console.log('<<<<<<<<<<<<<', _res)
               schemaid = _res.id
-              objid = await (saveData(obj, _res.database, _res.id))
+              objid = await (saveData(obj, _res))
             } else {
               console.log('@@@@.............', res)
               schemaid = res.id
-              objid = await (saveData(obj, res.database, res.id))
+              objid = await (saveData(obj, res))
             }
             // console.log('res=====================================', res)
             // var objid = await (saveData(obj, res.database))
@@ -208,7 +208,7 @@ var checkDataObj = async(function(data, id, res) {
   }
   for (let [inxx, object] of data.entries()) {
     // console.log('>>>>>>>>>>>>>>> ', res)
-    var id = await (saveData(object, res.database, res.id))
+    var id = await (saveData(object, res))
     id = id.toString()
     for (let okey in object) {
       delete object[okey]
@@ -247,8 +247,8 @@ var giveDatabase = async(function(schemaid) {
     // postSchemaData = res.data 
   return res.data.database
 })
-var saveData = async(function(data, database, _id) {
-  console.log('save calling...................', data, database, _id)
+var saveData = async(function(data, res) {
+  console.log('save calling...................', data, res)
     // var database;
     // if(data.Schemaid != undefined) {
     // database = await (giveDatabase(data.Schemaid))
@@ -265,11 +265,18 @@ var saveData = async(function(data, database, _id) {
     //   var res = await (getSchemaData(id))
     //   database = res.database
     // }
-  var _dbindex = _.findIndex(dbapi, { 'db': database[0] });
-  if (typeof _id !== 'undefined') {
-    var dbdata = await (dbapi[_dbindex].api.postflowsInstance(data, database[1], _id));
+  
+  var _dbindex = _.findIndex(dbapi, { 'db': res.database[0] });
+  // for(let [i, obj] of dbapi.entries()) {
+  //   if(obj.db == database[0]) {
+  //     _dbindex = i
+  //   }
+  // }
+  
+  if (typeof res._id !== 'undefined') {
+    var dbdata = await (dbapi[_dbindex].api.postflowsInstance(data, res.database[1], res.title));
   } else {
-    var dbdata = await (dbapi[_dbindex].api.postflowsInstance(data, database[1]));
+    var dbdata = await (dbapi[_dbindex].api.postflowsInstance(data, res.database[1]));
   }
   console.log('Return Instance id .........', dbdata)
   return dbdata;

@@ -62,8 +62,10 @@ db.rethink.dbinstance.forEach(function (instance, inx) {
   })
 
 module.exports = {
-  generateInstanceTable: async(function (ins_id, title){
+  generateInstanceTable: async(function (data){
     // console.log('Rethink generate instance collection..........', ins_id, title);
+    var title = data.title
+    var ins_id = data.database[1]
     for(let [i, db_i] of r.entries()) {
       if(db_i.id == ins_id) {
         console.log(r[i].conn)

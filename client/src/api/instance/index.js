@@ -16,6 +16,6 @@ export default {
     return api.request('post', '/' + model, data)
   },
   put: (id, data) => {
-    return api.request('pot', '/' + model + '/' + id, data)
+    return api.request('put', '/' + model + '/' + id, data)
   }
 }
