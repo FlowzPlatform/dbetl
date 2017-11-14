@@ -44,7 +44,7 @@ $ wget https://github.com/FlowzPlatform/FlowzSchemaEditor.zip -O FlowzSchemaEdit
 
 	$ npm start
 
-	Your application should run on port 3000 with the development environment configuration, so in your browser navigate to http://localhost:3000
+	Your application should run on port 8000 with the development environment configuration, so in your browser navigate to http://localhost:3000
 
 	That's it! Your application should be running. To proceed with your development, check the other sections in this documentation.
 
