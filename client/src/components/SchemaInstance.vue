@@ -137,7 +137,8 @@ export default {
       var self = this
       if (this.$route.params.id !== undefined) {
         console.log('Hii', this.$route.params.id)
-        var instanceres = await Instance.getThis(this.$route.params.id)
+        // var instanceres = await Instance.getThis(this.$route.params.id)
+        var instanceres = await Instance.getThis(this.$route.params.id, this.$route.params.schemaid)
         console.log('instancedata', instanceres.data)
         this.instanceData = instanceres.data
         var schemares = await Schema.getThis(instanceres.data.Schemaid)
