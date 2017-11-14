@@ -1,36 +1,108 @@
 var mysql = require('mysql');
 let _ = require('lodash');
 var db1 = require('./db');
+var fs = require('fs');
 let async = require('asyncawait/async');
 let await = require('asyncawait/await');
 var endecrypt = require('../encryption/security')
 var db = [];
+var defaultDb = [];
 
 db1.mysql.dbinstance.forEach(function (instance, inx) {
-  if (instance.isenable) {
-    var pass = endecrypt.decrypt(instance.password)
-    var connection = mysql.createConnection({
-      host     : instance.host,
-      user     : instance.username,
-      password : pass,
-      database : instance.dbname
-    });
-     
-    connection.connect();
+  var pass = endecrypt.decrypt(instance.password)
+  
+  var conn1 = mysql.createConnection({
+    host     : instance.host,
+    user     : instance.username,
+    password : pass,
+  });
+  conn1.connect();  
 
-    db.push({ id: instance.id, conn: connection })
-  }
+  conn1.query("CREATE DATABASE IF NOT EXISTS "+instance.dbname, function (err) {
+    if (err) throw err;
+    conn1.query('USE '+instance.dbname, function (err) {
+        if (err) throw err;
+        if (instance.isenable) {
+          db.push({ id: instance.id, conn: conn1 })
+        }
+        if (instance.isdefault) {
+          defaultDb.push({ id: instance.id, conn: conn1 })
+        }
+    });
+  });
+  // conn1.end();
+  // if (instance.isenable) {
+  //   var pass = endecrypt.decrypt(instance.password)
+  
+  //   var connection = mysql.createConnection({
+  //     host     : instance.host,
+  //     user     : instance.username,
+  //     password : pass,
+  //     database : instance.dbname
+  //   });
+     
+  //   connection.connect();
+
+  //   db.push({ id: instance.id, conn: connection })
+  // }
 })
 
 var schemadataWithId = async(function (id, selectedDB) {
   var result = []
+  var commonSelectWithCondition = await(getQuery('mysql','select','commonSelectWithCondition'));
+  commonSelectWithCondition = commonSelectWithCondition.replace('{{ table_name }}','tbl_schema');
+  commonSelectWithCondition = commonSelectWithCondition.replace('{{ fields }}','*');
+  commonSelectWithCondition = commonSelectWithCondition.replace('{{ where }}','id='+id);
 
   return new Promise((resolve, reject) => {
-    selectedDB.conn.query('SELECT * from tbl_schema where id='+id, function (error, results, fields) {
+    selectedDB.conn.query(commonSelectWithCondition, function (error, results, fields) {
       _.forEach(results, function (instance) {
         var table_name = instance.title.replace(' ', '_');
-        console.log('table_name', table_name);
         result.push(table_name) 
+      })
+      resolve(result)
+    })
+  }).then(content => {
+    return content;
+  }).catch(err=> {
+    return err;
+  })
+});
+
+var getSchemaIdFromEntity = async(function (selectedDB,Schemaid,columnName) {
+  var result = []
+  var commonSelect = await(getQuery('mysql','select','commonSelectWithCondition'));
+  commonSelect = commonSelect.replace('{{ table_name }}','tbl_entity');
+  commonSelect = commonSelect.replace('{{ fields }}','type');
+  commonSelect = commonSelect.replace('{{ where }}','name="'+columnName+'" AND schemaid="'+Schemaid+'" AND customtype="1"');
+  
+  return new Promise((resolve, reject) => {
+    selectedDB.conn.query(commonSelect, function (error, results, fields) {
+      _.forEach(results, function (instance) {
+        var orgSchemaId = parseInt(instance.type);
+        result.push(orgSchemaId) 
+      })
+      resolve(result)
+    })
+  }).then(content => {
+    return content;
+  }).catch(err=> {
+    return err;
+  })
+});
+
+var getSchemaOriginalId = async(function (id, selectedDB) {
+  var result = []
+  var commonSelectWithCondition = await(getQuery('mysql','select','commonSelectWithCondition'));
+  commonSelectWithCondition = commonSelectWithCondition.replace('{{ table_name }}','tbl_schema');
+  commonSelectWithCondition = commonSelectWithCondition.replace('{{ fields }}','id');
+  commonSelectWithCondition = commonSelectWithCondition.replace('{{ where }}','id='+id);
+
+  return new Promise((resolve, reject) => {
+    selectedDB.conn.query(commonSelectWithCondition, function (error, results, fields) {
+      _.forEach(results, function (instance) {
+  
+        result.push(instance.id) 
       })
       resolve(result)
     })
@@ -43,13 +115,16 @@ var schemadataWithId = async(function (id, selectedDB) {
 
 var tabledataWithId = async(function (table_name, id, selectedDB) {
   var result1 = []
-
+  var commonSelectWithCondition = await(getQuery('mysql','select','commonSelectWithCondition'));
+  commonSelectWithCondition = commonSelectWithCondition.replace('{{ table_name }}',table_name);
+  commonSelectWithCondition = commonSelectWithCondition.replace('{{ fields }}','_id');
+  commonSelectWithCondition = commonSelectWithCondition.replace('{{ where }}','id='+id);
+  //'SELECT _id from '+table_name+' where id='+id
+  
   return new Promise((resolve, reject) => {
-    selectedDB.conn.query('SELECT _id from '+table_name+' where id='+id, function (error, results, fields) {
+    selectedDB.conn.query(commonSelectWithCondition, function (error, results, fields) {
       _.forEach(results, function (instance) {
         result1.push(instance._id);
-        console.log('result1', result1);
-        
       })
       resolve(result1)
     })
@@ -63,8 +138,13 @@ var tabledataWithId = async(function (table_name, id, selectedDB) {
 var schemadetailWithId = async(function (id, selectedDB) {
   var result1 = []
 
+  var commonSelectWithCondition = await(getQuery('mysql','select','commonSelectWithCondition'));
+  commonSelectWithCondition = commonSelectWithCondition.replace('{{ table_name }}','tbl_schema');
+  commonSelectWithCondition = commonSelectWithCondition.replace('{{ fields }}','title,database_name');
+  commonSelectWithCondition = commonSelectWithCondition.replace('{{ where }}','id='+id);
+
   return new Promise((resolve, reject) => {
-    selectedDB.conn.query('SELECT title,database_name from tbl_schema where id='+id, function (error, results, fields) {
+    selectedDB.conn.query(commonSelectWithCondition, function (error, results, fields) {
       _.forEach(results, function (instance) {
         result1.push(instance);
       })
@@ -77,11 +157,18 @@ var schemadetailWithId = async(function (id, selectedDB) {
   })
 });
 
-var schemaTabledata = async(function (selectedDB) {
+var schemaTabledata = async(function (selectedDB,Schemaid) {
   var result = []
-
+  var query = await(getQuery('mysql','select','schemaTabledata'));
+  if(typeof Schemaid !== 'undefined')
+  {
+    query = query.replace('{{ where }}','where s.id='+Schemaid); 
+  }
+  else{
+    query = query.replace('{{ where }}','');
+  }
   return new Promise((resolve, reject) => {
-    selectedDB.conn.query("SELECT s.id,s.title,s.database_name,GROUP_CONCAT(e.name SEPARATOR '||') as name,GROUP_CONCAT(e.type SEPARATOR '||')as type,GROUP_CONCAT(e.customtype SEPARATOR '||') as customtype FROM tbl_schema as s join tbl_entity as e on s.id=e.schemaid GROUP BY s.id", function (error, results, fields) {
+    selectedDB.conn.query(query, function (error, results, fields) {
       _.forEach(results, function (instance) {
         result.push(instance);
       })
@@ -92,6 +179,265 @@ var schemaTabledata = async(function (selectedDB) {
   }).catch(err=> {
     return err;
   })
+});
+
+// var schemaTableAllData = async(function (selectedDB) {
+//   var result = []
+//   var query = await(getQuery('mysql','select','getSchema'));
+
+//   return new Promise((resolve, reject) => {
+//     selectedDB.conn.query(query, function (error, results, fields) {
+//       _.forEach(results, function (instance) {
+//         result.push(instance);
+//       })
+//       resolve(result)
+//     })
+//   }).then(content => {
+//     return content;
+//   }).catch(err=> {
+//     return err;
+//   })
+// });
+
+var schemaTableAllData = async(function (dbinstance) {
+  var result = []
+  var promises = []
+
+    var createTableQuery = await(getQuery('mysql','create','createTable'));
+    createTableQuery = createTableQuery.replace('{{ table_name }}','tbl_schema');
+    createTableQuery = createTableQuery.replace('{{ fields }}',"id int(11) NOT NULL AUTO_INCREMENT, _id varchar(255),title varchar(255) DEFAULT NULL, createTemplate text, database_name text, entity text, viewTemplate text, isdeleted tinyint(1) NOT NULL DEFAULT '0', PRIMARY KEY (id)");
+    createTableQuery = createTableQuery.replace(',)',')');
+
+    dbinstance.conn.query(createTableQuery);
+
+    var createTableQuery = await(getQuery('mysql','create','createTable'));
+    createTableQuery = createTableQuery.replace('{{ table_name }}','tbl_entity');
+    createTableQuery = createTableQuery.replace('{{ fields }}',"id int(11) NOT NULL AUTO_INCREMENT, name text NOT NULL, type text NOT NULL, customtype tinyint(4) DEFAULT '0', notes text NOT NULL, schemaid int(11) NOT NULL, PRIMARY KEY (id)");
+    createTableQuery = createTableQuery.replace(',)',')');
+
+    dbinstance.conn.query(createTableQuery);
+
+    var createTableQuery = await(getQuery('mysql','create','createTable'));
+    createTableQuery = createTableQuery.replace('{{ table_name }}','tbl_property');
+    createTableQuery = createTableQuery.replace('{{ fields }}',"id int(11) NOT NULL AUTO_INCREMENT, min int(11) NOT NULL, max int(11) NOT NULL, mindate text, maxdate text, allowed_value text NOT NULL, default_value text NOT NULL, helper text NOT NULL, regex text NOT NULL, placeholder text NOT NULL, optional varchar(255) NOT NULL, options text NOT NULL, IsArray text NOT NULL, entity_id int(11) NOT NULL, PRIMARY KEY (id)");
+    createTableQuery = createTableQuery.replace(',)',')');
+
+    dbinstance.conn.query(createTableQuery);
+
+    var process = new Promise((resolve, reject) => { 
+
+      var query = await(getQuery('mysql','select','getSchema'));
+
+      dbinstance.conn.query(query, function (error, results, fields) {
+        if (error) throw error;
+        _.forEach(results, function (instance,key) {
+          entity_result=[]
+          
+          let name = instance.name.split("||");
+          let type = instance.type.split("||");
+          let customtype = instance.customtype.split("||");
+          let notes = instance.notes.split("||");
+          
+          let IsArray = instance.IsArray.split("||");
+          let allowed_value = instance.allowed_value.split("||");
+          let default_value = instance.default_value.split("||");
+
+          let helper = instance.helper.split("||");
+          let min = instance.min.split("||");
+          let max = instance.max.split("||");
+
+          let mindate = instance.mindate.split("||");
+          let maxdate = instance.maxdate.split("||");
+          let optional = instance.optional.split("||");
+          let options = instance.options.split("||");
+          let placeholder = instance.placeholder.split("||");
+          let regEx = instance.regEx.split("||");
+
+          _.forEach(name, function (nameArray,key) {
+            if(customtype[key] == 1)
+            {
+              instance['entity'] = {'name':name[key],'type':type[key],'notes':notes[key],'customtype': true};
+            }
+            else
+            {
+              instance['entity'] = {'name':name[key],'type':type[key],'notes':notes[key],'customtype': false};                
+            }
+            //instance['entity'] = {'name':name[key],'type':type[key],'notes':notes[key]};
+            
+            instance['entity']['property'] = {'IsArray': IsArray[key],'allowedValue': JSON.parse(allowed_value[key]),'defaultValue': default_value[key],'helper': helper[key],'max': max[key],'maxdate': maxdate[key],'min': min[key],'mindate': mindate[key],'optional': JSON.parse(optional[key]),'options': JSON.parse(options[key]),'placeholder': placeholder[key],'regEx': regEx[key]};
+            entity_result.push(instance['entity']);
+          })
+
+          instance['entity'] = entity_result;
+          //instance['database_name'] = JSON.parse(instance['database_name'])
+          if(instance['isdeleted'] == 1)
+          {
+            instance['isdeleted'] = true;
+          }
+          else
+          {
+            instance['isdeleted'] = false;                
+          }
+          instance['database'] = JSON.parse(instance['database_name'])
+          instance['_id'] = instance['id'] 
+
+          // delete instance['database_name'];   
+          // delete instance['entityid'];   
+          // delete instance['name'];   
+          // delete instance['type'];   
+          // delete instance['customtype'];   
+          // delete instance['notes'];   
+          // delete instance['IsArray'];   
+          // delete instance['allowed_value'];   
+          // delete instance['default_value'];   
+          // delete instance['helper'];   
+          // delete instance['max'];   
+          // delete instance['min'];   
+          // delete instance['maxdate'];   
+          // delete instance['mindate'];   
+          // delete instance['optional'];   
+          // delete instance['options'];   
+          // delete instance['placeholder'];   
+          // delete instance['regEx'];   
+          result.push(instance);
+          
+        })
+        resolve(result)
+      })   
+    })
+    promises.push(process)
+  
+  return Promise.all(promises).then(content => {
+    return _.union(...content)
+  });
+});
+
+var schemaTableAllDataByID = async(function (id) {
+  var result = []
+  var promises = []
+  
+  for(var dbinstance of db) {
+    var process = new Promise((resolve, reject) => {
+      
+      var query = await(getQuery('mysql','select','getThisSchema'));
+      query = query.replace('{{ id }}',id);
+      // console.log('----------query-----------',query);
+      dbinstance.conn.query(query, function (error, results, fields) {
+        if (error) throw error;
+      // console.log('----------results-----------',results);
+      
+        _.forEach(results, function (instance,key) {
+          var entity_result=[]
+          var old_fields=[]
+          let name = instance.name.split("||");
+          let type = instance.type.split("||");
+          let customtype = instance.customtype.split("||");
+          let notes = instance.notes.split("||");
+          
+          let IsArray = instance.IsArray.split("||");
+          let allowed_value = instance.allowed_value.split("||");
+          let default_value = instance.default_value.split("||");
+
+          let helper = instance.helper.split("||");
+          let min = instance.min.split("||");
+          let max = instance.max.split("||");
+
+          let mindate = instance.mindate.split("||");
+          let maxdate = instance.maxdate.split("||");
+          let optional = instance.optional.split("||");
+          let options = instance.options.split("||");
+          let placeholder = instance.placeholder.split("||");
+          let regEx = instance.regEx.split("||");
+
+          _.forEach(name, function (nameArray,key) {
+
+            if(customtype[key] == 1)
+            {
+              instance['entity'] = {'name':name[key],'type':parseInt(type[key]),'notes':notes[key],'customtype': true};
+            }
+            else
+            {
+              instance['entity'] = {'name':name[key],'type':type[key],'notes':notes[key],'customtype': false};                
+            }
+            instance['entity']['property'] = {'IsArray': IsArray[key],'allowedValue': JSON.parse(allowed_value[key]),'defaultValue': default_value[key],'helper': helper[key],'max': JSON.parse(max[key]),'maxdate': maxdate[key],'min': JSON.parse(min[key]),'mindate': mindate[key],'optional': JSON.parse(optional[key]),'options': JSON.parse(options[key]),'placeholder': placeholder[key],'regEx': regEx[key]};
+            entity_result.push(instance['entity']);
+            old_fields.push(nameArray);
+          })
+
+          instance['entity'] = entity_result;
+          instance['old_title'] = instance['title'];
+          instance['old_fields'] = old_fields;
+          instance['database_name'] = JSON.parse(instance['database_name'])
+          if(instance['isdeleted'] == 1)
+          {
+            instance['isdeleted'] = true;
+          }
+          else
+          {
+            instance['isdeleted'] = false;                
+          }
+          instance['database'] = instance['database_name']
+          instance['_id'] = instance['id']
+          
+          result.push(instance);  
+        })
+        // console.log('###########result###############',result);
+        resolve(result);
+      })   
+    })
+    promises.push(process)
+  }
+
+  return Promise.all(promises).then(content => {
+    return _.union(...content)
+  });
+});
+
+var getDatabaseName = async(function (id) {
+  let result = new Promise((resolve, reject) => {
+    fs.readFile(__dirname+'/db.json',function (err, data) {
+      if (err) return console.log(err);
+          resolve(JSON.parse(data));
+          });
+    });
+
+    var _data = Promise.resolve(result).then(function(dbdata){
+        var instance;
+        _.forEach(dbdata, function(instances, db){
+            var obj = _.find(instances.dbinstance, {id: id})
+            if(obj != undefined){
+              instance = obj
+            }   
+        })
+        return instance
+    });
+    
+    return _data
+});
+
+var getQuery = async(function (dbName,type,queryFor) {
+  let result = new Promise((resolve, reject) => {
+    fs.readFile(__dirname+'/query.json',function (err, data) {
+      if (err) return console.log(err);
+          resolve(JSON.parse(data));
+          });
+    });
+
+    var _data = Promise.resolve(result).then(function(dbdata){
+        var instance;
+
+        _.forEach(dbdata[dbName][type], function(instances, db){
+            if(Object.keys(instances)[0] == queryFor)
+            {
+              var obj = _.find(instances)
+              if(obj != undefined){
+                instance = obj
+              }
+            }   
+        })
+        return instance
+    });
+    return _data
 });
 
 var UUID = async(function generateUUID() {
@@ -118,138 +464,60 @@ module.exports = {
   getThisSchemaFieldName: async(function (id, fieldname) {
     console.log('mysql get SchemaCurrent fieldname');
   }),
+  getSchemaByDbid: async(function(dbid) {
+    console.log('mysql get Schema By dbid...........................');
+    var schemadata = async(function () {
+      var result = []
+      _.forEach(db, function (dbinstance) {
+        if (dbinstance.id == dbid) {
+          var r = await (schemaTableAllData(dbinstance))
+          _.forEach(r, function (instance) {
+            result.push(instance)
+          })
+        }
+      })
+      return result;
+    });
+    var res = await (schemadata())
+    return res;
+  }),
   getSchema: async(function () {
     console.log('mysql get Schema');
     
+    
+
     var schemadata = async(function () {
       var result = []
       var promises = []
       
-      for(var dbinstance of db) {
-        var process = new Promise((resolve, reject) => { 
-          dbinstance.conn.query("SELECT s.id,s.title,s.database_name,s.isdeleted,GROUP_CONCAT(e.id SEPARATOR '||') as entityid,GROUP_CONCAT(e.name SEPARATOR '||') as name,GROUP_CONCAT(e.type SEPARATOR '||') as type,GROUP_CONCAT(e.customtype SEPARATOR '||') as customtype,GROUP_CONCAT(e.notes SEPARATOR '||') as notes,GROUP_CONCAT(p.IsArray SEPARATOR '||') as IsArray,GROUP_CONCAT(p.allowed_value SEPARATOR '||') as allowed_value,GROUP_CONCAT(p.default_value SEPARATOR '||') as default_value,GROUP_CONCAT(p.helper SEPARATOR '||') as helper,GROUP_CONCAT(p.max SEPARATOR '||') as max,GROUP_CONCAT(p.min SEPARATOR '||') as min,GROUP_CONCAT(p.maxdate SEPARATOR '||') as maxdate,GROUP_CONCAT(p.mindate SEPARATOR '||') as mindate,GROUP_CONCAT(p.optional SEPARATOR '||') as optional,GROUP_CONCAT(p.options SEPARATOR '||') as options,GROUP_CONCAT(p.placeholder SEPARATOR '||') as placeholder,GROUP_CONCAT(p.regEx SEPARATOR '||') as regEx FROM `tbl_schema` as s join tbl_entity as e on s.id=e.schemaid join tbl_property as p on e.id=p.entity_id GROUP BY s.id", function (error, results, fields) {
-            if (error) throw error;
-            _.forEach(results, function (instance,key) {
-              entity_result=[]
-              
-              let name = instance.name.split("||");
-              let type = instance.type.split("||");
-              let customtype = instance.customtype.split("||");
-              let notes = instance.notes.split("||");
-              
-              let IsArray = instance.IsArray.split("||");
-              let allowed_value = instance.allowed_value.split("||");
-              let default_value = instance.default_value.split("||");
-  
-              let helper = instance.helper.split("||");
-              let min = instance.min.split("||");
-              let max = instance.max.split("||");
-  
-              let mindate = instance.mindate.split("||");
-              let maxdate = instance.maxdate.split("||");
-              let optional = instance.optional.split("||");
-              let options = instance.options.split("||");
-              let placeholder = instance.placeholder.split("||");
-              let regEx = instance.regEx.split("||");
-  
-              _.forEach(name, function (nameArray,key) {
-                if(customtype[key] == 1)
-                {
-                  instance['entity'] = {'name':name[key],'type':parseInt(type[key]),'notes':notes[key],'customtype': true};
-                }
-                else
-                {
-                  instance['entity'] = {'name':name[key],'type':type[key],'notes':notes[key],'customtype': false};                
-                }
-                //instance['entity'] = {'name':name[key],'type':type[key],'notes':notes[key]};
-                
-                instance['entity']['property'] = {'IsArray': IsArray[key],'allowedValue': JSON.parse(allowed_value[key]),'defaultValue': default_value[key],'helper': helper[key],'max': max[key],'maxdate': maxdate[key],'min': min[key],'mindate': mindate[key],'optional': JSON.parse(optional[key]),'options': JSON.parse(options[key]),'placeholder': placeholder[key],'regEx': regEx[key]};
-                entity_result.push(instance['entity']);
-              })
-  
-              instance['entity'] = entity_result;
-              //instance['database_name'] = JSON.parse(instance['database_name'])
-              if(instance['isdeleted'] == 1)
-              {
-                instance['isdeleted'] = true;
-              }
-              else
-              {
-                instance['isdeleted'] = false;                
-              }
-              instance['database'] = JSON.parse(instance['database_name'])
-              instance['_id'] = instance['id']         
-              // delete instance['database_name'];   
-              // delete instance['entityid'];   
-              // delete instance['name'];   
-              // delete instance['type'];   
-              // delete instance['customtype'];   
-              // delete instance['notes'];   
-              // delete instance['IsArray'];   
-              // delete instance['allowed_value'];   
-              // delete instance['default_value'];   
-              // delete instance['helper'];   
-              // delete instance['max'];   
-              // delete instance['min'];   
-              // delete instance['maxdate'];   
-              // delete instance['mindate'];   
-              // delete instance['optional'];   
-              // delete instance['options'];   
-              // delete instance['placeholder'];   
-              // delete instance['regEx'];   
-              result.push(instance);
-              
-            })
-            resolve(result)
-          })   
-        })
-        promises.push(process)
-      }
-      
-      // _.forEach(db, function (dbinstance) {
-      //   var r = await (dbinstance.conn.query('SELECT s.id as schema_id,s.title,s.database_name,e.id as entityid,e.name,e.type,e.notes,p.* FROM `tbl_schema` as s join tbl_entity as e on s.id=e.schemaid join tbl_property as p on e.id=p.entity_id', function (error, results, fields) {
-      //     if (error) throw error;
-      //     // console.log('rr',results);
-      //     var current_schema_id='';
-      //     var previous_instance=[];
+      // for(var dbinstance of db) {
+      //   var process = new Promise((resolve, reject) => { 
 
-      //     _.forEach(results, function (instance,key) {
-            
-      //       if(current_schema_id == '')
-      //       {
-      //         current_schema_id = instance.schema_id;
-      //       }
-            
-      //       instance['entity'] = {'name':instance.name,'type':instance.type,'notes':instance.notes};
-      //       instance['entity']['property'] = {'IsArray': instance.IsArray ,'allowedValue': JSON.parse(instance.allowed_value),'defaultValue': instance.default_value,'helper': instance.helper,'max': instance.max,'maxdate': instance.maxdate,'min': instance.min,'mindate': instance.mindate,'optional': JSON.parse(instance.optional),'options': JSON.parse(instance.options),'placeholder': instance.placeholder,'regEx': instance.regEx};
-            
-      //       if(current_schema_id == instance.schema_id)
-      //       {
-      //         entity_result.push(instance['entity']);
-      //         previous_instance = instance;
-      //       }
-      //       else
-      //       {
-      //         previous_instance['entity'] = entity_result;
-      //         previous_instance['database_name'] = JSON.parse(previous_instance['database_name'])
-      //         result.push(previous_instance);
-      //         entity_result = [];  
-      //         current_schema_id = instance.schema_id;
-      //         entity_result.push(instance['entity']);
-      //         previous_instance = instance;
-      //       }
+      //     // var query = await(getQuery('mysql','select','getSchema'));
+      //     var r = await (schemaTableAllData(dbinstance))
+      //     _.forEach(r, function (instance) {
+      //       result.push(instance)
       //     })
-      //     previous_instance['entity'] = entity_result;
-      //     previous_instance['database_name'] = JSON.parse(previous_instance['database_name'])
-      //     result.push(previous_instance);
-      //   }))
-      // })
+      //     resolve(result)   
+      //   })
+      //   promises.push(process)
+      // }
+      var process = new Promise((resolve, reject) => { 
+        
+        var r = await (schemaTableAllData(defaultDb[0]))
+        _.forEach(r, function (instance) {
+          result.push(instance)
+        })
+        resolve(result)   
+      })
+      
+      promises.push(process)
+      
       return Promise.all(promises).then(content => {
         return _.union(...content)
       });
     });
     var res = await (schemadata())
-    
     return res;
 
   }),
@@ -259,169 +527,87 @@ module.exports = {
 
     var schemadata = async(function () {
       var result = []
-      // var entity_result = []
-     
-      // _.forEach(db, function (dbinstance) {
-      //   var r = await (dbinstance.conn.query('SELECT s.id as schema_id,s.title,s.database_name,e.id as entityid,e.name,e.type,e.notes,p.* FROM `tbl_schema` as s join tbl_entity as e on s.id=e.schemaid join tbl_property as p on e.id=p.entity_id where s.id='+id, function (error, results, fields) {
-      //     if (error) throw error;
-      //     // console.log('rr',results);
-      //     _.forEach(results, function (instance,key) {
-      //       instance['entity'] = {'name':instance.name,'type':instance.type,'notes':instance.notes};
-      //       instance['entity']['property'] = {'IsArray': instance.IsArray ,'allowedValue': JSON.parse(instance.allowed_value),'defaultValue': instance.default_value,'helper': instance.helper,'max': instance.max,'maxdate': instance.maxdate,'min': instance.min,'mindate': instance.mindate,'optional': JSON.parse(instance.optional),'options': JSON.parse(instance.options),'placeholder': instance.placeholder,'regEx': instance.regEx};
-      //       // _.forEach(instance, function (value,key) {
-      //       //   {
-      //       //     try {
-      //       //       instance[key] = JSON.parse(value)                                                  
-      //       //     } catch (e) {
-      //       //     }
-      //       //   }
-      //       // })
-      //       entity_result.push(instance['entity'])
-            
-      //       if(results.length-1 == key)
-      //       {
-      //         instance['entity'] = entity_result;
-      //         instance['database_name'] = JSON.parse(instance['database_name'])
-      //         result.push(instance);
-      //       }
-      //       // console.log('result',result);
-      //     })
-      //   }))
-      // })
-
 
       var promises = []
-      
-      for(var dbinstance of db) {
-      //_.forEach(db, function (dbinstance) {
-        var process = new Promise((resolve, reject) => { 
-          dbinstance.conn.query("SELECT s.id,s.title,s.database_name,s.isdeleted,GROUP_CONCAT(e.id SEPARATOR '||') as entityid,GROUP_CONCAT(e.name SEPARATOR '||') as name,GROUP_CONCAT(e.type SEPARATOR '||') as type,GROUP_CONCAT(e.customtype SEPARATOR '||') as customtype,GROUP_CONCAT(e.notes SEPARATOR '||') as notes,GROUP_CONCAT(p.IsArray SEPARATOR '||') as IsArray,GROUP_CONCAT(p.allowed_value SEPARATOR '||') as allowed_value,GROUP_CONCAT(p.default_value SEPARATOR '||') as default_value,GROUP_CONCAT(p.helper SEPARATOR '||') as helper,GROUP_CONCAT(p.max SEPARATOR '||') as max,GROUP_CONCAT(p.min SEPARATOR '||') as min,GROUP_CONCAT(p.maxdate SEPARATOR '||') as maxdate,GROUP_CONCAT(p.mindate SEPARATOR '||') as mindate,GROUP_CONCAT(p.optional SEPARATOR '||') as optional,GROUP_CONCAT(p.options SEPARATOR '||') as options,GROUP_CONCAT(p.placeholder SEPARATOR '||') as placeholder,GROUP_CONCAT(p.regEx SEPARATOR '||') as regEx FROM `tbl_schema` as s join tbl_entity as e on s.id=e.schemaid join tbl_property as p on e.id=p.entity_id where s.id="+id+" GROUP BY s.id", function (error, results, fields) {
-            if (error) throw error;
+
+      if(/^\d+$/.test(id))
+      {
+        for(var dbinstance of db) {
+        //_.forEach(db, function (dbinstance) {
+          var process = new Promise((resolve, reject) => {
             
-            _.forEach(results, function (instance,key) {
-              var entity_result=[]
-              var old_fields=[]
-              let name = instance.name.split("||");
-              let type = instance.type.split("||");
-              let customtype = instance.customtype.split("||");
-              let notes = instance.notes.split("||");
-              
-              let IsArray = instance.IsArray.split("||");
-              let allowed_value = instance.allowed_value.split("||");
-              let default_value = instance.default_value.split("||");
-  
-              let helper = instance.helper.split("||");
-              let min = instance.min.split("||");
-              let max = instance.max.split("||");
-  
-              let mindate = instance.mindate.split("||");
-              let maxdate = instance.maxdate.split("||");
-              let optional = instance.optional.split("||");
-              let options = instance.options.split("||");
-              let placeholder = instance.placeholder.split("||");
-              let regEx = instance.regEx.split("||");
-  
-              _.forEach(name, function (nameArray,key) {
-  
-                if(customtype[key] == 1)
+            var query = await(getQuery('mysql','select','getThisSchema'));
+            query = query.replace('{{ id }}',id);
+            
+            dbinstance.conn.query(query, function (error, results, fields) {
+              if (error) throw error;
+              _.forEach(results, function (instance,key) {
+                var entity_result=[]
+                var old_fields=[]
+                let name = instance.name.split("||");
+                let type = instance.type.split("||");
+                let customtype = instance.customtype.split("||");
+                let notes = instance.notes.split("||");
+                
+                let IsArray = instance.IsArray.split("||");
+                let allowed_value = instance.allowed_value.split("||");
+                let default_value = instance.default_value.split("||");
+    
+                let helper = instance.helper.split("||");
+                let min = instance.min.split("||");
+                let max = instance.max.split("||");
+    
+                let mindate = instance.mindate.split("||");
+                let maxdate = instance.maxdate.split("||");
+                let optional = instance.optional.split("||");
+                let options = instance.options.split("||");
+                let placeholder = instance.placeholder.split("||");
+                let regEx = instance.regEx.split("||");
+    
+                _.forEach(name, function (nameArray,key) {
+    
+                  if(customtype[key] == 1)
+                  {
+                    instance['entity'] = {'name':name[key],'type':parseInt(type[key]),'notes':notes[key],'customtype': true};
+                  }
+                  else
+                  {
+                    instance['entity'] = {'name':name[key],'type':type[key],'notes':notes[key],'customtype': false};                
+                  }
+                  instance['entity']['property'] = {'IsArray': IsArray[key],'allowedValue': JSON.parse(allowed_value[key]),'defaultValue': default_value[key],'helper': helper[key],'max': JSON.parse(max[key]),'maxdate': maxdate[key],'min': JSON.parse(min[key]),'mindate': mindate[key],'optional': JSON.parse(optional[key]),'options': JSON.parse(options[key]),'placeholder': placeholder[key],'regEx': regEx[key]};
+                  entity_result.push(instance['entity']);
+                  old_fields.push(nameArray);
+                })
+    
+                instance['entity'] = entity_result;
+                instance['old_title'] = instance['title'];
+                instance['old_fields'] = old_fields;
+                instance['database_name'] = JSON.parse(instance['database_name'])
+                if(instance['isdeleted'] == 1)
                 {
-                  instance['entity'] = {'name':name[key],'type':parseInt(type[key]),'notes':notes[key],'customtype': true};
+                  instance['isdeleted'] = true;
                 }
                 else
                 {
-                  instance['entity'] = {'name':name[key],'type':type[key],'notes':notes[key],'customtype': false};                
+                  instance['isdeleted'] = false;                
                 }
-                instance['entity']['property'] = {'IsArray': IsArray[key],'allowedValue': JSON.parse(allowed_value[key]),'defaultValue': default_value[key],'helper': helper[key],'max': JSON.parse(max[key]),'maxdate': maxdate[key],'min': JSON.parse(min[key]),'mindate': mindate[key],'optional': JSON.parse(optional[key]),'options': JSON.parse(options[key]),'placeholder': placeholder[key],'regEx': regEx[key]};
-                entity_result.push(instance['entity']);
-                old_fields.push(nameArray);
+                instance['database'] = instance['database_name']
+                instance['_id'] = instance['id']
+                
+                result.push(instance);  
               })
-  
-              instance['entity'] = entity_result;
-              instance['old_title'] = instance['title'];
-              instance['old_fields'] = old_fields;
-              instance['database_name'] = JSON.parse(instance['database_name'])
-              if(instance['isdeleted'] == 1)
-              {
-                instance['isdeleted'] = true;
-              }
-              else
-              {
-                instance['isdeleted'] = false;                
-              }
-              instance['database'] = instance['database_name']
-              instance['_id'] = instance['id']
-              
-              result.push(instance);  
-            })
-            resolve(result);
-          })   
-        })
-        promises.push(process)
+              resolve(result);
+            })   
+          })
+          promises.push(process)
+        }
       }
-
-
-      // _.forEach(db, function (dbinstance) {
-      //   var r = await (dbinstance.conn.query("SELECT s.id,s.title,s.database_name,GROUP_CONCAT(e.id SEPARATOR '||') as entityid,GROUP_CONCAT(e.name SEPARATOR '||') as name,GROUP_CONCAT(e.type SEPARATOR '||') as type,GROUP_CONCAT(e.customtype SEPARATOR '||') as customtype,GROUP_CONCAT(e.notes SEPARATOR '||') as notes,GROUP_CONCAT(p.IsArray SEPARATOR '||') as IsArray,GROUP_CONCAT(p.allowed_value SEPARATOR '||') as allowed_value,GROUP_CONCAT(p.default_value SEPARATOR '||') as default_value,GROUP_CONCAT(p.helper SEPARATOR '||') as helper,GROUP_CONCAT(p.max SEPARATOR '||') as max,GROUP_CONCAT(p.min SEPARATOR '||') as min,GROUP_CONCAT(p.maxdate SEPARATOR '||') as maxdate,GROUP_CONCAT(p.mindate SEPARATOR '||') as mindate,GROUP_CONCAT(p.optional SEPARATOR '||') as optional,GROUP_CONCAT(p.options SEPARATOR '||') as options,GROUP_CONCAT(p.placeholder SEPARATOR '||') as placeholder,GROUP_CONCAT(p.regEx SEPARATOR '||') as regEx FROM `tbl_schema` as s join tbl_entity as e on s.id=e.schemaid join tbl_property as p on e.id=p.entity_id where s.id="+id+" GROUP BY s.id", function (error, results, fields) {
-      //     if (error) throw error;
-          
-      //     _.forEach(results, function (instance,key) {
-      //       var entity_result=[]
-      //       var old_fields=[]
-      //       let name = instance.name.split("||");
-      //       let type = instance.type.split("||");
-      //       let customtype = instance.customtype.split("||");
-      //       let notes = instance.notes.split("||");
-            
-      //       let IsArray = instance.IsArray.split("||");
-      //       let allowed_value = instance.allowed_value.split("||");
-      //       let default_value = instance.default_value.split("||");
-
-      //       let helper = instance.helper.split("||");
-      //       let min = instance.min.split("||");
-      //       let max = instance.max.split("||");
-
-      //       let mindate = instance.mindate.split("||");
-      //       let maxdate = instance.maxdate.split("||");
-      //       let optional = instance.optional.split("||");
-      //       let options = instance.options.split("||");
-      //       let placeholder = instance.placeholder.split("||");
-      //       let regEx = instance.regEx.split("||");
-
-      //       _.forEach(name, function (nameArray,key) {
-
-      //         if(customtype[key] == 1)
-      //         {
-      //           instance['entity'] = {'name':name[key],'type':parseInt(type[key]),'notes':notes[key],'customtype': true};
-      //         }
-      //         else
-      //         {
-      //           instance['entity'] = {'name':name[key],'type':type[key],'notes':notes[key],'customtype': false};                
-      //         }
-      //         instance['entity']['property'] = {'IsArray': IsArray[key],'allowedValue': JSON.parse(allowed_value[key]),'defaultValue': default_value[key],'helper': helper[key],'max': JSON.parse(max[key]),'maxdate': maxdate[key],'min': JSON.parse(min[key]),'mindate': mindate[key],'optional': JSON.parse(optional[key]),'options': JSON.parse(options[key]),'placeholder': placeholder[key],'regEx': regEx[key]};
-      //         entity_result.push(instance['entity']);
-      //         old_fields.push(nameArray);
-      //       })
-
-      //       instance['entity'] = entity_result;
-      //       instance['old_title'] = instance['title'];
-      //       instance['old_fields'] = old_fields;
-      //       instance['database_name'] = JSON.parse(instance['database_name'])
-      //       instance['database'] = instance['database_name']
-      //       instance['_id'] = instance['id']
-            
-      //       result.push(instance);  
-      //     })
-          
-      //   }))
-      // })
-      // return result;
 
       return Promise.all(promises).then(content => {
         return _.union(...content)
       });
     });
     var res = await (schemadata())
-    console.log('schemadata getSchema',res);
     return res;
   }),
   getflowsInstance: async(function () {
@@ -432,59 +618,52 @@ module.exports = {
       var promises = []
 
       for(var dbinstance of db) {
-
-        var res = await (schemaTabledata(dbinstance))
-        
+        var res = await (schemaTabledata(defaultDb[0]))
         //instanceVal1 = {};
         
-          // console.log('rr', res);
         _.forEach(res, function (r) {
 
-          let name = r.name.split("||");
-          let type = r.type.split("||");
-          let customtype = r.customtype.split("||");
+          let database_name = JSON.parse(r.database_name)
           
-          _.forEach(name, function (nameArray,key) {
-
-            if(customtype[key] == 1)
-            {
-              console.log('true', parseInt(type[key]));
-              var detailSchema = await (schemadetailWithId(parseInt(type[key]), dbinstance))
-              console.log('detailSchema', detailSchema);
-            }
-            else
-            {
-              console.log('false');
-            }
-          })
+          var dbName = await(getDatabaseName(database_name[1]));
 
             instanceVal1 = [];
+            if(dbName.id == dbinstance.id)
+            {
+              var process = new Promise((resolve, reject) => {
+                
+                var commonSelect = await(getQuery('mysql','select','commonSelect'));
+                commonSelect = commonSelect.replace('{{ table_name }}',dbName.dbname+'.'+r.title.replace(' ', '_'));
+                commonSelect = commonSelect.replace('{{ fields }}','*');
 
-            var process = new Promise((resolve, reject) => {
-              dbinstance.conn.query("SELECT * from "+r.title, function (error, results, fields) {
-                if (error) throw error;
-                _.forEach(results, function (rs) {
-                  instanceVal = {};         
-                  //instanceVal['title'] = r.title;
-                  instanceVal['database'] = JSON.parse(r.database_name);
-                  instanceVal['Schemaid'] = r.id;
-                  _.forEach(rs, function (rs1,key) {
-                    try {
-                        instanceVal[key] = JSON.parse(rs1);
-                      } catch (e) {
-                        instanceVal[key] = rs1;                        
-                      }
+                dbinstance.conn.query(commonSelect, function (error, results, fields) {
+                  if (error) throw error;
+                
+                  _.forEach(results, function (rs) {
+                    instanceVal = {};         
+                    //instanceVal['title'] = r.title;
+                    // instanceVal['database'] = JSON.parse(r.database_name);
+                    instanceVal['Schemaid'] = r.id.toString();
+                    instanceVal['_id'] = rs.id.toString();
+                    
+                    _.forEach(rs, function (rs1,key) {
+                      try {
+                          instanceVal[key] = JSON.parse(rs1);
+                        } catch (e) {
+                          instanceVal[key] = rs1;                        
+                        }
+                    })
+                    delete instanceVal['id']; 
+                    instanceVal1.push(instanceVal);
                   })
-                  instanceVal1.push(instanceVal);
+                  resolve(instanceVal1)
                 })
-                resolve(instanceVal1)
               })
-            })
-            promises.push(process)
+              promises.push(process)
+            }
         })
       }
       
-      console.log('promises', promises)
       return Promise.all(promises).then(content => {
         return _.union(...content)
       });
@@ -494,201 +673,315 @@ module.exports = {
     var res = await (flowsInstance())
     return res;
   }),
-  getThisflowsInstance: async(function (id,Schemaid) {
-    console.log('mysql get flowsInstanceCurrent');
-  
+  getThisflowsInstance: async(function (id,Schemaid,columnName) {
+    console.log('mysql get flowsInstanceCurrent',id,Schemaid,columnName);
+   
     var flowsInstance = async(function () {
       var result = []
       var promises = []
-      _.forEach(db, function (dbinstance) {
+      if(/^\d+$/.test(id))
+      {
+        _.forEach(db, function (dbinstance) {
 
-        ///////////////////////////////////////////////  Using Schemaid //////////////////////////////////////////////////////////
-        
-        // var res = await (schemadetailWithId(Schemaid,dbinstance))
-        // var rs = res[0];
-        // table_name = rs.title.replace(' ', '_');
-    
-        // console.log(table_name);
-        // instanceVal1 = [];
-        
-        // var process = new Promise((resolve, reject) => {
-        //   dbinstance.conn.query("SELECT * from "+table_name+" where id="+id, function (error, results, fields) {
-        //     if (error) throw error;
-        //     _.forEach(results, function (instance) {
-        //       instanceVal = {};         
-
-        //       instanceVal['database'] = JSON.parse(rs.database_name);
-        //       instanceVal['Schemaid'] = Schemaid;
-              
-        //       _.forEach(rs, function (rs1,key) {
-        //         try {
-        //             instanceVal[key] = JSON.parse(rs1);
-        //           } catch (e) {
-        //             instanceVal[key] = rs1;                        
-        //           }
-        //       })
-        //       instanceVal1.push(instanceVal);
-        //     })
-        //     resolve(instanceVal1)
-        //   })
-        // })
-
-        ///////////////////////////////////////////////  Using Schemaid //////////////////////////////////////////////////////////
-
-        var res = await (schemaTabledata(dbinstance))
-        
-          // console.log('rr', res);
-        _.forEach(res, function (r) {
-
-          instanceVal1 = [];
+          ///////////////////////////////////////////////  Using Schemaid //////////////////////////////////////////////////////////
           
-          var process = new Promise((resolve, reject) => {
-            var table_name = r.title.replace(' ', '_');
+          // var res = await (schemadetailWithId(Schemaid,dbinstance))
+          // var rs = res[0];
+          // table_name = rs.title.replace(' ', '_');
+      
+          // console.log(table_name);
+          // instanceVal1 = [];
+          
+          // var process = new Promise((resolve, reject) => {
+          //   dbinstance.conn.query("SELECT * from "+table_name+" where id="+id, function (error, results, fields) {
+          //     if (error) throw error;
+          //     _.forEach(results, function (instance) {
+          //       instanceVal = {};         
+
+          //       instanceVal['database'] = JSON.parse(rs.database_name);
+          //       instanceVal['Schemaid'] = Schemaid;
+                
+          //       _.forEach(rs, function (rs1,key) {
+          //         try {
+          //             instanceVal[key] = JSON.parse(rs1);
+          //           } catch (e) {
+          //             instanceVal[key] = rs1;                        
+          //           }
+          //       })
+          //       instanceVal1.push(instanceVal);
+          //     })
+          //     resolve(instanceVal1)
+          //   })
+          // })
+
+          ///////////////////////////////////////////////  Using Schemaid //////////////////////////////////////////////////////////
+          if(typeof columnName !== 'undefined' && typeof Schemaid !== 'undefined')
+          {
+            var getSchemaId = await (getSchemaIdFromEntity(defaultDb[0], Schemaid, columnName))
+            var res = await (schemaTabledata(defaultDb[0],getSchemaId[0]))
+          }
+          else if(typeof Schemaid !== 'undefined')
+          {
+            var res = await (schemaTabledata(defaultDb[0],Schemaid))
+          }
+          else{
+            var res = await (schemaTabledata(defaultDb[0]))          
+          }
+          
+          _.forEach(res, function (r) {
+
+            instanceVal1 = [];
             
-            dbinstance.conn.query("SELECT * from "+table_name+" where _id='"+id+"'", function (error, results, fields) {
-              if (error) throw error;
+            var process = new Promise((resolve, reject) => {
 
-              if(results.length>0)
-              {
-                _.forEach(results, function (instance) {
-                  instanceVal = {};         
-    
-                  instanceVal['database'] = JSON.parse(r.database_name);
-                  instanceVal['Schemaid'] = r.id;
-                  
-                  _.forEach(instance, function (rs1,key) {
-                    try {
-                        instanceVal[key] = JSON.parse(rs1);
-                      } catch (e) {
-                        instanceVal[key] = rs1;                        
-                      }
+              let database_name = JSON.parse(r.database_name)
+              var dbName = await(getDatabaseName(database_name[1]));
+
+              var table_name = dbName.dbname+'.'+r.title.replace(' ', '_');
+              
+              var commonSelect = await(getQuery('mysql','select','commonSelectWithCondition'));
+              commonSelect = commonSelect.replace('{{ table_name }}',table_name);
+              commonSelect = commonSelect.replace('{{ fields }}','*');
+              commonSelect = commonSelect.replace('{{ where }}','id="'+id+'"');
+
+              dbinstance.conn.query(commonSelect, function (error, results, fields) {
+                if (error) throw error;
+      
+                if(results.length>0)
+                {
+                  _.forEach(results, function (instance) {
+                    instanceVal = {};         
+      
+                    // instanceVal['database'] = JSON.parse(r.database_name);
+                    instanceVal['Schemaid'] = r.id.toString();
+                    instanceVal['_id'] = instance.id.toString();
+                    
+                    _.forEach(instance, function (rs1,key) {
+                      try {
+                          instanceVal[key] = JSON.parse(rs1);
+                        } catch (e) {
+                          instanceVal[key] = rs1;                        
+                        }
+                    })
+                    instanceVal1.push(instanceVal);
                   })
-                  instanceVal1.push(instanceVal);
-                })
-              }
-              resolve(instanceVal1)
+                }
+                resolve(instanceVal1)
+              })
             })
-          })
-          
-          promises.push(process)
+            
+            promises.push(process)
 
+          })
         })
-      })
+      }
       //return result;
 
-      //console.log('promises', promises)
       return Promise.all(promises).then(content => {
         return _.union(...content)
       });
 
     });
     var res = await (flowsInstance())
+    
     return res;
   }),
   //post methods
   postSchema: async(function (data) {
     console.log('mysql post Schema');
     let database_name = JSON.stringify(data.database)
-
+    
     var selectedDB = _.find(db, (d) => {
       return d.id == data.database[1]
     })
-    var sql = "INSERT INTO tbl_schema (title,database_name) VALUES ('"+data.title+"','"+database_name+"')";
+    
+    schemaDb = defaultDb[0];
 
-    var schemadata = async(function () {
+    var dbName = await(getDatabaseName(data.database[1]));
+    let uuid = await (UUID())
+    var schemaQuery = await(getQuery('mysql','insert','commonInsert'));
+    schemaQuery = schemaQuery.replace('{{ table_name }}','tbl_schema');
+    schemaQuery = schemaQuery.replace('{{ fields }}','title,database_name');
+    
+    var values = "'"+data.title+"'"+","+"'"+database_name+"'";
+    
+    schemaQuery = schemaQuery.replace('{{ values }}',values);
+    
+    // insert data in schema table
+    var schemadata = function () {
       var result = []
-      var schema = await (selectedDB.conn.query(sql, function (err, results) {
-        if (err) throw err;
-        console.log('last inserted:'+results.insertId);
-        table_name = data.title.replace(' ', '_');
-        fields="";
-        _.forEach(data.entity, function (entity,index) {
-
-          var isLastElement = index == data.entity.length -1;
-          if(isLastElement)
-            fields += entity.name+" Text";
-          else
-            fields += entity.name+" Text,";
-          
-          if(isLastElement)
-          {
-            sql = "CREATE TABLE IF NOT EXISTS "+table_name+" ("+fields+")";
-            selectedDB.conn.query(sql);
-            sql = "SELECT * FROM information_schema.COLUMNS WHERE TABLE_NAME = '"+table_name+"' AND COLUMN_NAME = 'id'";
-            isexist = selectedDB.conn.query(sql, function (err, results) {
-              if(results.length == 1)
-              {
-                var sql = "ALTER TABLE "+table_name+" DROP id";
-                selectedDB.conn.query(sql);
-              }
-              var sql = "ALTER TABLE "+table_name+" ADD id INT(11) NOT NULL AUTO_INCREMENT FIRST, ADD PRIMARY KEY (id);";
-              selectedDB.conn.query(sql); 
-            })
-
-            sql = "SELECT * FROM information_schema.COLUMNS WHERE TABLE_NAME = '"+table_name+"' AND COLUMN_NAME = '_id'";
-            isexist = selectedDB.conn.query(sql, function (err, results) {
-              if(results.length == 1)
-              {
-                var sql = "ALTER TABLE "+table_name+" DROP _id";
-                selectedDB.conn.query(sql);
-              }
-              var sql = "ALTER TABLE "+table_name+" ADD _id Varchar(255) NOT NULL  AFTER id";
-              selectedDB.conn.query(sql);  
-            })
-          }
-
-          if(entity.customtype)
-          {
-            console.log('true')
-            customtype = 1;
-          }
-          else{
-            console.log('false')
-            customtype = 0;
-          }
-          var sql = "INSERT INTO tbl_entity (name,type,customtype,notes,schemaid) VALUES ('"+entity.name+"','"+entity.type+"',"+customtype+",'"+entity.notes+"','"+results.insertId+"')";
-          selectedDB.conn.query(sql, function (err, entity_result) {
-            if (err) throw err;
-              let properties = entity.property;
-              
-              let min = properties.min||'0';
-              let max = properties.max||'0';
-              let mindate = properties.mindate||'';
-              let maxdate = properties.maxdate||'';
-              let allowedValue = JSON.stringify(properties.allowedValue)||[];
-              let defaultValue = properties.defaultValue||'';
-              let placeholder = properties.placeholder||'';
-              let helper = properties.helper||'';
-              let regEx = properties.regEx||'';
-              let optional = properties.optional||'';
-              let options = JSON.stringify(properties.options)||[];
-              let IsArray = properties.IsArray||'';
-
-              var sql = "INSERT INTO tbl_property (min,max,mindate,maxdate,allowed_value,default_value,helper,regex,placeholder,optional,options,IsArray,entity_id) VALUES ('"+min+"','"+max+"','"+mindate+"','"+maxdate+"','"+allowedValue+"','"+defaultValue+"','"+placeholder+"','"+helper+"','"+regEx+"','"+optional+"','"+options+"','"+IsArray+"','"+entity_result.insertId+"')";
-              selectedDB.conn.query(sql, function (err, property_result) {
-                if (err) throw err;
-              });
-
-          });
+      
+      return new Promise((resolve, reject) => {
+        schemaDb.conn.query(schemaQuery, function (error, result, fields) {
+          error? reject(error) : resolve(result.insertId)
         })
-        result.push(results.insertId)
-      }))
-      return result     
-    });
+      }).then(content => {
+        return content;
+      }).catch(err=> {
+        return err;
+      })     
+    };
     var res = await (schemadata())
-    return res;
-  }),
-  postflowsInstance: async(function (data) {
-    var selectedDB = _.find(db, (d) => {
-      return d.id == data.database[1]
-    })
+    // end - insert data in schema table
+    
+    // insert data in entity table
+    
+    var entitydata = async(function () {
+      var promises = []
 
-    var res = await (schemadataWithId(data.Schemaid, selectedDB))
+      table_name = data.title.replace(' ', '_');
+      fields="";
+      
+      _.forEach(data.entity, function (entity,index) {
+
+        var isLastElement = index == data.entity.length -1;
+        if(entity.name !="id" && entity.name != "_id")
+        {
+          if(isLastElement)
+            fields += entity.name.replace(' ', '_')+" Text";
+          else
+            fields += entity.name.replace(' ', '_')+" Text,";
+        }
+        if(isLastElement)
+        {
+          var createTableQuery = await(getQuery('mysql','create','createTable'));
+          createTableQuery = createTableQuery.replace('{{ table_name }}',table_name);
+          createTableQuery = createTableQuery.replace('{{ fields }}',fields);
+          createTableQuery = createTableQuery.replace(',)',')');
+          
+          selectedDB.conn.query(createTableQuery);
+          
+          var alterTableAndAddPrimaryKey = await(getQuery('mysql','alter','alterTableAndAddPrimaryKey'));
+          alterTableAndAddPrimaryKey = alterTableAndAddPrimaryKey.replace('{{ table_name }}',table_name);
+          alterTableAndAddPrimaryKey = alterTableAndAddPrimaryKey.replace('{{ field }}','id');
+          alterTableAndAddPrimaryKey = alterTableAndAddPrimaryKey.replace('{{ primary_field }}','id');
+
+          
+          selectedDB.conn.query(alterTableAndAddPrimaryKey);
+
+          // var alterTableAndAddField = await(getQuery('mysql','alter','alterTableAndAddField'));
+          // alterTableAndAddField = alterTableAndAddField.replace('{{ table_name }}',table_name);
+          // alterTableAndAddField = alterTableAndAddField.replace('{{ field }}','_id');
+          // alterTableAndAddField = alterTableAndAddField.replace('{{ type }}','Varchar(255) NOT NULL');
+          // alterTableAndAddField = alterTableAndAddField.replace('{{ after }}','AFTER id');
+
+          // selectedDB.conn.query(alterTableAndAddField);
+        }
+
+        if(entity.customtype)
+        {
+          customtype = 1;
+        }
+        else{
+          customtype = 0;
+        }
+        
+        var entityQuery = await(getQuery('mysql','insert','commonInsert'));
+        entityQuery = entityQuery.replace('{{ table_name }}','tbl_entity');
+        entityQuery = entityQuery.replace('{{ fields }}','name,type,customtype,notes,schemaid');
+        
+        var values = "'"+entity.name.replace(' ', '_')+"'"+","+"'"+entity.type+"'"+","+"'"+customtype+"'"+","+"'"+entity.notes+"'"+","+"'"+res+"'";
+        
+        entityQuery = entityQuery.replace('{{ values }}',values);
+        
+        var process = new Promise((resolve, reject) => {
+          schemaDb.conn.query(entityQuery, function (error, result, fields) {
+            error? reject(error) : resolve(result.insertId)
+          })
+        })
+        promises.push(process); 
+      });
+    
+      return Promise.all(promises).then(content => {
+        return _.union(content)
+      });
+    })
+    var entityResponse = await (entitydata())
+    // end - insert data in entity table
+    
+    // insert data in property table
+    
+    var propertydata = async(function () {
+      _.forEach(data.entity, function (entity,index) {
+        return new Promise((resolve, reject) => {
+
+          let properties = entity.property;
+          
+          let min = properties.min||'0';
+          let max = properties.max||'0';
+          let mindate = properties.mindate||'';
+          let maxdate = properties.maxdate||'';
+          let allowedValue = JSON.stringify(properties.allowedValue)||[];
+          let defaultValue = properties.defaultValue||'';
+          let placeholder = properties.placeholder||'';
+          let helper = properties.helper||'';
+          let regEx = properties.regEx||'';
+          let optional = properties.optional||'';
+          let options = JSON.stringify(properties.options)||[];
+          let IsArray = properties.IsArray||'';
+          
+          var propertyQuery = await(getQuery('mysql','insert','commonInsert'));
+          propertyQuery = propertyQuery.replace('{{ table_name }}','tbl_property');
+          propertyQuery = propertyQuery.replace('{{ fields }}','min,max,mindate,maxdate,allowed_value,default_value,helper,regex,placeholder,optional,options,IsArray,entity_id');
+          
+          var values = "'"+min+"'"+","+"'"+max+"'"+","+"'"+mindate+"'"+","+"'"+maxdate+"'"+","+"'"+allowedValue+"'"+","+"'"+defaultValue+"'"+","+"'"+helper+"'"+","+"'"+regEx+"'"+","+"'"+placeholder+"'"+","+"'"+optional+"'"+","+"'"+options+"'"+","+"'"+IsArray+"'"+","+"'"+entityResponse[index]+"'";
+          
+          propertyQuery = propertyQuery.replace('{{ values }}',values);
+          
+          schemaDb.conn.query(propertyQuery, function (error, result, fields) {
+            error? reject(error) : resolve(result.insertId)
+          })
+        }).then(content => {
+          return content;
+        }).catch(err=> {
+          return err;
+        })  
+      });
+    })
+    var propertyResponse = await (propertydata())
+    // var r = await (tabledataWithId('tbl_schema',res,selectedDB))
+    var response = await (schemaTableAllDataByID(res))
+    responseArray = [];
+    _.forEach(response, function (resp,index) {
+      responseObj = {};
+      responseObj['_id'] = resp['id']
+      responseObj['database'] = resp['database']
+      responseObj['entity'] = resp['entity']
+      responseObj['title'] = resp['title']
+      responseArray.push(responseObj);
+    });
+    
+    return responseArray;
+    // end - insert data in property table
+  }),
+  postflowsInstance: async(function (data,dbid,_id) {
+    console.log('mysql post flowsInstance');
+    // var selectedDB = _.find(db, (d) => {
+    //   return d.id == data.database[1]
+    // })
+    var selectedDB;
+    for (let i = 0; i< db.length; i++) {
+      if (db[i].id == dbid) {
+        selectedDB = db[i]
+      }  
+    }
+    
+    if(typeof _id !== 'undefined')
+    {
+      var id = parseInt(_id);
+    }
+    else{
+      var id = parseInt(data.Schemaid);
+    }
+
+    var res = await (schemadataWithId(id, defaultDb[0]))
+
     table_name = res[0];
 
     var schemadata = function () {
       var result = []
       var tableFields='';
+      var tableValues='';
       k=0;  
 
       _.forEach(data, function (d,key) {
@@ -699,25 +992,63 @@ module.exports = {
             let res = await (UUID())
             let uuid = res;
 
-            tableFields += key+"='"+d+"'";
-            tableFields += ",_id='"+uuid+"'";
+            tableFields += key;
+
+            if(typeof d == 'object')
+              {
+                tableValues += "'"+JSON.stringify(d)+"'";
+              }
+              else{
+                tableValues += "'"+d+"'";
+              } 
           }
           else
           {
             if(typeof d == 'object')
             {
-              tableFields += ","+key+"='"+JSON.stringify(d)+"'";
+              tableFields += ','+key;
+              tableValues += ",'"+JSON.stringify(d)+"'";              
             }
             else{
-              tableFields += ","+key+"='"+d+"'";              
+              tableFields += ','+key;
+              tableValues += ",'"+d+"'";              
             }
           }
           k++; 
         }
       })
+      
+      // _.forEach(data, function (d,key) {
+      //   if(key != 'Schemaid' && key != 'database')
+      //   {
+      //     if(k==0)
+      //     {
+      //       let res = await (UUID())
+      //       let uuid = res;
+
+      //       tableFields += key+"='"+d+"'";
+      //       tableFields += ",_id='"+uuid+"'";
+      //     }
+      //     else
+      //     {
+      //       if(typeof d == 'object')
+      //       {
+      //         tableFields += ","+key+"='"+JSON.stringify(d)+"'";
+      //       }
+      //       else{
+      //         tableFields += ","+key+"='"+d+"'";              
+      //       }
+      //     }
+      //     k++; 
+      //   }
+      // })
     
       return new Promise((resolve, reject) => {
-        selectedDB.conn.query("INSERT INTO "+table_name+" SET "+tableFields, function (error, result, fields) {
+        var commonInsert = await(getQuery('mysql','insert','commonInsert'));
+        commonInsert = commonInsert.replace('{{ table_name }}',table_name);
+        commonInsert = commonInsert.replace('{{ fields }}',tableFields);
+        commonInsert = commonInsert.replace('{{ values }}',tableValues);
+        selectedDB.conn.query(commonInsert, function (error, result, fields) {
           error? reject(error) : resolve(result.insertId)
         })
       }).then(content => {
@@ -727,9 +1058,10 @@ module.exports = {
       })
     };
     var res = await (schemadata())
-
-    var tableDetail = await (tabledataWithId(table_name, res, selectedDB));
-    return tableDetail[0];
+    return res;
+    
+    // var tableDetail = await (tabledataWithId(table_name, res, selectedDB));
+    // return tableDetail[0];
   }),
   //put methods
   putSchema: async(function (data, id) {
@@ -741,122 +1073,231 @@ module.exports = {
     var selectedDB = _.find(db, (d) => {
       return d.id == data.database[1]
     })
+    schemaDb = defaultDb[0];
 
     if(data.old_title != data.title)
     {
-      var sql = "RENAME Table "+data.old_title+" TO "+data.title;
-      selectedDB.conn.query(sql);
+      var commonRename = await(getQuery('mysql','rename','commonRename'));
+      commonRename = commonRename.replace('{{ old_table_name }}',data.old_title);
+      commonRename = commonRename.replace('{{ new_table_name }}',data.title.replace(' ', '_'));
+
+      selectedDB.conn.query(commonRename);
     }
-    // console.log("=============="+JSON.stringify(selectedDB))
 
-    // var sql = "UPDATE tbl_schema SET title='"+data.title+"',database_name='"+database_name+"',entity='"+entity+"' WHERE id="+id;
+    var dbName = await(getDatabaseName(data.database[1]));
 
-    // var schemadata = async(function () {
-    //   var result = []
-    //   var schema = await (selectedDB.conn.query(sql, function (err, results) {
-    //     if (err) throw err;
-    //     console.log('results');
-    //     console.log(results.insertId);
-    //     result.push(results.insertId)
-    //     // _.forEach(results, function (instance) {
-    //     //   result.push(instance)
-    //     // })
-    //     //console.log("1 record inserted");
-    //   }))
-    //   return result      
-    // });
-    var sql = "UPDATE tbl_schema SET title='"+data.title+"',database_name='"+database_name+"' WHERE id="+id;
-    
-    var schemadata = async(function () {
+    var commonUpdate = await(getQuery('mysql','update','commonUpdate'));
+    commonUpdate = commonUpdate.replace('{{ table_name }}','tbl_schema');
+    commonUpdate = commonUpdate.replace('{{ fields }}',"title="+"'"+data.title+"',database_name="+"'"+database_name+"'");
+    commonUpdate = commonUpdate.replace('{{ where }}','id='+id);
+
+    var updateSchema = function () {
       var result = []
-      var schema = await (selectedDB.conn.query(sql, function (err, results) {
-        if (err) throw err;
+      
+      return new Promise((resolve, reject) => {
+        schemaDb.conn.query(commonUpdate, function (error, result, fields) {
+          error? reject(error) : resolve(result.insertId)
+        })
+      }).then(content => {
+        return content;
+      }).catch(err=> {
+        return err;
+      })     
+    };
+    var resUpdateSchema = await (updateSchema());
 
-        var sql = "SELECT GROUP_CONCAT(e.id) as entityid FROM tbl_entity as e where schemaid="+id+" GROUP BY schemaid";
+    var commonSelectWithCondition = await(getQuery('mysql','select','commonSelectWithCondition'));
+    commonSelectWithCondition = commonSelectWithCondition.replace('{{ table_name }}','tbl_entity');
+    commonSelectWithCondition = commonSelectWithCondition.replace('{{ fields }}','GROUP_CONCAT(id) as entityid');
+    commonSelectWithCondition = commonSelectWithCondition.replace('{{ where }}','schemaid='+id+' GROUP BY schemaid');
+
+    var deleteSchemaData = function () {
+      return new Promise((resolve, reject) => {
+        schemaDb.conn.query(commonSelectWithCondition, function (error, result, fields) {
+          error? reject(error) : resolve(result[0].entityid)
+        })
+      }).then(content => {
+        return content;
+      }).catch(err=> {
+        return err;
+      })     
+    };
+    var resDeleteSchemaData = await (deleteSchemaData());
+
+    var commonDelete = await(getQuery('mysql','delete','commonDelete'));
+    commonDelete = commonDelete.replace('{{ table_name }}','tbl_entity');
+    commonDelete = commonDelete.replace('{{ where }}','schemaid='+id);
+
+    schemaDb.conn.query(commonDelete);
+    
+    var commonDelete = await(getQuery('mysql','delete','commonDelete'));
+    commonDelete = commonDelete.replace('{{ table_name }}','tbl_property');
+    commonDelete = commonDelete.replace('{{ where }}','entity_id IN('+resDeleteSchemaData+')');
+
+    schemaDb.conn.query(commonDelete);
+    
+    // insert data in entity table
+    
+    var entitydata = async(function () {
+      var promises = []
+
+      table_name = data.title.replace(' ', '_');
+      
+      _.forEach(data.entity, function (entity,index) { 
+
+        if(entity.customtype)
+        {
+          customtype = 1;
+        }
+        else{
+          customtype = 0;
+        }
         
-        selectedDB.conn.query(sql, function (err, entity_ids) {
-          if (err) throw err;
-          
-          var sql = "DELETE FROM tbl_entity where schemaid="+id;
-          selectedDB.conn.query(sql);
-          
-          var sql = "DELETE FROM tbl_property where entity_id IN("+entity_ids[0].entityid+")";
-          selectedDB.conn.query(sql);
-          
-          table_name = data.title.replace(' ', '_');
-          new_fields=[]
-          _.forEach(data.entity, function (entity,index) {
-
-            if(entity.name != 'id' && entity.name != '_id')
-            {
-              new_fields.push(entity.name);
-              var sql = "SELECT * FROM information_schema.COLUMNS WHERE TABLE_NAME = '"+table_name+"' AND COLUMN_NAME = '"+entity.name+"'";
-              isexist = selectedDB.conn.query(sql, function (err, results) {
-                if(results.length == 0)
-                {
-                  var sql = "ALTER TABLE "+table_name+" ADD "+entity.name+" TEXT NULL DEFAULT NULL";
-                  selectedDB.conn.query(sql);
-                } 
-              })
-            }  
-            
-            if(entity.customtype)
-            {
-              console.log('true')
-              customtype = 1;
-            }
-            else{
-              console.log('false')
-              customtype = 0;
-            }
-
-            var sql = "INSERT INTO tbl_entity (name,type,customtype,notes,schemaid) VALUES ('"+entity.name+"','"+entity.type+"',"+customtype+",'"+entity.notes+"','"+id+"')";
-            selectedDB.conn.query(sql, function (err, entity_result) {
-              if (err) throw err;
-                let properties = entity.property;
-                
-                let min = properties.min||'0';
-                let max = properties.max||'0';
-                let mindate = properties.mindate||'';
-                let maxdate = properties.maxdate||'';
-                let allowedValue = JSON.stringify(properties.allowedValue)||[];
-                let defaultValue = properties.defaultValue||'';
-                let placeholder = properties.placeholder||'';
-                let helper = properties.helper||'';
-                let regEx = properties.regEx||'';
-                let optional = properties.optional||'';
-                let options = JSON.stringify(properties.options)||[];
-                let IsArray = properties.IsArray||'';
-  
-                var sql = "INSERT INTO tbl_property (min,max,mindate,maxdate,allowed_value,default_value,helper,regex,placeholder,optional,options,IsArray,entity_id) VALUES ('"+min+"','"+max+"','"+mindate+"','"+maxdate+"','"+allowedValue+"','"+defaultValue+"','"+placeholder+"','"+helper+"','"+regEx+"','"+optional+"','"+options+"','"+IsArray+"','"+entity_result.insertId+"')";
-                selectedDB.conn.query(sql, function (err, property_result) {
-                  if (err) throw err;
-                });
-  
-            });
+        var entityQuery = await(getQuery('mysql','insert','commonInsert'));
+        entityQuery = entityQuery.replace('{{ table_name }}','tbl_entity');
+        entityQuery = entityQuery.replace('{{ fields }}','name,type,customtype,notes,schemaid');
+        
+        var values = "'"+entity.name.replace(' ', '_')+"'"+","+"'"+entity.type+"'"+","+"'"+customtype+"'"+","+"'"+entity.notes+"'"+","+"'"+id+"'";
+        
+        entityQuery = entityQuery.replace('{{ values }}',values);
+        
+        var process = new Promise((resolve, reject) => {
+          schemaDb.conn.query(entityQuery, function (error, result, fields) {
+            error? reject(error) : resolve(result.insertId)
           })
-          difference = _.difference(data.old_fields,new_fields)
-          _.forEach(difference, function (value,index) {
-            var sql = "ALTER TABLE "+table_name+" DROP "+value;
-            selectedDB.conn.query(sql);
+        })
+        promises.push(process); 
+      });
+    
+      return Promise.all(promises).then(content => {
+        return _.union(content)
+      });
+    })
+    var entityResponse = await (entitydata())
+    // end - insert data in entity table
+
+    // insert data in property table
+    
+    var propertydata = async(function () {
+      _.forEach(data.entity, function (entity,index) {
+        return new Promise((resolve, reject) => {
+
+          let properties = entity.property;
+          
+          let min = properties.min||'0';
+          let max = properties.max||'0';
+          let mindate = properties.mindate||'';
+          let maxdate = properties.maxdate||'';
+          let allowedValue = JSON.stringify(properties.allowedValue)||[];
+          let defaultValue = properties.defaultValue||'';
+          let placeholder = properties.placeholder||'';
+          let helper = properties.helper||'';
+          let regEx = properties.regEx||'';
+          let optional = properties.optional||'';
+          let options = JSON.stringify(properties.options)||[];
+          let IsArray = properties.IsArray||'';
+          
+          var propertyQuery = await(getQuery('mysql','insert','commonInsert'));
+          propertyQuery = propertyQuery.replace('{{ table_name }}','tbl_property');
+          propertyQuery = propertyQuery.replace('{{ fields }}','min,max,mindate,maxdate,allowed_value,default_value,helper,regex,placeholder,optional,options,IsArray,entity_id');
+          
+          var values = "'"+min+"'"+","+"'"+max+"'"+","+"'"+mindate+"'"+","+"'"+maxdate+"'"+","+"'"+allowedValue+"'"+","+"'"+defaultValue+"'"+","+"'"+helper+"'"+","+"'"+regEx+"'"+","+"'"+placeholder+"'"+","+"'"+optional+"'"+","+"'"+options+"'"+","+"'"+IsArray+"'"+","+"'"+entityResponse[index]+"'";
+          
+          propertyQuery = propertyQuery.replace('{{ values }}',values);
+          
+          schemaDb.conn.query(propertyQuery, function (error, result, fields) {
+            error? reject(error) : resolve(result.insertId)
           })
-        });
-        result.push(results.insertId)
-      }))
-      return result     
-    });
+        }).then(content => {
+          return content;
+        }).catch(err=> {
+          return err;
+        })  
+      });
+    })
+    var propertyResponse = await (propertydata())    
+    // end - insert data in property table
 
-    var res = await (schemadata())
-    return res;
-  }),
-  putflowsInstance: async(function (data, id) {
-    console.log('mysql put flowsInstance');
 
-    var selectedDB = _.find(db, (d) => {
-      return d.id == data.database[1]
+    var updateSchemaData = async(function () {
+      var promises = []
+
+      table_name = data.title.replace(' ', '_');
+      
+      new_fields=[]
+      
+      _.forEach(data.entity, function (entity,index) {
+
+        if(entity.name != 'id' && entity.name != '_id')
+        {
+          new_fields.push(entity.name.replace(' ', '_'));
+          
+          var checkColumn = await(getQuery('mysql','select','checkColumn'));
+          checkColumn = checkColumn.replace('{{ table_name }}','information_schema.COLUMNS');
+          checkColumn = checkColumn.replace('{{ tableName }}',table_name);
+          checkColumn = checkColumn.replace('{{ fields }}','*');
+          checkColumn = checkColumn.replace('{{ database_name }}',dbName.dbname);
+          checkColumn = checkColumn.replace('{{ column_name }}',entity.name.replace(' ', '_'));
+
+          
+          var process = new Promise((resolve, reject) => {
+            schemaDb.conn.query(checkColumn, function (error, result, fields) {
+              error? reject(error) : result.length == 0 ? resolve(entity.name.replace(' ', '_')) : resolve('')
+            })
+          })
+        }
+
+        promises.push(process); 
+      });
+    
+      return Promise.all(promises).then(content => {
+        return _.union(content)
+      });
+    })
+
+    var updateSchemaDataResponse = await (updateSchemaData())
+    
+    _.forEach(updateSchemaDataResponse, function (field,index) {
+        if(field != "")
+        {
+          var alterTableAndAddField = await(getQuery('mysql','alter','alterTableAndAddField'));
+          alterTableAndAddField = alterTableAndAddField.replace('{{ table_name }}',table_name);
+          alterTableAndAddField = alterTableAndAddField.replace('{{ field }}',field);
+          alterTableAndAddField = alterTableAndAddField.replace('{{ type }}','TEXT NULL DEFAULT NULL');
+          alterTableAndAddField = alterTableAndAddField.replace('{{ after }}','');
+
+          selectedDB.conn.query(alterTableAndAddField);
+        }
+    })
+
+    difference = _.difference(data.old_fields,new_fields)
+
+    _.forEach(difference, function (value,index) {
+      var dropField = await(getQuery('mysql','alter','dropField'));
+      dropField = dropField.replace('{{ table_name }}',table_name);
+      dropField = dropField.replace('{{ field }}',value);
+
+      selectedDB.conn.query(dropField);
     })
     
-    var res = await (schemadataWithId(id, selectedDB))
+    return id;
+  }),
+  putflowsInstance: async(function (data, id, dbid) {
+    console.log('mysql put flowsInstance');
+
+    // var selectedDB = _.find(db, (d) => {
+    //   return d.id == data.database[1]
+    // })
+    var selectedDB = _.find(db, (d) => {
+      return d.id == dbid
+    })
+
+    var resSchema = await (getSchemaOriginalId(parseInt(data.Schemaid), selectedDB))
+    
+    var schemaid = resSchema[0];
+    
+    var res = await (schemadataWithId(schemaid, defaultDb[0]))
+    
     table_name = res[0];
 
     var schemadata = function () {
@@ -865,7 +1306,7 @@ module.exports = {
       k=0;  
 
       _.forEach(data, function (d,key) {
-        if(key != 'schemaid' && key != 'database')
+        if(key != 'Schemaid' && key != '_id' && key != 'id' && key != 'database')
         {
           if(k==0)
             tableFields += key+"='"+d+"'";
@@ -875,8 +1316,15 @@ module.exports = {
         }
       })
 
+
       return new Promise((resolve, reject) => {
-        selectedDB.conn.query("UPDATE "+table_name+" SET "+tableFields+" where id="+data.id, function (error, result, fields) {
+        var commonUpdate = await(getQuery('mysql','update','commonUpdate'));
+        commonUpdate = commonUpdate.replace('{{ table_name }}',table_name);
+        commonUpdate = commonUpdate.replace('{{ fields }}',tableFields);
+        commonUpdate = commonUpdate.replace('{{ where }}','id='+data.id);
+      
+        // selectedDB.conn.query("UPDATE "+table_name+" SET "+tableFields+" where id="+data.id, function (error, result, fields) {
+        selectedDB.conn.query(commonUpdate, function (error, result, fields) {
           error? reject(error) : resolve(data.id)
         })
       }).then(content => {
@@ -886,33 +1334,14 @@ module.exports = {
       })
     };
     var res = await (schemadata())
+    
     return res;
 
   }),
   deleteSchema: async(function () {
     console.log('mysql delete allSchema');
   }),
-  //delete methods
-  // deleteSchema: async(function() {
-  //     // var _data = JSON.parse(data);
-  //     // console.log('mongo delete Schema');
-  //  // var id = new mongoose.Types.ObjectId(id);
-  //  // console.log('id from putSchema:',id);
-  //  // db.collection('schema').updateOne({ _id: id }, { $set: _data }, function(err, result) {
-  //  //     if (err) {
-  //  //         return {success: false}
-  //  //     } else {
-  //  //         return {success: true}
-  //  //     }
-  //  // });
-  //  db.collection('schema').drop(function(err, result) {
-  //   if (err) {
-  //          return {success: false}
-  //      } else {
-  //          return {success: true}
-  //      }
-  //  });
-  // })
+
   deleteThisSchema: async(function (id,type) {
     console.log('-----------mysql delete schema--------------'+id+'----'+type);
 
@@ -920,19 +1349,16 @@ module.exports = {
     if(type == 'softdel') {
       var schemadata = async(function () {
         var result = []
-        _.forEach(db, function (dbinstance) {
-          sql = 'UPDATE tbl_schema SET isdeleted=1 where id='+id;
-          var data = await (dbinstance.conn.query(sql, function (err, results) {
-            console.log('-------results-------', results);
-          }))
-          // _.forEach(data, function (instance) {
-          //   result.push(instance)
-          // })
-        })
+
+        var commonUpdate = await(getQuery('mysql','update','commonUpdate'));
+        commonUpdate = commonUpdate.replace('{{ table_name }}','tbl_schema');
+        commonUpdate = commonUpdate.replace('{{ fields }}','isdeleted=1');
+        commonUpdate = commonUpdate.replace('{{ where }}','id='+id);       
+
+        var data = await (defaultDb[0].conn.query(commonUpdate))
         return result;
       });
       var res = await (schemadata())
-      // console.log('rethink delete res::', res);
       return res;
     }
   }),
