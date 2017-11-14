@@ -161,11 +161,11 @@ var checkDataObj = async (function(data, id, res) {
                           }
                           if(!s) {
                             console.log('<<<<<<<<<<<<<', _res)
-                            objid = await (saveData(obj, _res.database))
+                            objid = await (saveData(obj, _res))
                           }
                           else {
                             console.log('@@@@.............', res)
-                            objid = await (saveData(obj, res.database))
+                            objid = await (saveData(obj, res))
                           }
                           // console.log('res=====================================', res)
                             // var objid = await (saveData(obj, res.database))
@@ -198,7 +198,7 @@ var checkDataObj = async (function(data, id, res) {
 
     for(let [inxx, object] of data.entries()){
       // console.log('>>>>>>>>>>>>>>> ', res)
-        var id = await (saveData(object, res.database))
+        var id = await (saveData(object, res))
         id = id.toString()
         for(let okey in object) {
             delete object[okey]
@@ -243,8 +243,8 @@ var giveDatabase = async(function(schemaid) {
   return res.data.database
 })
 
-var saveData = async (function(data, database) {
-    console.log('save calling...................', data, database)
+var saveData = async (function(data, res) {
+    console.log('save calling...................', data, res.database)
     // var database;
     // if(data.Schemaid != undefined) {
       // database = await (giveDatabase(data.Schemaid))
@@ -261,8 +261,8 @@ var saveData = async (function(data, database) {
     //   var res = await (getSchemaData(id))
     //   database = res.database
     // }
-    var _dbindex = _.findIndex(dbapi, { 'db': database[0]});
-    var dbdata = await (dbapi[_dbindex].api.postflowsInstance(data, database[1]));
+    var _dbindex = _.findIndex(dbapi, { 'db': res.database[0]});
+    var dbdata = await (dbapi[_dbindex].api.postflowsInstance(data, res.database[1], res.title));
     console.log('Return Instance id .........', dbdata)
     return dbdata;
 })
@@ -278,48 +278,54 @@ var setData = async(function(data) {
 })
 
 var getInstance = async( function(id) {
-    var instance = []
-    dbapi.forEach(function (db) {
-        let _promise = new Promise((resolve, reject) => {
-            db.api.getThisflowsInstance(id).then((data) => {
-                resolve(data);
-            })
-        });
-        instance.push(_promise)
-      });
-    // }
-    var _data = Promise.all(instance).then(async (function (response) {
-        var obj;
-        response.forEach(function (item) {
-            if (item[0] != undefined) {
-                obj = item[0]
-            }
-        })
-        // console.log('????????????????????', obj)
-        var flag = await (checkFlagforGet(obj))
-        // console.log(flag)
-        if(!flag) {
-            return obj
-        }
-        else {
-            for(let okey in obj) {
-                // console.log(okey, '=', obj[okey])
-                if (okey == 'database') {
-                }
-                else {
-                    if (Array.isArray(obj[okey])) {
-                        for(let [index, insideObj] of obj[okey].entries()) {
-                            // console.log('111111111111111111111111111111111', insideObj)
-                            obj[okey][index] = await (getInstance(insideObj.refid))
-                            // console.log('222222222222222222222222222222222', obj[okey][index], insideObj)
-                        }
-                    }
-                } 
-            }
-            return obj
-        }
-    }))
-    return _data;
+    // var instance = []
+    // dbapi.forEach(function (db) {
+    //     let _promise = new Promise((resolve, reject) => {
+    //         db.api.getThisflowsInstance(id).then((data) => {
+    //             resolve(data);
+    //         })
+    //     });
+    //     instance.push(_promise)
+    //   });
+    // // }
+    // var _data = Promise.all(instance).then(async (function (response) {
+    //     var obj;
+    //     response.forEach(function (item) {
+    //         if (item[0] != undefined) {
+    //             obj = item[0]
+    //         }
+    //     })
+    //     // console.log('????????????????????', obj)
+    //     var flag = await (checkFlagforGet(obj))
+    //     // console.log(flag)
+    //     if(!flag) {
+    //         return obj
+    //     }
+    //     else {
+    //         for(let okey in obj) {
+    //             // console.log(okey, '=', obj[okey])
+    //             if (okey == 'database') {
+    //             }
+    //             else {
+    //                 if (Array.isArray(obj[okey])) {
+    //                     for(let [index, insideObj] of obj[okey].entries()) {
+    //                         // console.log('111111111111111111111111111111111', insideObj)
+    //                         obj[okey][index] = await (getInstance(insideObj.refid))
+    //                         // console.log('222222222222222222222222222222222', obj[okey][index], insideObj)
+    //                     }
+    //                 }
+    //             } 
+    //         }
+    //         return obj
+    //     }
+    // }))
+    // return _data;
+    var data = await (findAllInstance())
+    for (let [i, item] of data.entries() ){
+      if (item._id == id) {
+        return item
+      }
+    }
 }) 
 
 var getallInstance = async(function(data) {
@@ -446,28 +452,78 @@ var singleLevelsave = async(function(data) {
   var res = await (getSchemaData(id))
   var arr = []
   for(let [inx, sObj] of data.entries()) {
-    var _res = await (saveData(sObj, res.database))
+    var _res = await (saveData(sObj, res))
     arr.push({refid: _res})
   }
   return arr
 }) 
 
-var findAllInstance = async(function() {
-    var instance = []
-    // console.log('dbapi', dbapi)
-    for (let [inx, mObj] of dbapi.entries()) {
-      // console.log('\n???', Obj)
-      var _res = await (mObj.api.getflowsInstance())
-      // console.log('_res', _res)
-      instance.push(_res)
-    }
-    var Extract = []
-    for (let [i, arr] of instance.entries()) {
-      for (let [j, item] of instance[i].entries()) {
-        Extract.push(item)
+var filterInst = async (function(data, id) {
+  for (let [i, fObj] of data.entries() ) {
+    if (fObj._id == id) {
+      for(let k in fObj) {
+        if (Array.isArray(fObj[k])) {
+          for (let[j, item] of fObj[k].entries()) {
+            fObj[k][j] = await (filterInst(data, item.refid))
+          }
+        } else {
+          return fObj
+        }
       }
     }
-    return Extract
+  }
+})
+
+var findAllInstance = async(function() {
+  var res = await (axios.get('http://'+config.get('host')+':'+config.get('port')+'/schema'))
+  var allschema = res.data
+  var Instance = []
+  for (let [i, sObj] of allschema.entries()) {
+    for (let [inx, apiObj] of dbapi.entries()) {
+      if ( apiObj.db == sObj.database[0] ) {
+        var _res = await (dbapi[inx].api.getflowsInstance(sObj.title, sObj.database[1]))
+        Instance.push(_res)
+      }
+    }
+  }
+  // console.log(Instance)
+  var Extract = []
+  for(let [i, obj] of Instance.entries()) {
+    // console.log(obj)
+    for(let [inx, item] of obj.entries() ) {
+      Extract.push(obj[inx])
+    }
+  }
+  // var fIns = []
+  for ( let [inx, fObj] of Extract.entries() ) {
+    // if (fObj.hasOwnProperty('Schemaid')) {
+      for (let k in fObj) {
+        if(Array.isArray(fObj[k])) {
+          // console.log(fObj)
+          for(let [j, item] of fObj[k].entries()) {
+            // console.log()
+            fObj[k][j] = await (filterInst(Extract, item.refid))
+          }
+        }
+      }
+    // }
+  }
+  return Extract
+    // var instance = []
+    // // console.log('dbapi', dbapi)
+    // for (let [inx, mObj] of dbapi.entries()) {
+    //   // console.log('\n???', Obj)
+    //   var _res = await (mObj.api.getflowsInstance())
+    //   // console.log('_res', _res)
+    //   instance.push(_res)
+    // }
+    // var Extract = []
+    // for (let [i, arr] of instance.entries()) {
+    //   for (let [j, item] of instance[i].entries()) {
+    //     Extract.push(item)
+    //   }
+    // }
+    // return Extract
 })
 
 class Service {
@@ -477,48 +533,48 @@ class Service {
 
   find(params) {
     console.log('find feathers instance...');
-    var instance = []
-    // var s = findAllInstance()
-    // return Promise.resolve(s)
-    dbapi.forEach(function (db) {
-      let _promise = new Promise((resolve, reject) => {
-        db.api.getflowsInstance().then((data) => {
-          resolve(data);
-        })
-      });
-      instance.push(_promise)
-    });
+    // var instance = []
+    var s = findAllInstance()
+    return Promise.resolve(s)
+    // dbapi.forEach(function (db) {
+    //   let _promise = new Promise((resolve, reject) => {
+    //     db.api.getflowsInstance().then((data) => {
+    //       resolve(data);
+    //     })
+    //   });
+    //   instance.push(_promise)
+    // });
 
-    var _data = Promise.all(instance).then(function (response) {
-      var Extract = []
-      // console.log(response)
-      response.forEach(function (item) {
-        item.forEach(function (result) {
-          Extract.push(result)
-        })
-      })
-      // console.log('..........', Extract)
-      // for(let [i, obj] of Extract.entries()) {
-      //   for(let k in obj) {
-      //       if(k == 'database') {
-      //       } 
-      //       else {
-      //           if(Array.isArray(obj[k])) {
-      //               for(let [index, insideObj] of obj[k].entries()) {
-      //                   obj[k][index] = getInstance(insideObj.refid)
-      //               }
-      //           }
-      //       }
-      //   }
-      // }
-      // console.log('Extract', Extract)
-      Extract = getallInstance(Extract)
-      return Promise.resolve(Extract).then(function(d){
-        // console.log('Hieeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee')
-        return d
-      })
-    })
-    return _data
+    // var _data = Promise.all(instance).then(function (response) {
+    //   var Extract = []
+    //   // console.log(response)
+    //   response.forEach(function (item) {
+    //     item.forEach(function (result) {
+    //       Extract.push(result)
+    //     })
+    //   })
+    //   // console.log('..........', Extract)
+    //   // for(let [i, obj] of Extract.entries()) {
+    //   //   for(let k in obj) {
+    //   //       if(k == 'database') {
+    //   //       } 
+    //   //       else {
+    //   //           if(Array.isArray(obj[k])) {
+    //   //               for(let [index, insideObj] of obj[k].entries()) {
+    //   //                   obj[k][index] = getInstance(insideObj.refid)
+    //   //               }
+    //   //           }
+    //   //       }
+    //   //   }
+    //   // }
+    //   // console.log('Extract', Extract)
+    //   Extract = getallInstance(Extract)
+    //   return Promise.resolve(Extract).then(function(d){
+    //     // console.log('Hieeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee')
+    //     return d
+    //   })
+    // })
+    // return _data
     // if (params.query.name == undefined) {
     //   var dbdata = dbapi.getflowsInstance();
     // }
@@ -576,7 +632,7 @@ class Service {
   }
 
   create(data, params) {
-    console.log('.................................Create feathers...............................');
+    console.log('.................................Create feathers...............................', data);
     var flag = false
     //var mainDt = data.data
     for(let value in data.data[0]) {
@@ -586,7 +642,7 @@ class Service {
             flag = true
         }
     }
-    // console.log('Flag create', flag)
+    console.log('Flag create', flag)
     if(!flag) {
         // var response = saveData(data.data[0], 'single')
         // var _data = Promise.resolve(response).then(function(d) {

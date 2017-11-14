@@ -48,7 +48,7 @@
         <Col span="16">
           <Row type="flex" justify="end">
             <Col col="8">
-              <Checkbox @on-change="handleGroupBy" label="groupby" size="small" style="color:#fff;margin-top:5px;">Group By</Checkbox>
+              <Checkbox v-model="groupby" label="groupby" size="small" style="color:#fff;margin-top:5px;">Group By</Checkbox>
             </Col>
             <Col span="8">
               <router-link to="/schema/new">
@@ -164,7 +164,7 @@
     data () {
       return {
         orderby: 'asc',
-        groupby: false,
+        groupby: true,
         mongo,
         rethink,
         elastic,
@@ -323,9 +323,6 @@
       },
       handleCommand (name) {
         this.orderby = name
-      },
-      handleGroupBy () {
-        this.groupby = !this.groupby
       }
     }
   }

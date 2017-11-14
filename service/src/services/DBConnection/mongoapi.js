@@ -5,6 +5,7 @@ let async = require('asyncawait/async');
 let await = require('asyncawait/await');
 var endecrypt = require('../encryption/security')
 var db = [];
+var defaultDb = []
 
 db1.mongo.dbinstance.forEach(function (instance, inx) {
   if (instance.isenable) {
@@ -18,6 +19,18 @@ db1.mongo.dbinstance.forEach(function (instance, inx) {
     connection.on('error', console.error.bind(console, 'MongoDB connection error:'));
 
     db.push({ id: instance.id, conn: connection })
+  }
+  if (instance.isdefault) {
+    // console.log('instance', instance)
+    var pass = endecrypt.decrypt(instance.password)
+      // console.log(pass)
+    var mongoDB = 'mongodb://' + instance.username + ':' + pass + '@' + instance.host + ':' + instance.port + '/' + instance.dbname;
+    // var mongoDB = 'mongodb://'+instance.host+':'+instance.port+'/'+((instance.dbname == '') ? databasename : instance.dbname);
+    console.log('database::::', mongoDB);
+    var connection = mongoose.createConnection(mongoDB);
+    connection.on('error', console.error.bind(console, 'MongoDB connection error:'));
+
+    defaultDb.push({ id: instance.id, conn: connection })
   }
 })
 
@@ -42,6 +55,19 @@ db1.mongo.dbinstance.forEach(function (instance, inx) {
 // console.log('Success!!!!!!!!!!!!! Mongo');
 
 module.exports = {
+  generateInstanceTable: async(function (ins_id, title){
+    console.log('Mongo generate instance collection..........', ins_id, title);
+    // for(let [i, db_i] of db.entries()) {
+    //   if(db_i.id == ins_id) {
+    //     console.log(db[i].conn)
+    //     var res = await (db[i].conn.createCollection(title))
+    //     console.log('res......generateInstanceTable........', res)
+    //     return res
+    //   }
+    // }
+    return 'success'
+  }),
+
   choose: async(function () {
     console.log('===================MONGODB=================');
   }),
@@ -172,17 +198,18 @@ module.exports = {
 
   getSchema: async(function () {
     console.log('mongo get Schema');
-    var schemadata = async(function () {
-      var result = []
-      _.forEach(db, function (dbinstance) {
-        var r = await (dbinstance.conn.collection('schema').find().toArray())
-        _.forEach(r, function (instance) {
-          result.push(instance)
-        })
-      })
-      return result;
-    });
-    var res = await (schemadata())
+    // var schemadata = async(function () {
+    //   var result = []
+    //   _.forEach(db, function (dbinstance) {
+    //     var r = await (dbinstance.conn.collection('schema').find().toArray())
+    //     _.forEach(r, function (instance) {
+    //       result.push(instance)
+    //     })
+    //   })
+    //   return result;
+    // });
+    // var res = await (schemadata())
+    var res = await (defaultDb[0].conn.collection('schema').find().toArray())
       // console.log('schemadata getSchema',res);
     return res;
   }),
@@ -211,20 +238,27 @@ module.exports = {
       return res;
     }
   }),
-  getflowsInstance: async(function () {
+  getflowsInstance: async(function (collName, inst_id) {
     console.log('mongo get flowsInstance');
-    var flowsInstance = async(function () {
-      var result = []
-      _.forEach(db, function (dbinstance) {
-        var r = await (dbinstance.conn.collection('flows-instance').find().toArray())
-        _.forEach(r, function (instance) {
-          result.push(instance)
-        })
-      })
-      return result;
-    });
-    var res = await (flowsInstance())
-    return res;
+    // var flowsInstance = async(function (collName, inst_id) {
+      for (let [i, inst] of db.entries()) {
+        if ( inst.id == inst_id ) {
+          var r = await (inst.conn.collection(collName).find().toArray())
+          // console.log('mongo r', r)
+          return r
+        }
+      }
+      // var result = []
+      // _.forEach(db, function (dbinstance) {
+      //   var r = await (dbinstance.conn.collection('flows-instance').find().toArray())
+      //   _.forEach(r, function (instance) {
+      //     result.push(instance)
+      //   })
+      // })
+      // return result;
+    // });
+    // var res = await (flowsInstance(collName, inst_id))
+    // return res;
     // var flowsInstance = await (db.collection('flows-instance').find().toArray());
     // // console.log('flowsInstance',flowsInstance);
     // return flowsInstance;
@@ -257,16 +291,16 @@ module.exports = {
   //post methods
   postSchema: async(function (data) {
     console.log('mongo post Schemax');
-    console.log('guid', data.database[1])
-    var selectedDB = _.find(db, (d) => {
-        return d.id == data.database[1]
-      })
+    // console.log('guid', data.database[1])
+    // var selectedDB = _.find(db, (d) => {
+    //     return d.id == data.database[1]
+    //   })
       // console.log(selectedDB)
-    var schema = await (selectedDB.conn.collection('schema').insert(data));
+    var schema = await (defaultDb[0].conn.collection('schema').insert(data));
     // console.log(schema)
     return schema.ops;
   }),
-  postflowsInstance: async(function (data, dbid) {
+  postflowsInstance: async(function (data, dbid, collName) {
     console.log('...................mongo post flowsInstance...................');
     // data.Schemaid = data._id
     // delete data._id
@@ -284,7 +318,7 @@ module.exports = {
       } 
     }
     // console.log('selectedDB', selectedDB)
-    var schema = await (selectedDB.conn.collection('flows-instance').insert(data));
+    var schema = await (selectedDB.conn.collection(collName).insert(data));
     console.log('Generated Id:', schema.ops[0]._id)
     return schema.ops[0]._id;
     // var flowsInstance = await (db.collection('flows-instance').insert(data));
@@ -306,10 +340,10 @@ module.exports = {
     // delete data._id
     // console.log('guid', data.database[1])
     var id = new mongoose.Types.ObjectId(id);
-    var selectedDB = _.find(db, (d) => {
-      return d.id == data.database[1]
-    })
-    var schema = await (selectedDB.conn.collection('schema').updateOne({ _id: id }, { $set: data }));
+    // var selectedDB = _.find(db, (d) => {
+    //   return d.id == data.database[1]
+    // })
+    var schema = await (defaultDb[0].conn.collection('schema').updateOne({ _id: id }, { $set: data }));
     return schema;
   }),
   putflowsInstance: async(function (data, id, dbid) {
@@ -357,19 +391,21 @@ module.exports = {
         var id = new mongoose.Types.ObjectId(id);
         if(type == 'softdel') {
             // console.log('2222')
-            var schemadata = async(function () {
-                var result = []
-                _.forEach(db, function (dbinstance) {
-                    var r = await (dbinstance.conn.collection('schema').updateOne({ _id: id }, {$set: {isdeleted: true}}))
-                    _.forEach(r, function (instance) {
-                        result.push(instance)
-                    })
-                })
-                return result;
-            });
-            var res = await (schemadata())
-            // console.log('mongo DeleteSchema',res[0]);
-            return res[0];
+            // var schemadata = async(function () {
+            //     var result = []
+            //     _.forEach(db, function (dbinstance) {
+            //         var r = await (dbinstance.conn.collection('schema').updateOne({ _id: id }, {$set: {isdeleted: true}}))
+            //         _.forEach(r, function (instance) {
+            //             result.push(instance)
+            //         })
+            //     })
+            //     return result;
+            // });
+            // var res = await (schemadata())
+            // // console.log('mongo DeleteSchema',res[0]);
+            // return res[0];
+            var schema = await (defaultDb[0].conn.collection('schema').updateOne({ _id: id }, {$set: {isdeleted: true}}));
+            return schema;
         }
     }
     // // var schema = await (db.collection('schema').deleteOne({ _id: id }));

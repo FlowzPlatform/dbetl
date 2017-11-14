@@ -19,13 +19,21 @@ var MongoClient = require('mongodb').MongoClient;
 var check_Connection = async(function(db, data) {
   // console.log('data..', data, 'db', db)
   if(db == 'mongo') {
-    // console.log("MongoDB..............");
+    console.log("MongoDB..............");
     var _res;
-    if(data.username != "" && data.password != "")
-    {
-      _res = await (MongoClient.connect('mongodb://'+data.username+':'+data.password+'@'+data.host+':'+data.port+'/'+data.dbname))
+    if(data.username != undefined && data.password != undefined) {
+      // console.log('.............')
+      if (data.username != "" && data.password != "") {
+        _res = await (MongoClient.connect('mongodb://'+data.username+':'+data.password+'@'+data.host+':'+data.port+'/'+data.dbname))
+      } else {
+        _res = await (MongoClient.connect('mongodb://'+data.host+':'+data.port+'/'+data.dbname))
+      }
     } else {
-      _res = await (MongoClient.connect('mongodb://'+data.host+':'+data.port+'/'+data.dbname))
+      // console.log('.............111')
+      if (data.dbname != undefined) {
+      } else {
+        _res = await (MongoClient.connect('mongodb://'+data.host+':'+data.port))
+      }
     }
     return _res
   }
@@ -106,6 +114,79 @@ var check_Connection = async(function(db, data) {
   else {
     var _res = new error()
     return _res
+  }
+})
+
+var getConnectionData = async( function( db, data) {
+  // console.log('getConnectionData..............')
+  if (db == 'mongo') {
+    var mongoDB; 
+    if(data.username != "" && data.password != "") {
+      mongoDB = 'mongodb://' + data.username + ':' + data.password + '@' + data.host + ':' + data.port + '/' + data.dbname;
+    } else {
+      mongoDB = 'mongodb://' + data.host + ':' + data.port + '/' + data.dbname;
+    }
+    var conn = await (MongoClient.connect(mongoDB))
+    // console.log('conn', conn);
+    // var collections = await (conn.listCollections().toArray());
+    // console.log('collections', collections)
+        
+    var result = await (conn.listCollections().toArray())
+    for( let [inx, obj] of result.entries()) {
+      for( let k in obj) {
+        if(k !== 'name') {
+          delete obj[k]
+        }
+      }
+    }
+    // console.log('Data........................', result)
+    return result
+  } else if (db == 'rethink') {
+    // console.log('match found rethink')
+    var connection = require('rethinkdbdash')({
+        username: data.username,
+        password: data.password,
+        port: data.port,
+        host: data.host,
+        db: data.dbname
+    });
+    // console.log('conn.......', connection)
+    // var result = await (connection.table('schema').run())
+    var result = await (connection.db(data.dbname).tableList())
+    for(let [inx, val] of result.entries()) {
+      result[inx] = { name: val}
+    }
+    // console.log('result............', result)
+    return result
+  } else if (db == 'elastic') {
+    // console.log('match found rethink')
+    var connection = new elasticsearch.Client({
+        host: data.host + ':' + data.port + '/' + data.dbname,
+        log: 'error'
+      });
+    var data1 = [];
+    var result = await( 
+    connection.search({
+        body: {
+          aggs: {
+            typesAgg: {
+              terms: {
+                field: '_type',
+                size: 200
+              }
+            }
+          },
+          size: 0
+        }
+    }))
+    console.log('result........', result.aggregations.typesAgg.buckets)
+    for(let [i, obj] of result.aggregations.typesAgg.buckets.entries()) {
+      data1.push({ name: obj.key})
+    }
+    // console.log(data1)
+    return data1;
+  } else {
+    return 'not_found_db'
   }
 })
 
@@ -204,7 +285,11 @@ class Service {
       var _res = check_Connection(params.query.check, data)
       return Promise.resolve(_res).then(function(res){
         // console.log('result.................', res)
-        return {result: true}
+        var abc = getConnectionData(params.query.check, data)
+        return Promise.resolve(abc).then(function(__res){
+          return {result: true, data: __res}
+        })
+        // return {result: true}
       })
       .catch(function(err){
         // console.log('Error..............', err)
@@ -236,9 +321,11 @@ class Service {
         }else{
           //check connection is isdefault true
             if(data.isdefault){
-              _.forEach(res[selectDB].dbinstance, function(inst){
-                inst.isdefault = false
-              })    
+              _.forEach(res, (v, k) => {
+                _.forEach(res[k].dbinstance, function(inst){
+                  inst.isdefault = false
+                })    
+              })
             }
             // console.log(res[selectDB].dbinstance)
             res[selectDB].dbinstance.push(data)
@@ -257,7 +344,7 @@ class Service {
   }
 
   update (id, data, params) {
-    console.log('Inside Update Settings...', id, data, params.query)
+    console.log('Inside Update Settings...')
     var updatedb = params.query.db
     let result = new Promise((resolve, reject) => {
         fs.readFile(path.join(__dirname, '../DBConnection/db.json'),function (err, data) {
@@ -281,7 +368,32 @@ class Service {
   }
 
   patch (id, data, params) {
-    return Promise.resolve(data);
+    console.log('Inside patch Settings...')
+    var updatedb = params.query.db
+    let result = new Promise((resolve, reject) => {
+        fs.readFile(path.join(__dirname, '../DBConnection/db.json'),function (err, data) {
+          if (err) return console.log(err);
+              resolve(JSON.parse(data));
+          });
+    });
+    var _data = Promise.resolve(result).then(function(res){
+        var index_instance = _.findKey(res[updatedb].dbinstance, {id: id});
+        // console.log('instance', index_instance)
+        for(let db in res) {
+          for(let [inx, inst] of res[db].dbinstance.entries()) {
+            inst.isdefault = false
+          }
+        }
+        res[updatedb].dbinstance[index_instance].isdefault = data.isdefault
+        let result1 = new Promise((resolve, reject) => {
+            jsonfile.writeFile(path.join(__dirname, '../DBConnection/db.json'), res, {spaces: 4}, function(err) {
+                if (err) return 'Error';
+                resolve(res);
+            });
+          });
+        return Promise.resolve(result1);
+    });
+    return _data;
   }
 
   remove (id, params) {
