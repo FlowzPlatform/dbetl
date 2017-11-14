@@ -57,6 +57,30 @@ let readfile = async(function () {
   });
 })
 
+var getQuery = async(function (dbName,type,queryFor) {
+  let result = new Promise((resolve, reject) => {
+    fs.readFile(path.join(__dirname, '../DBConnection/db.json'),function (err, data) {
+      if (err) return console.log(err);
+          resolve(JSON.parse(data));
+          });
+    });
+
+    var _data = Promise.resolve(result).then(function(dbdata){
+        var instance;
+
+        _.forEach(dbdata[dbName][type], function(instances, db){
+            if(Object.keys(instances)[0] == queryFor)
+            {
+              var obj = _.find(instances)
+              if(obj != undefined){
+                instance = obj
+              }
+            }   
+        })
+        return instance
+    });
+    return _data
+});
 // One-liner for current directory, ignores .dotfiles 
 chokidar.watch(path.join(__dirname, '../DBConnection/db.json'), { ignored: /(^|[\/\\])\../ }).on('change', async(function (path) {
   // console.log('From..........................................instance111')
@@ -161,11 +185,13 @@ var checkDataObj = async (function(data, id, res) {
                           }
                           if(!s) {
                             console.log('<<<<<<<<<<<<<', _res)
-                            objid = await (saveData(obj, _res.database))
+                            schemaid = _res.id
+                            objid = await (saveData(obj, _res.database,_res.id))
                           }
                           else {
                             console.log('@@@@.............', res)
-                            objid = await (saveData(obj, res.database))
+                            schemaid = res.id                            
+                            objid = await (saveData(obj, res.database, res.id))
                           }
                           // console.log('res=====================================', res)
                             // var objid = await (saveData(obj, res.database))
@@ -176,6 +202,7 @@ var checkDataObj = async (function(data, id, res) {
                                 delete obj[key]
                             }
                             obj.refid = objid
+                            // obj.schemaid = schemaid
                         }
                     }
                     else {
@@ -198,7 +225,7 @@ var checkDataObj = async (function(data, id, res) {
 
     for(let [inxx, object] of data.entries()){
       // console.log('>>>>>>>>>>>>>>> ', res)
-        var id = await (saveData(object, res.database))
+        var id = await (saveData(object, res.database, res.id))
         id = id.toString()
         for(let okey in object) {
             delete object[okey]
@@ -243,8 +270,8 @@ var giveDatabase = async(function(schemaid) {
   return res.data.database
 })
 
-var saveData = async (function(data, database) {
-    console.log('save calling...................', data, database)
+var saveData = async (function(data, database,_id) {
+    console.log('save calling...................', data, database, _id)
     // var database;
     // if(data.Schemaid != undefined) {
       // database = await (giveDatabase(data.Schemaid))
@@ -262,8 +289,14 @@ var saveData = async (function(data, database) {
     //   database = res.database
     // }
     var _dbindex = _.findIndex(dbapi, { 'db': database[0]});
-    var dbdata = await (dbapi[_dbindex].api.postflowsInstance(data, database[1]));
-    console.log('Return Instance id .........', dbdata)
+    if(typeof _id !== 'undefined')
+    {
+      var dbdata = await (dbapi[_dbindex].api.postflowsInstance(data, database[1],_id));
+    }
+    else{
+      var dbdata = await (dbapi[_dbindex].api.postflowsInstance(data, database[1]));      
+    }
+      console.log('Return Instance id .........', dbdata)
     return dbdata;
 })
 
@@ -277,13 +310,28 @@ var setData = async(function(data) {
   return res
 })
 
-var getInstance = async( function(id) {
+var getInstance = async( function(id,schemaid,columnname) {
     var instance = []
+    var isMysql = false;
     dbapi.forEach(function (db) {
         let _promise = new Promise((resolve, reject) => {
+          // console.log('????????????????????', db.db)
+          if(db.db == 'mysql')
+          {
+            isMysql = true    
+          }
+
+          if(typeof schemaid !== 'undefined')
+          {
+            db.api.getThisflowsInstance(id,schemaid,columnname).then((data) => {
+              resolve(data);
+            })
+          }
+          else {
             db.api.getThisflowsInstance(id).then((data) => {
                 resolve(data);
             })
+          }
         });
         instance.push(_promise)
       });
@@ -309,8 +357,17 @@ var getInstance = async( function(id) {
                 else {
                     if (Array.isArray(obj[okey])) {
                         for(let [index, insideObj] of obj[okey].entries()) {
-                            // console.log('111111111111111111111111111111111', insideObj)
-                            obj[okey][index] = await (getInstance(insideObj.refid))
+                          // console.log('11111111111okey1111111111111111111111', okey)
+                          // console.log('isMysql', isMysql)
+                          // console.log('111111111111OBJ111111111111111111111', obj)
+                          
+                            if(isMysql)
+                            {
+                              obj[okey][index] = await (getInstance(insideObj.refid, obj.Schemaid,okey))                              
+                            }
+                            else {
+                              obj[okey][index] = await (getInstance(insideObj.refid))                             
+                            }
                             // console.log('222222222222222222222222222222222', obj[okey][index], insideObj)
                         }
                     }
@@ -330,7 +387,17 @@ var getallInstance = async(function(data) {
             else {
                 if(Array.isArray(obj[k])) {
                     for(let [index, insideObj] of obj[k].entries()) {
-                        obj[k][index] = await (getInstance(insideObj.refid))
+                        // console.log('222222222222222222222222222222222', insideObj)
+                        // console.log('111111111111111111111111111111111', k)
+                        // console.log('111111111111111111111111111111111', obj.Schemaid)
+
+                        if(/^\d+$/.test(obj.Schemaid))
+                        {
+                          obj[k][index] = await (getInstance(insideObj.refid, obj.Schemaid,k))                                                    
+                        }
+                        else {
+                          obj[k][index] = await (getInstance(insideObj.refid))                          
+                        }
                     }
                 }
             }
@@ -544,7 +611,13 @@ class Service {
       //   });
       //   instance.push(_promise)
       // });
-      var dbdata = getInstance(id)
+      
+      if (params.query.Schemaid !== undefined) {
+        var dbdata = getInstance(id,params.query.Schemaid)
+      }
+      else{
+        var dbdata = getInstance(id)
+      }
       // console.log('dbdata....', dbdata)
       return Promise.resolve(dbdata)
         // .then(function(d) {
