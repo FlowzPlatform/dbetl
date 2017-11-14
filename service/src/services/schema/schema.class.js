@@ -77,7 +77,7 @@ chokidar.watch(path.join(__dirname, '../DBConnection/db.json'), { ignored: /(^|[
     var db;
     if(data.database != undefined) {
       db = require('../DBConnection/' + data.database[0] + 'api')
-      var createTable = await (db.generateInstanceTable(data.database[1], data.title))
+      var createTable = await (db.generateInstanceTable(data))
       console.log('createTable >>>>>>>>>>>>>>>>>', createTable)
     } else {
       // db = require()
