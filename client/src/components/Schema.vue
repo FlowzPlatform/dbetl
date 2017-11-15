@@ -444,7 +444,7 @@ export default {
   components: {'input-tag': InputTag, 'grid-manager': gridmanager, 'GrapesComponent': GrapesComponent,  'MjmlEditor': MjmlEditor, 'f-Tab': Tab},
   data () {
     const validateTitle = async(rule, value, callback) => {
-      var patt = new RegExp('')
+      var patt = new RegExp(/^_|\`|\~|\!|\@|\#|\$|\%|\^|\&|\*|\(|\)|\+|\=|\[|\{|\]|\}|\||\\|\'|\<|\,|\.|\>|\?|\/|\"|\;|\:|\-|\s/)
       var _res = patt.test(value)
       if (!_res) {
         callback(new Error('Not Allowed Special Character'))
