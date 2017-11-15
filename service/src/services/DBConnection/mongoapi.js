@@ -263,25 +263,38 @@ module.exports = {
     // // console.log('flowsInstance',flowsInstance);
     // return flowsInstance;
   }),
-  getThisflowsInstance: async(function (id) {
+  getThisflowsInstance: async(function (id, collName, inst_id) {
     console.log('mongo get flowsInstanceCurrent');
-    if (id.length != 24) {
-      return [];
-    } else {
-      var id = new mongoose.Types.ObjectId(id);
-      var flowsInstance = async(function () {
-        var result = []
-        _.forEach(db, function (dbinstance) {
-          var r = await (dbinstance.conn.collection('flows-instance').find({ _id: id }).toArray())
-          _.forEach(r, function (instance) {
-            result.push(instance)
-          })
-        })
-        return result;
-      });
-      var res = await (flowsInstance())
-      return res;
-    }
+    var id = new mongoose.Types.ObjectId(id);
+    for (let [i, inst] of db.entries()) {
+        if ( inst.id == inst_id ) {
+          var r = await (inst.conn.collection(collName).find({_id: id}).toArray())
+          // console.log('mongo r', r)
+          return r[0]
+          // for(let [inx, obj] of r.entries()) {
+          //   if (obj._id == id) {
+          //     return obj
+          //   }
+          // }
+        }
+      }
+    // if (id.length != 24) {
+    //   return [];
+    // } else {
+    //   var id = new mongoose.Types.ObjectId(id);
+    //   var flowsInstance = async(function () {
+    //     var result = []
+    //     _.forEach(db, function (dbinstance) {
+    //       var r = await (dbinstance.conn.collection('flows-instance').find({ _id: id }).toArray())
+    //       _.forEach(r, function (instance) {
+    //         result.push(instance)
+    //       })
+    //     })
+    //     return result;
+    //   });
+    //   var res = await (flowsInstance())
+    //   return res;
+    // }
     // var id = new mongoose.Types.ObjectId(id);
     // var flowsInstance = await (db.collection('flows-instance').find({ _id: id }).toArray());
     // // console.log('flowsInstance',flowsInstance);

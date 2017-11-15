@@ -6,12 +6,11 @@ var axios = require('axios');
 var fs = require('fs');
 var path = require('path');
 var _ = require('lodash');
+var chokidar = require('chokidar');
 var db = '../DBConnection/db.json';
 var file = require(db);
 var dbapi = [];
-let postSchemaData;
-let putSchemaData;
-// console.log('config', config.get('host'))
+
 _.forEach(file, function(dbs, i) {
   var flag = false
   _.forEach(dbs.dbinstance, function(instance) {
@@ -25,7 +24,6 @@ _.forEach(file, function(dbs, i) {
     api.choose()
   }
 })
-var chokidar = require('chokidar');
 let readfile = async(function() {
   fs.readFile(path.join(__dirname, '../DBConnection/db.json'), function(err, data) {
     // console.log('reading file' + data)
@@ -74,6 +72,7 @@ var getQuery = async(function(dbName, type, queryFor) {
   });
   return _data
 });
+
 // One-liner for current directory, ignores .dotfiles 
 chokidar.watch(path.join(__dirname, '../DBConnection/db.json'), { ignored: /(^|[\/\\])\../ }).on('change', async(function(path) {
   // console.log('From..........................................instance111')
@@ -89,6 +88,7 @@ chokidar.watch(path.join(__dirname, '../DBConnection/db.json'), { ignored: /(^|[
     await (readfile);
   }
 }))
+
 var checkFlag = async(function(data) {
   var flag = false
   _.forEach(data, async(function(obj, index) {
@@ -228,17 +228,15 @@ var FindEntitytype = async(function(fieldname, data) {
     // console.log('...', object, inxx)
   }
 })
-var setSchemaData = async(function(id) {
-  // console.log('setSchemaData calling >>>>>>>>>>>')
-  var res = await (axios.get('http://' + config.get('host') + ':' + config.get('port') + '/schema/' + id))
-  postSchemaData = res.data
-  return 'set'
-})
 var getSchemaData = async(function(id) {
   // console.log('setSchemaData calling >>>>>>>>>>>')
   var res = await (axios.get('http://' + config.get('host') + ':' + config.get('port') + '/schema/' + id))
     // console.log('res', res)
     // postSchemaData = res.data 
+  return res.data
+})
+var getallSchemaData = async(function() {
+  var res = await (axios.get('http://' + config.get('host') + ':' + config.get('port') + '/schema/'))
   return res.data
 })
 var giveDatabase = async(function(schemaid) {
@@ -475,24 +473,24 @@ var singleLevelsave = async(function(data) {
   }
   return arr
 })
-var filterInst = async(function(data, id) {
-  for (let [i, fObj] of data.entries()) {
-    if (fObj._id == id) {
-      for (let k in fObj) {
-        if (Array.isArray(fObj[k])) {
-          for (let [j, item] of fObj[k].entries()) {
-            fObj[k][j] = await (filterInst(data, item.refid))
-          }
-        } else {
-          return fObj
-        }
-      }
-    }
-  }
-})
+// var filterInst = async(function(data, id) {
+//   for (let [i, fObj] of data.entries()) {
+//     if (fObj._id == id) {
+//       for (let k in fObj) {
+//         if (Array.isArray(fObj[k])) {
+//           for (let [j, item] of fObj[k].entries()) {
+//             fObj[k][j] = await (filterInst(data, item.refid))
+//           }
+//         } else {
+//           return fObj
+//         }
+//       }
+//     }
+//   }
+// })
 var findAllInstance = async(function() {
-  var res = await (axios.get('http://' + config.get('host') + ':' + config.get('port') + '/schema'))
-  var allschema = res.data
+  // var res = await (axios.get('http://' + config.get('host') + ':' + config.get('port') + '/schema'))
+  var allschema = await (getallSchemaData())
   var Instance = []
   for (let [i, sObj] of allschema.entries()) {
     for (let [inx, apiObj] of dbapi.entries()) {
@@ -510,37 +508,94 @@ var findAllInstance = async(function() {
       Extract.push(obj[inx])
     }
   }
-  // var fIns = []
-  for (let [inx, fObj] of Extract.entries()) {
-    // if (fObj.hasOwnProperty('Schemaid')) {
-    for (let k in fObj) {
-      if (Array.isArray(fObj[k])) {
-        // console.log(fObj)
-        for (let [j, item] of fObj[k].entries()) {
-          // console.log()
-          fObj[k][j] = await (filterInst(Extract, item.refid))
+  var fExtract = []
+  // Filter Only SchemaId Instances
+  for(let [inz, idObj] of Extract.entries() ) {
+    if(idObj.hasOwnProperty('Schemaid')) {
+      fExtract.push(idObj)
+    }
+  }
+  console.log('Extract', JSON.stringify(fExtract))
+
+  for (let [inxx, mObj] of fExtract.entries() ) {
+    fExtract[inxx] = await (getIdbySchemaId(mObj._id, mObj.Schemaid))
+  }
+  return fExtract
+  // // var fIns = []
+  // for (let [inx, fObj] of Extract.entries()) {
+  //   // if (fObj.hasOwnProperty('Schemaid')) {
+  //   for (let k in fObj) {
+  //     if (Array.isArray(fObj[k])) {
+  //       // console.log(fObj)
+  //       for (let [j, item] of fObj[k].entries()) {
+  //         // console.log()
+  //         fObj[k][j] = await (filterInst(Extract, item.refid))
+  //       }
+  //     }
+  //   }
+  //   // }
+  // }
+  // return Extract
+  //   // var instance = []
+  //   // // console.log('dbapi', dbapi)
+  //   // for (let [inx, mObj] of dbapi.entries()) {
+  //   //   // console.log('\n???', Obj)
+  //   //   var _res = await (mObj.api.getflowsInstance())
+  //   //   // console.log('_res', _res)
+  //   //   instance.push(_res)
+  //   // }
+  //   // var Extract = []
+  //   // for (let [i, arr] of instance.entries()) {
+  //   //   for (let [j, item] of instance[i].entries()) {
+  //   //     Extract.push(item)
+  //   //   }
+  //   // }
+  //   // return Extract
+})
+
+var getIdbySchemaId = async(function(id, schemaid) {
+  // console.log(id, schemaid)
+  var res = await (getSchemaData(schemaid))
+  // console.log(res)
+  for(let [i, db] of dbapi.entries()) {
+    if (db.db == res.database[0]) {
+      var _res = await (db.api.getThisflowsInstance(id, res.title, res.database[1]))
+      // console.log('_res', _res)
+      var status = false 
+      for(let k in _res) {
+        if(Array.isArray(_res[k])) {
+          status = true
         }
       }
+      if(!status) {
+        return _res
+      } else {
+        for(let k in _res) {
+          if(Array.isArray(_res[k])) {
+            for(let [inx, iObj] of _res[k].entries()) {
+              var _typeid = await (FindEntitytype(k, res))
+              _res[k][inx] = await( getIdbySchemaId(iObj.refid, _typeid))
+            }
+          }
+        }
+        return _res
+      }
     }
-    // }
   }
-  return Extract
-    // var instance = []
-    // // console.log('dbapi', dbapi)
-    // for (let [inx, mObj] of dbapi.entries()) {
-    //   // console.log('\n???', Obj)
-    //   var _res = await (mObj.api.getflowsInstance())
-    //   // console.log('_res', _res)
-    //   instance.push(_res)
-    // }
-    // var Extract = []
-    // for (let [i, arr] of instance.entries()) {
-    //   for (let [j, item] of instance[i].entries()) {
-    //     Extract.push(item)
-    //   }
-    // }
-    // return Extract
 })
+
+var getIdbySchemaName = async( function(id, name) {
+  var Schema = await (getallSchemaData())
+  var Schemaid;
+  for(let [i, obj] of Schema.entries()) {
+    if( obj.title == name ) {
+      Schemaid = obj._id
+    }
+  }
+  var _res = await (getIdbySchemaId(id, Schemaid))
+  return _res;
+})
+
 class Service {
   constructor(options) {
     this.options = options || {};
@@ -597,54 +652,31 @@ class Service {
       // return Promise.resolve(dbdata);
   }
   get(id, params) {
-    console.log('Get feathers...');
-    var instance = []
-    if (params.query.type !== undefined) {
-      var dbdata = dbapi.getThisSchemaType(id, params.query.type)
-    } else if (params.query.fieldname !== undefined) {
-      var dbdata = dbapi.getThisSchemaFieldName(id, params.query.fieldname)
+    console.log('Get Instance feathers...');
+    if (params.query.schemaid != undefined) {
+      var res = getIdbySchemaId(id, params.query.schemaid)
+      return Promise.resolve(res)
+    } else if (params.query.schemaname != undefined) {
+      var res = getIdbySchemaName(id, params.query.schemaname)
+      return Promise.resolve(res)
     } else {
-      // dbapi.forEach(function (db) {
-      //   let _promise = new Promise((resolve, reject) => {
-      //     db.api.getThisflowsInstance(id).then((data) => {
-      //       resolve(data);
-      //     })
-      //   });
-      //   instance.push(_promise)
-      // });
-      if (params.query.Schemaid !== undefined) {
-        var dbdata = getInstance(id, params.query.Schemaid)
-      } else {
-        var dbdata = getInstance(id)
-      }
-      // console.log('dbdata....', dbdata)
-      return Promise.resolve(dbdata)
-        // .then(function(d) {
-        //     console.log('response... ', d)
-        //     return d
-        // })
-        // .catch(function(err){
-        //     console.log('Error', err)
-        // }) 
+      return Promise.resolve('You Must Enter schemaid Or schemaname as parameter for result..')
     }
-    // var _data = Promise.all(instance).then(function (response) {
-    //   var obj;
-    //   response.forEach(function (item) {
-    //     if (item[0] != undefined) {
-    //       obj = item[0]
-    //     }
-    //   })
-    //   return obj
-    // })
-    // return _data;
-    // if (params.query.type !== undefined) {
-    //   var dbdata = dbapi.getThisSchemaType(id, params.query.type)
-    // } else if (params.query.fieldname !== undefined) {
-    //   var dbdata = dbapi.getThisSchemaFieldName(id, params.query.fieldname)
-    // } else {
-    //   var dbdata = dbapi.getThisflowsInstance(id);
-    // }
-    // return Promise.resolve(dbdata);
+      // // dbapi.forEach(function (db) {
+      // //   let _promise = new Promise((resolve, reject) => {
+      // //     db.api.getThisflowsInstance(id).then((data) => {
+      // //       resolve(data);
+      // //     })
+      // //   });
+      // //   instance.push(_promise)
+      // // });
+      // if (params.query.Schemaid !== undefined) {
+      //   var dbdata = getInstance(id, params.query.Schemaid)
+      // } else {
+      //   var dbdata = getInstance(id)
+      // }
+      // // console.log('dbdata....', dbdata)
+      // return Promise.resolve(dbdata)
   }
   create(data, params) {
       console.log('.................................Create feathers...............................', data);
@@ -692,7 +724,7 @@ class Service {
           //     console.log('Error', err)
           // }) 
       }
-    }
+  }
     // create(data, params) {
     //   console.log('create feathers...');
     //   var _dbindex = _.findIndex(dbapi, { 'db': data.database[0]});

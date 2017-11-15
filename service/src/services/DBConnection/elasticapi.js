@@ -457,38 +457,41 @@ module.exports = {
     var res = await (flowsInstance())
     return res;
   }),
-  getThisflowsInstance: async(function (id) {
+  getThisflowsInstance: async(function (id, typeName, inst_id) {
     console.log('elastic get flowsInstanceCurrent');
     var flowsInstance = async(function () {
-      var result1 = [];
+    var result1 = [];
       for (var i = 0; i < client.length; i++) {
-        var data = [];
-        var result = await (
-          client[i].conn.search({
-            index: client[i].dbname,
-            type: 'instance',
-            body: {
-              query: {
-                match: {
-                  '_id': id
-                }
-              },
-            }
-          }))
-        result.hits.hits.forEach(function (hit) {
-          var item = hit._source;
-          item._id = hit._id;
-          data.push(item);
-        })
-        // console.log(client[i].id)
-        for (var j = 0; j < data.length; j++) {
-          result1.push(data[j])
+        if ( client[i].id == inst_id ) {
+          var data = [];
+          var result = await (
+            client[i].conn.search({
+              index: client[i].dbname,
+              type: typeName,
+              body: {
+                query: {
+                  match: {
+                    '_id': id
+                  }
+                },
+              }
+            }))
+          result.hits.hits.forEach(function (hit) {
+            var item = hit._source;
+            item._id = hit._id;
+            data.push(item);
+          })
+          // console.log(client[i].id)
+          for (var j = 0; j < data.length; j++) {
+            result1.push(data[j])
+          }
         }
       }
       return result1;
     });
     var res = await (flowsInstance())
-    return res;
+    // console.log('elastic r...', res)
+    return res[0];
   }),
 
   //********************post methods***********************

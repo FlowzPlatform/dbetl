@@ -590,6 +590,7 @@ export default {
       rethink,
       elastic,
       nedb,
+      mysql,
       model: false,
       csvData: [],
       errmsg: [],

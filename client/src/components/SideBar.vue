@@ -72,6 +72,7 @@
               <img v-else-if="itm.iconpath === 'rethink'" :src="rethink" class="schema-icon">
               <img v-else-if="itm.iconpath === 'elastic'" :src="elastic" class="schema-icon">
               <img v-else-if="itm.iconpath === 'nedb'" :src="nedb" class="schema-icon">
+              <img v-else-if="itm.iconpath === 'mysql'" :src="mysql" class="schema-icon">
               <img v-else :src="itm.iconpath" class="schema-icon">
               <span>
                 {{itm.title}}
@@ -113,6 +114,7 @@
               <img v-else-if="item.iconpath === 'rethink'" :src="rethink" class="schema-icon">
               <img v-else-if="item.iconpath === 'elastic'" :src="elastic" class="schema-icon">
               <img v-else-if="item.iconpath === 'nedb'" :src="nedb" class="schema-icon">
+              <img v-else-if="item.iconpath === 'mysql'" :src="mysql" class="schema-icon">
               <img v-else :src="item.iconpath" class="schema-icon">
               <span>
                 {{item.title}}
@@ -159,6 +161,7 @@
   import rethink from '../assets/images/rethink.png'
   import elastic from '../assets/images/elasticsearch.png'
   import nedb from '../assets/images/nedb.png'
+  import mysql from '../assets/images/mysql.png'
   const _ = require('lodash')
   export default {
     data () {
@@ -169,6 +172,7 @@
         rethink,
         elastic,
         nedb,
+        mysql,
         deleteSchemaValue: 'softdel'
       }
     },
