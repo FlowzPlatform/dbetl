@@ -78,7 +78,7 @@ chokidar.watch(path.join(__dirname, '../DBConnection/db.json'), { ignored: /(^|[
     if(data.database != undefined) {
       db = require('../DBConnection/' + data.database[0] + 'api')
       var createTable = await (db.generateInstanceTable(data))
-      console.log('createTable >>>>>>>>>>>>>>>>>', createTable)
+      // console.log('createTable >>>>>>>>>>>>>>>>>', createTable)
     } else {
       // db = require()
       // var createTable = await (dbapi[0].api.generateInstanceTable(dbapi[0], data.title))
@@ -108,7 +108,7 @@ class Service {
             instance.push(_promise)
         });    
         var _data = Promise.all(instance).then(function (response) {
-          console.log('response...................22',response)
+          // console.log('response...................22',response)
           // return response[0]
           var Extract = []
           response.forEach(function (item) {
@@ -228,7 +228,7 @@ class Service {
         instance.push(_promise)
       });
       var _data = Promise.all(instance).then(function (response) {
-        console.log('_data...type..............................\n', response)
+        // console.log('_data...type..............................\n', response)
         var Extract = []
             response.forEach(function (item) {
               item.forEach(function (result) {
@@ -276,7 +276,7 @@ class Service {
       instance.push(_promise)
       });
       var _data = Promise.all(instance).then(function (response) {
-          console.log(response)
+          // console.log(response)
             // var Extract = []
             // response.forEach(function (item) {
             //   item.forEach(function (result) {
@@ -317,7 +317,7 @@ class Service {
       // return _data;
     }
     var _data = Promise.all(instance).then(function (response) {
-      console.log('_data.................', response)
+      // console.log('_data.................', response)
       var Extract = []
           response.forEach(function (item) {
             item.forEach(function (result) {
@@ -358,7 +358,7 @@ class Service {
   update(id, data, params) {
     console.log('Update feathers...', data, id);
     var _dbindex = _.findIndex(dbapi, { 'db': data.database[0] });
-    console.log(_dbindex)
+    // console.log(_dbindex)
     var dbdata = dbapi[0].api.putSchema(data, id);
     return Promise.resolve(dbdata);
   }

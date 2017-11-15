@@ -110,6 +110,9 @@ var check_Connection = async(function(db, data) {
     //     return 'true'
     //   }
     // });
+  } 
+  else if(db == 'mysql') {
+    return 'success'
   }
   else {
     var _res = new error()
@@ -193,7 +196,11 @@ var getConnectionData = async( function( db, data) {
     }
     // console.log(data1)
     return data1;
-  } else {
+  } else if(db == 'mysql') {
+    var s = []
+    return s
+  }
+  else {
     return 'not_found_db'
   }
 })
@@ -290,19 +297,23 @@ class Service {
   create (data, params) {
     console.log('********* Inside Create Service *********\n');
     if(params.query.check != undefined) {
-      var _res = check_Connection(params.query.check, data)
-      return Promise.resolve(_res).then(function(res){
-        // console.log('result.................', res)
-        var abc = getConnectionData(params.query.check, data)
-        return Promise.resolve(abc).then(function(__res){
-          return {result: true, data: __res}
+      if(params.query.check == 'mysql') {
+        return Promise.resolve({result: true, data: []})
+      } else {
+        var _res = check_Connection(params.query.check, data)
+        return Promise.resolve(_res).then(function(res){
+          // console.log('result.................', res)
+          var abc = getConnectionData(params.query.check, data)
+          return Promise.resolve(abc).then(function(__res){
+            return {result: true, data: __res}
+          })
+          // return {result: true}
         })
-        // return {result: true}
-      })
-      .catch(function(err){
-        // console.log('Error..............', err)
-        return {result: false}
-      })
+        .catch(function(err){
+          // console.log('Error..............', err)
+          return {result: false}
+        })
+      }
     } else {
       //encryption
       data.password = endecrypt.encrypt(data.password);

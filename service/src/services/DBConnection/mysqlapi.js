@@ -750,7 +750,7 @@ module.exports = {
     return res;
   }),
   getflowsInstance: async(function (title,instance_id) {
-    console.log('mysql get flowsInstance-------------------');
+    console.log('mysql get flowsInstance----------------------------------------------------');
 
     var flowsInstance = async(function () {
       var result = []
@@ -816,125 +816,262 @@ module.exports = {
     })
 
     var res = await (flowsInstance())
+    // console.log('myssql................', res)
     return res;
   }),
-  getThisflowsInstance: async(function (id,Schemaid,columnName) {
-    console.log('mysql get flowsInstanceCurrent',id,Schemaid,columnName);
+  getThisflowsInstance: async(function (id, tableName, instance_id) {
+    console.log('mysql get flowsInstanceCurrent',id,tableName,instance_id);
    
     var flowsInstance = async(function () {
       var result = []
       var promises = []
-      if(/^\d+$/.test(id))
-      {
-        _.forEach(db, function (dbinstance) {
-
+      // if(/^\d+$/.test(id))
+      // {
+        // _.forEach(db, function (dbinstance) {
+          for(let[i, dbinstance] of db.entries()){
+          if( dbinstance.id == instance_id ) {
+            console.log('db.id', dbinstance.id)
           ///////////////////////////////////////////////  Using Schemaid //////////////////////////////////////////////////////////
           
           // var res = await (schemadetailWithId(Schemaid,dbinstance))
           // var rs = res[0];
           // table_name = rs.title.replace(' ', '_');
       
-          // console.log(table_name);
-          // instanceVal1 = [];
+          // console.log(tableName);
+          instanceVal1 = [];
           
-          // var process = new Promise((resolve, reject) => {
-          //   dbinstance.conn.query("SELECT * from "+table_name+" where id="+id, function (error, results, fields) {
-          //     if (error) throw error;
-          //     _.forEach(results, function (instance) {
-          //       instanceVal = {};         
+          var p1 = new Promise((resolve, reject) => {
+            dbinstance.conn.query("SELECT * from "+tableName+" where id="+id, function (error, results, fields) {
+              if (error) throw error;
+              // console.log('results', results[0])
+              // _.forEach(results, function (instance) {
+              //   instanceVal = {};         
 
-          //       instanceVal['database'] = JSON.parse(rs.database_name);
-          //       instanceVal['Schemaid'] = Schemaid;
+              //   // instanceVal['database'] = JSON.parse(rs.database_name);
+              //   // instanceVal['Schemaid'] = Schemaid;
                 
-          //       _.forEach(rs, function (rs1,key) {
-          //         try {
-          //             instanceVal[key] = JSON.parse(rs1);
-          //           } catch (e) {
-          //             instanceVal[key] = rs1;                        
-          //           }
-          //       })
-          //       instanceVal1.push(instanceVal);
-          //     })
-          //     resolve(instanceVal1)
-          //   })
-          // })
-
-          ///////////////////////////////////////////////  Using Schemaid //////////////////////////////////////////////////////////
-          if(typeof columnName !== 'undefined' && typeof Schemaid !== 'undefined')
-          {
-            var getSchemaId = await (getSchemaIdFromEntity(defaultDb[0], Schemaid, columnName))
-            var res = await (schemaTabledata(defaultDb[0],getSchemaId[0]))
-          }
-          else if(typeof Schemaid !== 'undefined')
-          {
-            var res = await (schemaTabledata(defaultDb[0],Schemaid))
-          }
-          else{
-            var res = await (schemaTabledata(defaultDb[0]))          
-          }
-          
-          _.forEach(res, function (r) {
-
-            instanceVal1 = [];
-            
-            var process = new Promise((resolve, reject) => {
-
-              let database_name = JSON.parse(r.database_name)
-              var dbName = await(getDatabaseName(database_name[1]));
-
-              var table_name = dbName.dbname+'.'+r.title.replace(' ', '_');
-              
-              var commonSelect = await(getQuery('mysql','select','commonSelectWithCondition'));
-              commonSelect = commonSelect.replace('{{ table_name }}',table_name);
-              commonSelect = commonSelect.replace('{{ fields }}','*');
-              commonSelect = commonSelect.replace('{{ where }}','id="'+id+'"');
-
-              dbinstance.conn.query(commonSelect, function (error, results, fields) {
-                if (error) throw error;
-      
-                if(results.length>0)
-                {
-                  _.forEach(results, function (instance) {
-                    instanceVal = {};         
-      
-                    // instanceVal['database'] = JSON.parse(r.database_name);
-                    // instanceVal['Schemaid'] = r.id.toString();
-                    instanceVal['_id'] = instance.id.toString();
-                    
-                    _.forEach(instance, function (rs1,key) {
-                      try {
-                          instanceVal[key] = JSON.parse(rs1);
-                        } catch (e) {
-                          instanceVal[key] = rs1;                        
-                        }
-                    })
-                    if(instanceVal.Schemaid == null)
-                    {
-                      delete  instanceVal.Schemaid;
-                    }
-                    instanceVal1.push(instanceVal);
-                  })
-                }
-                resolve(instanceVal1)
-              })
+              //   // _.forEach(rs, function (rs1,key) {
+              //   //   try {
+              //   //       instanceVal[key] = JSON.parse(rs1);
+              //   //     } catch (e) {
+              //   //       instanceVal[key] = rs1;                        
+              //   //     }
+              //   // })
+              //   instanceVal1.push(instanceVal);
+              // })
+              resolve(results)
             })
-            
-            promises.push(process)
-
           })
-        })
-      }
+          promises.push(p1)
+
+          
+          ///////////////////////////////////////////////  Using Schemaid //////////////////////////////////////////////////////////
+          // if(typeof columnName !== 'undefined' && typeof Schemaid !== 'undefined')
+          // {
+          //   var getSchemaId = await (getSchemaIdFromEntity(defaultDb[0], Schemaid, columnName))
+          //   var res = await (schemaTabledata(defaultDb[0],getSchemaId[0]))
+          // }
+          // else if(typeof Schemaid !== 'undefined')
+          // {
+          //   var res = await (schemaTabledata(defaultDb[0],Schemaid))
+          // }
+          // else{
+          //   var res = await (schemaTabledata(defaultDb[0]))          
+          // }
+          
+          // _.forEach(res, function (r) {
+
+          //   instanceVal1 = [];
+            
+          //   var process = new Promise((resolve, reject) => {
+
+          //     let database_name = JSON.parse(r.database_name)
+          //     var dbName = await(getDatabaseName(database_name[1]));
+
+          //     var table_name = dbName.dbname+'.'+r.title.replace(' ', '_');
+              
+          //     var commonSelect = await(getQuery('mysql','select','commonSelectWithCondition'));
+          //     commonSelect = commonSelect.replace('{{ table_name }}',table_name);
+          //     commonSelect = commonSelect.replace('{{ fields }}','*');
+          //     commonSelect = commonSelect.replace('{{ where }}','id="'+id+'"');
+
+          //     dbinstance.conn.query(commonSelect, function (error, results, fields) {
+          //       if (error) throw error;
+      
+          //       if(results.length>0)
+          //       {
+          //         _.forEach(results, function (instance) {
+          //           instanceVal = {};         
+      
+          //           // instanceVal['database'] = JSON.parse(r.database_name);
+          //           // instanceVal['Schemaid'] = r.id.toString();
+          //           instanceVal['_id'] = instance.id.toString();
+                    
+          //           _.forEach(instance, function (rs1,key) {
+          //             try {
+          //                 instanceVal[key] = JSON.parse(rs1);
+          //               } catch (e) {
+          //                 instanceVal[key] = rs1;                        
+          //               }
+          //           })
+          //           if(instanceVal.Schemaid == null)
+          //           {
+          //             delete  instanceVal.Schemaid;
+          //           }
+          //           instanceVal1.push(instanceVal);
+          //         })
+          //       }
+          //       resolve(instanceVal1)
+          //     })
+          //   })
+            
+          //   promises.push(process)
+
+          // })
+        }
+        }
+        return Promise.all(promises).then(content => {
+            // console.log(content)
+            return content[0]
+          });
+      // }
       //return result;
 
-      return Promise.all(promises).then(content => {
-        return _.union(...content)
-      });
 
     });
     var res = await (flowsInstance())
-    
-    return res;
+    // console.log('.............................................', res[0])
+    var _res = res[0]
+    for(let k in _res) {
+      if(typeof _res[k] == 'string') {
+        if(_res[k][0] == '['){
+        _res[k] = JSON.parse(_res[k])
+        }
+      }
+    }
+    if(_res.Schemaid == null ){
+      delete _res.Schemaid
+    }
+    _res._id = _res.id
+    return _res;
   }),
+  // getThisflowsInstance: async(function (id,Schemaid,columnName) {
+  //     console.log('mysql get flowsInstanceCurrent',id,Schemaid,columnName);
+     
+  //     var flowsInstance = async(function () {
+  //       var result = []
+  //       var promises = []
+  //       if(/^\d+$/.test(id))
+  //       {
+  //         _.forEach(db, function (dbinstance) {
+
+  //           ///////////////////////////////////////////////  Using Schemaid //////////////////////////////////////////////////////////
+            
+  //           // var res = await (schemadetailWithId(Schemaid,dbinstance))
+  //           // var rs = res[0];
+  //           // table_name = rs.title.replace(' ', '_');
+        
+  //           // console.log(table_name);
+  //           // instanceVal1 = [];
+            
+  //           // var process = new Promise((resolve, reject) => {
+  //           //   dbinstance.conn.query("SELECT * from "+table_name+" where id="+id, function (error, results, fields) {
+  //           //     if (error) throw error;
+  //           //     _.forEach(results, function (instance) {
+  //           //       instanceVal = {};         
+
+  //           //       instanceVal['database'] = JSON.parse(rs.database_name);
+  //           //       instanceVal['Schemaid'] = Schemaid;
+                  
+  //           //       _.forEach(rs, function (rs1,key) {
+  //           //         try {
+  //           //             instanceVal[key] = JSON.parse(rs1);
+  //           //           } catch (e) {
+  //           //             instanceVal[key] = rs1;                        
+  //           //           }
+  //           //       })
+  //           //       instanceVal1.push(instanceVal);
+  //           //     })
+  //           //     resolve(instanceVal1)
+  //           //   })
+  //           // })
+
+  //           ///////////////////////////////////////////////  Using Schemaid //////////////////////////////////////////////////////////
+  //           if(typeof columnName !== 'undefined' && typeof Schemaid !== 'undefined')
+  //           {
+  //             var getSchemaId = await (getSchemaIdFromEntity(defaultDb[0], Schemaid, columnName))
+  //             var res = await (schemaTabledata(defaultDb[0],getSchemaId[0]))
+  //           }
+  //           else if(typeof Schemaid !== 'undefined')
+  //           {
+  //             var res = await (schemaTabledata(defaultDb[0],Schemaid))
+  //           }
+  //           else{
+  //             var res = await (schemaTabledata(defaultDb[0]))          
+  //           }
+            
+  //           _.forEach(res, function (r) {
+
+  //             instanceVal1 = [];
+              
+  //             var process = new Promise((resolve, reject) => {
+
+  //               let database_name = JSON.parse(r.database_name)
+  //               var dbName = await(getDatabaseName(database_name[1]));
+
+  //               var table_name = dbName.dbname+'.'+r.title.replace(' ', '_');
+                
+  //               var commonSelect = await(getQuery('mysql','select','commonSelectWithCondition'));
+  //               commonSelect = commonSelect.replace('{{ table_name }}',table_name);
+  //               commonSelect = commonSelect.replace('{{ fields }}','*');
+  //               commonSelect = commonSelect.replace('{{ where }}','id="'+id+'"');
+
+  //               dbinstance.conn.query(commonSelect, function (error, results, fields) {
+  //                 if (error) throw error;
+        
+  //                 if(results.length>0)
+  //                 {
+  //                   _.forEach(results, function (instance) {
+  //                     instanceVal = {};         
+        
+  //                     // instanceVal['database'] = JSON.parse(r.database_name);
+  //                     // instanceVal['Schemaid'] = r.id.toString();
+  //                     instanceVal['_id'] = instance.id.toString();
+                      
+  //                     _.forEach(instance, function (rs1,key) {
+  //                       try {
+  //                           instanceVal[key] = JSON.parse(rs1);
+  //                         } catch (e) {
+  //                           instanceVal[key] = rs1;                        
+  //                         }
+  //                     })
+  //                     if(instanceVal.Schemaid == null)
+  //                     {
+  //                       delete  instanceVal.Schemaid;
+  //                     }
+  //                     instanceVal1.push(instanceVal);
+  //                   })
+  //                 }
+  //                 resolve(instanceVal1)
+  //               })
+  //             })
+              
+  //             promises.push(process)
+
+  //           })
+  //         })
+  //       }
+  //       //return result;
+
+  //       return Promise.all(promises).then(content => {
+  //         return _.union(...content)
+  //       });
+
+  //     });
+  //     var res = await (flowsInstance())
+      
+  //     return res;
+  //   }),
   //post methods
   postSchema: async(function (data) {
     console.log('mysql post Schema');

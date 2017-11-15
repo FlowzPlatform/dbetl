@@ -293,20 +293,32 @@ module.exports = {
     // // return flowsInstance;
   }),
 
-  getThisflowsInstance: async(function (id) {
+  getThisflowsInstance: async(function (id, tableName, inst_id) {
     console.log('rethink get flowsInstanceCurrent');
-    var flowsInstance = async(function () {
-      var result = []
-      _.forEach(r, function (dbinstance) {
-        var data = await (dbinstance.conn.table('flowsinstance').filter({ 'id': id }).run())
-        _.forEach(data, function (instance) {
-          result.push(instance)
-        })
-      })
-      return result;
-    });
-    var res = await (flowsInstance())
-    return res;
+    for (let [i, inst] of r.entries()) {
+      if ( inst.id == inst_id ) {
+        var res = await (inst.conn.table(tableName).filter({ 'id': id }).run())
+        // for(let [inx, obj] of res.entries()) {
+        //   if (obj._id == id) {
+        //     return obj
+        //   }
+        // }
+        // console.log('rethink r', res)
+        return res[0]
+      }
+    }
+    // var flowsInstance = async(function () {
+    //   var result = []
+    //   _.forEach(r, function (dbinstance) {
+    //     var data = await (dbinstance.conn.table('flowsinstance').filter({ 'id': id }).run())
+    //     _.forEach(data, function (instance) {
+    //       result.push(instance)
+    //     })
+    //   })
+    //   return result;
+    // });
+    // var res = await (flowsInstance())
+    // return res;
     // var flowsInstance = await (r.table('flowsinstance').filter({ 'id': id }).run());
     // // console.log('flowsInstance',flowsInstance);
     // return flowsInstance[0];

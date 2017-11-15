@@ -10,7 +10,7 @@ export default {
     return api.request('get', '/' + model)
   },
   getThis: (id, Schemaid) => {
-    return api.request('get', '/' + model + '/' + id + '?Schemaid=' + Schemaid)
+    return api.request('get', '/' + model + '/' + id + '?schemaid=' + Schemaid)
   },
   post: (data) => {
     return api.request('post', '/' + model, data)
