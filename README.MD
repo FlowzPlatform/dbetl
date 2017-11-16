@@ -36,17 +36,23 @@ $ wget https://github.com/FlowzPlatform/FlowzSchemaEditor.zip -O FlowzSchemaEdit
 
 	First go to service folder. Run below command
 	
-	```npm install```
+	
+	$ npm install
+	
 
-	```npm start```
+	$ npm start
+	
 	
 	Your api should run on port 3030 with the development environment configuration
 
 	Now go to client folder. Run below command
 
-	```npm install```
-
-	```npm start```
+	
+	$ npm install
+	
+	
+	$ npm start
+	
 
 	Your application should run on port 8000 with the development environment configuration, so in your browser navigate to http://localhost:3000
 
