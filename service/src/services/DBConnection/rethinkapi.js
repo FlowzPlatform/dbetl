@@ -294,7 +294,7 @@ module.exports = {
   }),
 
   getThisflowsInstance: async(function (id, tableName, inst_id) {
-    console.log('rethink get flowsInstanceCurrent');
+    console.log('rethink get flowsInstanceCurrent', id, tableName, inst_id);
     for (let [i, inst] of r.entries()) {
       if ( inst.id == inst_id ) {
         var res = await (inst.conn.table(tableName).filter({ 'id': id }).run())
@@ -382,12 +382,12 @@ module.exports = {
     // var schema = await (r.table('schema').get(id).replace(data).run());
     // return schema;dr[0]
   }),
-  putflowsInstance: async(function (data, id, dbid) {
+  putflowsInstance: async(function (id, data, tableName, inst_id) {
     console.log('rethink put flowsInstance');
     var selectedDB = _.find(r, (d) => {
-        return d.id == dbid
+        return d.id == inst_id
     })
-    var flowsinstance = await (selectedDB.conn.table('flowsinstance').get(id).replace(data).run());
+    var flowsinstance = await (selectedDB.conn.table(tableName).get(id).replace(data).run());
     return flowsinstance;
   }),
 

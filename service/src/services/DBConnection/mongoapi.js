@@ -359,16 +359,16 @@ module.exports = {
     var schema = await (defaultDb[0].conn.collection('schema').updateOne({ _id: id }, { $set: data }));
     return schema;
   }),
-  putflowsInstance: async(function (data, id, dbid) {
-    // var _data = JSON.parse(data);
+  putflowsInstance: async(function (id, data, tableName, inst_id) {
     console.log('mongo put flowsInstance');
     delete data._id
+    delete data.id
     var id = new mongoose.Types.ObjectId(id);
     // console.log('id from putflowsInstance:',id);
     var selectedDB = _.find(db, (d) => {
-      return d.id == dbid
+      return d.id == inst_id
     })
-    var flowsInstance = await (selectedDB.conn.collection('flows-instance').updateOne({ _id: id }, { $set: data }));
+    var flowsInstance = await (selectedDB.conn.collection(tableName).updateOne({ _id: id }, { $set: data }));
     return flowsInstance;
   }),
 

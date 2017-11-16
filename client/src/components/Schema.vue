@@ -419,7 +419,7 @@
         </Form>
       </Col>
     </Row>
-    {{formSchema}}
+    <!-- {{formSchema}} -->
     <!-- <div class="">
     <GrapesComponent :is='active'></GrapesComponent>
     </div> -->
@@ -446,7 +446,7 @@ export default {
     const validateTitle = async(rule, value, callback) => {
       var patt = new RegExp(/^_|\`|\~|\!|\@|\#|\$|\%|\^|\&|\*|\(|\)|\+|\=|\[|\{|\]|\}|\||\\|\'|\<|\,|\.|\>|\?|\/|\"|\;|\:|\-|\s/)
       var _res = patt.test(value)
-      if (!_res) {
+      if (_res) {
         callback(new Error('Not Allowed Special Character'))
       } else {
         var res = await this.validateTitle(value)
