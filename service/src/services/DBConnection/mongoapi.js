@@ -369,7 +369,7 @@ module.exports = {
       return d.id == inst_id
     })
     var flowsInstance = await (selectedDB.conn.collection(tableName).updateOne({ _id: id }, { $set: data }));
-    return flowsInstance;
+    return flowsInstance.result;
   }),
 
   //delete methods

@@ -315,50 +315,60 @@ class Service {
         })
       }
     } else {
-      //encryption
-      data.password = endecrypt.encrypt(data.password);
-      // console.log(data)
-      let result = new Promise((resolve, reject) => {
-          fs.readFile(path.join(__dirname, '../DBConnection/db.json'),function (err, data) {
-            if (err) return console.log(err);
-                resolve(JSON.parse(data));
-            });
-      });
-      var _data = Promise.resolve(result).then(function(res){
-        var selectDB = data.selectedDb;
-        delete data.selectedDb;
-
-        //check connection alredy exist or not
-        var check = ''
-        _.map(res[selectDB].dbinstance, function(instance) { 
-          if(instance.host == data.host && instance.port == data.port && instance.dbname == data.dbname){
-              check = 'Exist'
-          }
+      if(params.query.checkconn != undefined) {
+        var _res = check_Connection(params.query.checkconn, data)
+        return Promise.resolve(_res).then(function(res){
+          return {result: true}
+        }).catch(function(err){
+          // console.log('Error..............', err)
+          return {result: false}
         })
-        if(check == 'Exist'){
-          return 'Exist'
-        }else{
-          //check connection is isdefault true
-            if(data.isdefault){
-              _.forEach(res, (v, k) => {
-                _.forEach(res[k].dbinstance, function(inst){
-                  inst.isdefault = false
-                })    
-              })
-            }
-            // console.log(res[selectDB].dbinstance)
-            res[selectDB].dbinstance.push(data)
-            let result1 = new Promise((resolve, reject) => {
-              jsonfile.writeFile(path.join(__dirname, '../DBConnection/db.json'), res, {spaces: 4}, function(err) {
-                  if (err) return 'Error';
-                  resolve(res);
+      } else {
+        //encryption
+        data.password = endecrypt.encrypt(data.password);
+        // console.log(data)
+        let result = new Promise((resolve, reject) => {
+            fs.readFile(path.join(__dirname, '../DBConnection/db.json'),function (err, data) {
+              if (err) return console.log(err);
+                  resolve(JSON.parse(data));
               });
-            });
-            Promise.resolve(result1);
-            return 'Success'
-        }
-      });
-      return _data;
+        });
+        var _data = Promise.resolve(result).then(function(res){
+          var selectDB = data.selectedDb;
+          delete data.selectedDb;
+
+          //check connection alredy exist or not
+          var check = ''
+          _.map(res[selectDB].dbinstance, function(instance) { 
+            if(instance.host == data.host && instance.port == data.port && instance.dbname == data.dbname){
+                check = 'Exist'
+            }
+          })
+          if(check == 'Exist'){
+            return 'Exist'
+          }else{
+            //check connection is isdefault true
+              if(data.isdefault){
+                _.forEach(res, (v, k) => {
+                  _.forEach(res[k].dbinstance, function(inst){
+                    inst.isdefault = false
+                  })    
+                })
+              }
+              // console.log(res[selectDB].dbinstance)
+              res[selectDB].dbinstance.push(data)
+              let result1 = new Promise((resolve, reject) => {
+                jsonfile.writeFile(path.join(__dirname, '../DBConnection/db.json'), res, {spaces: 4}, function(err) {
+                    if (err) return 'Error';
+                    resolve(res);
+                });
+              });
+              Promise.resolve(result1);
+              return 'Success'
+          }
+        });
+        return _data;
+      }
     }
   }
 

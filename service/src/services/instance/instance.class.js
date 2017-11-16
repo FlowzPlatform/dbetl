@@ -386,7 +386,7 @@ var getActualInstance = async(function(id, res) {
   return _data;
 })
 var updateData = async(function(id, data, res) {
-  console.log('update calling...................', id, data, res)
+  console.log('update calling...................', id)
   var _dbindex = _.findIndex(dbapi, { 'db': res.database[0] });
   var dbdata = await (dbapi[_dbindex].api.putflowsInstance(id, data, res.title, res.database[1]));
   console.log('dbdata..........', dbdata)
@@ -401,6 +401,7 @@ var checkUpdateData = async(function(id, data) {
   var _res = await ( compareData(id, old_data, data[0], res) ) 
   return _res
 })
+
 var compareData = async(function(id, old_data, new_data, res) {
   var new_status = await (checkFlagforGet(old_data))
   console.log('new_status...........................', new_status)
@@ -416,26 +417,37 @@ var compareData = async(function(id, old_data, new_data, res) {
         console.log('....................')
         console.log(old_data[sKey], sKey)
         var entityType = await (FindEntitytype(sKey, res))
-        var database = await (giveDatabase(entityType))
-        console.log('Database', database)
-        for (let [i, sObj] of old_data[sKey].entries()) {
-          var _dbindex = _.findIndex(dbapi, { 'db': database[0] });
-          var dbdata = await (dbapi[_dbindex].api.putflowsInstance(new_data[0][sKey][i], sObj.refid, database[1]))
+        // var database = await (giveDatabase(entityType))
+        var _res = await (getSchemaData(entityType))
+        console.log('Database', _res)
+        var flag = false
+        for(let [inx, ent] of _res.entity.entries()) {
+          if(ent.customtype) {
+            flag = true
+          }
         }
-        // var status = await (checkFlagforGet(object[sKey]))
-        // if(!status) {
-        //   console.log('Hieeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee')
-        //   for (let sObj in object[sKey]) {
-        //     console.log('sKey', sKey)
-        //     // var _dbindex = _.findIndex(dbapi, { 'db': putSchemaData.database[0]});
-        //     // var dbdata = await (dbapi[_dbindex].api.putflowsInstance(new_data[0], sObj.refid, putSchemaData.database[1]));
-        //   }
-        // } else {
-        // }
+
+        if(!flag) {
+          var s = []
+          for(let [i, sObj] of old_data[sKey].entries()) {
+            console.log(sObj.refid, new_data[sKey][i], _res)
+            old_data[sKey] = await (updateData(sObj.refid, new_data[sKey][i], _res))
+            new_data[sKey][i] = {}
+            new_data[sKey][i].refid = sObj.refid
+            // console.log(new_data[sKey][i])
+            // new_data[sKey][i] = old_data[sKey][i]
+          }
+          old_data[sKey] = s;
+        } else {
+          for(let [i, sObj] of old_data[sKey].entries()) {
+            old_data[sKey] = await (compareData(sObj.refid, new_data[sKey][i], _res))
+          }
+        }
       }
     }
     // }
-    return 'refid'
+    var s = await (updateData (id, new_data, res))
+    return s
   }
 })
 var singleLevelsave = async(function(data) {
