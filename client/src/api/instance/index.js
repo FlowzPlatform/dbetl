@@ -17,5 +17,8 @@ export default {
   },
   put: (id, data) => {
     return api.request('put', '/' + model + '/' + id, data)
+  },
+  delThis: (id, Schemaid) => {
+    return api.request('delete', '/' + model + '/' + id + '?schemaid=' + Schemaid)
   }
 }

@@ -625,7 +625,11 @@ var getIdbySchemaName = async( function(id, name) {
   var _res = await (getIdbySchemaId(id, Schemaid))
   return _res;
 })
-
+var removeIdbySchemaId = async (function (id, schemaid) {
+   var res = await (getSchemaData(schemaid))
+   var _res = await (deleteData(id, res))
+   return _res
+})
 var removeIdbySchemaName = async( function(id, name) {
   var Schema = await (getallSchemaData())
   var Schemaid;
@@ -636,11 +640,6 @@ var removeIdbySchemaName = async( function(id, name) {
   }
   var _res = await (removeIdbySchemaId(id, Schemaid))
   return _res;
-})
-var removeIdbySchemaId = async (function (id, schemaid) {
-   var res = await (getSchemaData(schemaid))
-   var _res = await (deleteData(id, res))
-   return _res
 })
 
 class Service {
