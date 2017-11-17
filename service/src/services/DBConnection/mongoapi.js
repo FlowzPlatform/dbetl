@@ -423,10 +423,13 @@ module.exports = {
     }
     // // var schema = await (db.collection('schema').deleteOne({ _id: id }));
   }),
-  deleteThisflowsInstance: async(function (id) {
-    console.log('mongo delete flowsInstance');
+  deleteThisflowsInstance: async(function (id, tableName, inst_id) {
+    console.log('mongo delete this flowsInstance');
     var id = new mongoose.Types.ObjectId(id);
-    var flowsInstance = await (db.collection('flows-instance').deleteOne({ _id: id }));
+    var selectedDB = _.find(db, (d) => {
+      return d.id == inst_id
+    })
+    var flowsInstance = await (selectedDB.conn.collection(tableName).deleteOne({ _id: id }));
     return flowsInstance;
   })
 

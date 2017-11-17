@@ -386,10 +386,17 @@ var getActualInstance = async(function(id, res) {
   return _data;
 })
 var updateData = async(function(id, data, res) {
-  console.log('update calling...................', id)
+  console.log('update calling...................')
   var _dbindex = _.findIndex(dbapi, { 'db': res.database[0] });
   var dbdata = await (dbapi[_dbindex].api.putflowsInstance(id, data, res.title, res.database[1]));
-  console.log('dbdata..........', dbdata)
+  console.log('dbdata..........')
+  return dbdata;
+})
+var deleteData = async(function(id, res) {
+  console.log('delete calling...................')
+  var _dbindex = _.findIndex(dbapi, { 'db': res.database[0] });
+  var dbdata = await (dbapi[_dbindex].api.deleteThisflowsInstance(id, res.title, res.database[1]));
+  console.log('dbdata..........')
   return dbdata;
 })
 var checkUpdateData = async(function(id, data) {
@@ -415,11 +422,11 @@ var compareData = async(function(id, old_data, new_data, res) {
       // console.log(object, sKey)
       if (Array.isArray(old_data[sKey])) {
         console.log('....................')
-        console.log(old_data[sKey], sKey)
+        // console.log(old_data[sKey], sKey)
         var entityType = await (FindEntitytype(sKey, res))
         // var database = await (giveDatabase(entityType))
         var _res = await (getSchemaData(entityType))
-        console.log('Database', _res)
+        // console.log('Database', _res)
         var flag = false
         for(let [inx, ent] of _res.entity.entries()) {
           if(ent.customtype) {
@@ -429,18 +436,54 @@ var compareData = async(function(id, old_data, new_data, res) {
 
         if(!flag) {
           var s = []
+          if(old_data[sKey].length == new_data[sKey].length) {
+            for(let [i, sObj] of old_data[sKey].entries()) {
+              // console.log(sObj.refid, new_data[sKey][i], _res)
+              var n = await (updateData(sObj.refid, new_data[sKey][i], _res))
+              s.push(n)
+              new_data[sKey][i] = {}
+              new_data[sKey][i].refid = sObj.refid
+              // console.log(new_data[sKey][i])
+              // new_data[sKey][i] = old_data[sKey][i]
+            }
+          } else if (old_data[sKey].length > new_data[sKey].length) {
+            var s = []
+            var diff = old_data[sKey].length - new_data[sKey].length
+            var upLen = old_data[sKey].length - diff
+            for(let i = 0; i < upLen; i++) {
+              var n = await (updateData(old_data[sKey][i].refid, new_data[sKey][i], _res))
+              s.push(n)
+              new_data[sKey][i] = {}
+              new_data[sKey][i].refid = old_data[sKey][i].refid
+            }
+            for(let j = upLen; j < old_data[sKey].length; j++) {
+              var n = await (deleteData(old_data[sKey][j].refid, _res))
+              s.push(n)
+            }
+          } else if (old_data[sKey].length < new_data[sKey].length) {
+            for(let i = 0; i < old_data[sKey].length; i++) {
+              var n = await (updateData(old_data[sKey][i].refid, new_data[sKey][i], _res))
+              s.push(n)
+              new_data[sKey][i] = {}
+              new_data[sKey][i].refid = old_data[sKey][i].refid
+            }
+            for(let j = old_data[sKey].length; j < new_data[sKey].length; j++) {
+              var sres = await (saveData(new_data[sKey][j], _res))
+              new_data[sKey][j] = {}
+              new_data[sKey][j].refid = sres
+              s.push(n)
+            }
+          }
+          // old_data[sKey] = s;
+        } else {
+          var s = []
+          // console.log('/////////////////////////////////////////////////////////////////////////////////////', new_data[sKey])
           for(let [i, sObj] of old_data[sKey].entries()) {
-            console.log(sObj.refid, new_data[sKey][i], _res)
-            old_data[sKey] = await (updateData(sObj.refid, new_data[sKey][i], _res))
+            var oData = await (getActualInstance(sObj.refid, _res))
+            var n = await (compareData(sObj.refid, oData, new_data[sKey][i], _res))
             new_data[sKey][i] = {}
             new_data[sKey][i].refid = sObj.refid
-            // console.log(new_data[sKey][i])
-            // new_data[sKey][i] = old_data[sKey][i]
-          }
-          old_data[sKey] = s;
-        } else {
-          for(let [i, sObj] of old_data[sKey].entries()) {
-            old_data[sKey] = await (compareData(sObj.refid, new_data[sKey][i], _res))
+            s.push(n)
           }
         }
       }
@@ -502,7 +545,7 @@ var findAllInstance = async(function() {
       fExtract.push(idObj)
     }
   }
-  console.log('Extract', JSON.stringify(fExtract))
+  // console.log('Extract', JSON.stringify(fExtract))
 
   for (let [inxx, mObj] of fExtract.entries() ) {
     fExtract[inxx] = await (getIdbySchemaId(mObj._id, mObj.Schemaid))

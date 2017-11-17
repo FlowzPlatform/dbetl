@@ -21,12 +21,13 @@
       <Form-item>
         <Row>
           <Col span="24">
-            <Button type="dashed" long @click="handleAdd" icon="plus-round">Add</Button>
+            <Button type="dashed" long v-if="!$route.params.id" @click="handleAdd" icon="plus-round">Add</Button>
           </Col>
         </Row>
       </Form-item>
       <Form-item>
-        <Button type="primary" v-model="savebutton" @click="handleSubmit('formSchemaInstance')">{{ savebutton }}</Button>
+        <Button type="primary" v-if="!$route.params.id" @click="handleSubmit('formSchemaInstance')">Save</Button>
+        <Button type="primary" v-if="$route.params.id" @click="handleSubmit('formSchemaInstance')">Update</Button>
         <Button type="ghost" @click="handleReset('formSchemaInstance')" style="margin-left: 8px">Reset</Button>
       </Form-item>
     </Form>
@@ -36,8 +37,7 @@
         {{item.name}} -- {{item.errmsg}}
       </div>
     </div>
-    {{formSchemaInstance.data}}
-    <!-- {{savebutton}} -->
+    <!-- {{formSchemaInstance.data}} -->
   </div>
 </template>
 
@@ -50,43 +50,27 @@ export default {
   name: 'schema',
   components: {
     'schema-form': SchemaForm
-    // draggable
   },
-  // props: ['id', 'instanceid', 'processid'],
   data () {
     return {
       loading: false,
       formSchemaInstance: {
-        // name: '',
         data: [],
         entity: []
       },
       schema: {},
       entity: [],
-      savebutton: 'Save',
       instanceData: {},
       validFlag: true,
       validErr: []
     }
   },
   created () {
-    // if (this.id === undefined) {
     if (this.$route.params.schemaid === undefined) {
-      this.savebutton = 'Update'
       this.fetch(this.$route.params.id)
     } else {
       this.fetch(this.$route.params.schemaid)
     }
-    // } else {
-    //   if (this.$route.params.schemaid === undefined) {
-    //     this.savebutton = 'Update'
-    //     this.fetch(this.$route.params.id)
-    //   } else if (this.$route.params.schemaid !== undefined) {
-    //     this.fetch(this.$route.params.schemaid)
-    //   } else {
-    //     this.fetch(this.id)
-    //   }
-    // }
   },
   methods: {
     getChildData (id) {
@@ -210,7 +194,7 @@ export default {
               console.log('response put', response.data)
               this.$Notice.success({title: 'success!', desc: 'Instance Updated...'})
               this.$Loading.finish()
-              // this.$router.push('/')
+              this.$router.push('/instancelist/' + this.$route.params.schemaid)
             })
             .catch(error => {
               console.log('Error', error)
@@ -223,7 +207,7 @@ export default {
               console.log('response', response.data)
               this.$Notice.success({title: 'success!', desc: 'Instance Saved...'})
               this.$Loading.finish()
-              this.$router.push('/')
+              this.$router.push('/instancelist/' + this.$route.params.schemaid)
             })
             .catch(error => {
               console.log('Error', error)

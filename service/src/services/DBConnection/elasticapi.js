@@ -696,13 +696,16 @@ module.exports = {
   //   // return result;
 
   // }),
-  deleteThisflowsInstance: async(function (id) {
+  deleteThisflowsInstance: async(function (id, tableName, inst_id) {
     console.log('elastic delete this flowsInstance');
+    var selectedDB = _.find(client, (d) => {
+      return d.id == inst_id
+    })
     var instanceid = id;
     var result = await (
-        client.delete({
-          index: db,
-          type: 'instance',
+        selectedDB.conn.delete({
+          index: selectedDB.dbname,
+          type: tableName,
           id: instanceid
         }))
       // console.log('result',result);

@@ -294,7 +294,7 @@ module.exports = {
   }),
 
   getThisflowsInstance: async(function (id, tableName, inst_id) {
-    console.log('rethink get flowsInstanceCurrent', id, tableName, inst_id);
+    console.log('rethink get flowsInstanceCurrent');
     for (let [i, inst] of r.entries()) {
       if ( inst.id == inst_id ) {
         var res = await (inst.conn.table(tableName).filter({ 'id': id }).run())
@@ -426,9 +426,12 @@ module.exports = {
   //   var flowsinstance = await (r.table('flowsinstance').delete().run());
   //   return flowsinstance;
   // }),
-  deleteThisflowsInstance: async(function (id) {
-    console.log('rethink delete flowsInstance');
-    var flowsinstance = await (r.table('flowsinstance').filter({ 'id': id }).delete().run());
+  deleteThisflowsInstance: async(function (id, tableName, inst_id) {
+    console.log('rethink delete this flowsInstance');
+    var selectedDB = _.find(r, (d) => {
+        return d.id == inst_id
+    })
+    var flowsinstance = await (selectedDB.conn.table(tableName).filter({ 'id': id }).delete().run());
     return flowsinstance;
   })
 }

@@ -33,7 +33,7 @@
                 "password": "",
                 "upldIcn": "",
                 "notes": "",
-                "isdefault": true,
+                "isdefault": false,
                 "id": "f613518b-200b-46ca-bebd-90db7d45c553"
             },
             {
@@ -53,6 +53,24 @@
                 "schemaData": [],
                 "isdefault": false,
                 "id": "ea0fb85a-51d1-4027-b7e6-a8a36438d7de"
+            },
+            {
+                "isenable": true,
+                "connection_name": "Rethink-fs",
+                "host": "localhost",
+                "port": "28015",
+                "dbname": "flowsservice",
+                "username": "",
+                "password": "",
+                "upldIcn": "",
+                "upldCSV": [],
+                "rdodb": "",
+                "rdosync": "",
+                "keep_sync": "",
+                "notes": "",
+                "schemaData": [],
+                "isdefault": true,
+                "id": "fc03995e-fa95-46cf-d401-2c0eb66bbb22"
             }
         ]
     },
