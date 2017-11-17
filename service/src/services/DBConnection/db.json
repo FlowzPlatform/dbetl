@@ -1,26 +1,123 @@
 {
-  "mongo": {
-    "dbinstance": []
-  },
-  "rethink": {
-    "dbinstance": [{
-      "isenable": true,
-      "connection_name": "Rethink",
-      "host": "localhost",
-      "port": "28015",
-      "dbname": "FlowzEngine",
-      "username": "",
-      "password": "",
-      "upldIcn": "",
-      "notes": "",
-      "isdefault": false,
-      "id": "f613518b-200b-46ca-bebd-90db7d45c553"
-    }]
-  },
-  "elastic": {
-    "dbinstance": []
-  },
-  "nedb": {
-    "dbinstance": []
-  }
+    "mongo": {
+        "dbinstance": [
+            {
+                "isenable": true,
+                "connection_name": "mongo-local",
+                "host": "localhost",
+                "port": "3001",
+                "dbname": "schema_builder",
+                "username": "",
+                "password": "",
+                "upldIcn": "",
+                "upldCSV": [],
+                "rdodb": "",
+                "rdosync": "",
+                "keep_sync": "",
+                "notes": "",
+                "schemaData": [],
+                "isdefault": false,
+                "id": "b1ac06f0-f0d2-4ebd-9796-cde1a55db9fb"
+            }
+        ]
+    },
+    "rethink": {
+        "dbinstance": [
+            {
+                "isenable": true,
+                "connection_name": "Rethink",
+                "host": "localhost",
+                "port": "28015",
+                "dbname": "FlowzEngine",
+                "username": "",
+                "password": "",
+                "upldIcn": "",
+                "notes": "",
+                "isdefault": false,
+                "id": "f613518b-200b-46ca-bebd-90db7d45c553"
+            },
+            {
+                "isenable": true,
+                "connection_name": "demo",
+                "host": "localhost",
+                "port": "28015",
+                "dbname": "Demo",
+                "username": "",
+                "password": "",
+                "upldIcn": "",
+                "upldCSV": [
+                    {
+                        "_id": "1",
+                        "entity__property__optional": "true",
+                        "email": "shraddha@officebrain.c",
+                        "phone": "7894561230",
+                        "date": "08/08/2016"
+                    },
+                    {
+                        "_id": "2",
+                        "entity__property__optional": "true",
+                        "email": "ashwin",
+                        "phone": "7412589630",
+                        "date": "05/05/05"
+                    },
+                    {
+                        "_id": "3",
+                        "entity__property__optional": "false",
+                        "email": "om@ddd.lvo",
+                        "phone": "9874563210",
+                        "date": "05/05/05"
+                    },
+                    {
+                        "_id": "4",
+                        "entity__property__optional": "false",
+                        "email": "sanjaom",
+                        "phone": "weqqw",
+                        "date": "05/05/14"
+                    },
+                    {
+                        "_id": "5",
+                        "entity__property__optional": "false",
+                        "email": "shraddha@officebrain.c",
+                        "phone": "7894561230",
+                        "date": "05/05/05"
+                    },
+                    {
+                        "_id": ""
+                    }
+                ],
+                "rdodb": "",
+                "rdosync": "",
+                "keep_sync": "",
+                "notes": "",
+                "schemaData": [],
+                "isdefault": false,
+                "id": "9e1d05e9-b652-4a3c-000c-b36c5e387040"
+            }
+        ]
+    },
+    "elastic": {
+        "dbinstance": [
+            {
+                "isenable": true,
+                "connection_name": "elastic",
+                "host": "localhost",
+                "port": "9200",
+                "dbname": "elastic",
+                "username": "",
+                "password": "",
+                "upldIcn": "",
+                "upldCSV": [],
+                "rdodb": "",
+                "rdosync": "rbtsync",
+                "keep_sync": "",
+                "notes": "",
+                "schemaData": [],
+                "isdefault": false,
+                "id": "6943c38b-0dac-4379-12d1-190d5d7194e8"
+            }
+        ]
+    },
+    "nedb": {
+        "dbinstance": []
+    }
 }

@@ -365,7 +365,7 @@
     <Row>
       <Col span="6">
       <FormItem>
-        
+
         <Button type="primary" :loading="loadingData" v-on:click="insertCsvData(frmSettings.upldCSV)" v-if="validateButton">
                       <span v-show="!loadingData">Validate Data</span>
                       <span v-show ="loadingData">Loading...</span>
@@ -621,6 +621,7 @@ export default {
         }
     },
     uploadCsv() {
+
       let self = this
       console.log("uploadCsv called....")
       $(document).ready(function() {
@@ -655,7 +656,8 @@ export default {
                 label: 'Date'
               }]
 
-
+              self.csvData = [],
+              self.frmSettings.uploadCsv = []
               self.frmSettings.upldCSV = results.data;
               console.log("--------------------->", self.frmSettings.upldCSV, self.frmSettings.upldCSV)
               self.headers = Object.keys(self.frmSettings.upldCSV[0]);
@@ -707,12 +709,6 @@ export default {
     },
     type(index) {
       var arr = [];
-      // console.log("iiiiiiiiiiiiiiiiiii",this.csvData[index].type)
-      // console.log("dsav",this.csvData.length)
-      // _.forEach(this.csvData, function(value){
-      //   console.log("hiiiii",value)
-      //   arr.push(type=value.type)
-      // })
       this.validateButton = true
       this.loadingData = false
       this.errmsg = [];
@@ -813,7 +809,6 @@ export default {
               i = key;
             }
           })
-          console.log("aaaaaaaaaaaaaaaaaa", self.csvData[i].allowedValue)
           if (self.csvData[i].allowedValue.length > 0) {
             if (value != undefined) {
               let check = _.includes(self.csvData[i].allowedValue, value)
@@ -824,7 +819,6 @@ export default {
         };
 
         let regExValidatorFunc = function(obj, value, fieldName) {
-          console.log("rrrrrrrrrrrrrrr")
           var i;
           _.forEach(self.headers, function(value, key) {
             if (fieldName == value) {
@@ -1212,9 +1206,10 @@ export default {
               })
               // console.log('flag = ', flag, c_name)
               if (!flag){
+                console.log(data)
                 api.request('post', '/settings?check=' + data.selectedDb, data)
                   .then(response => {
-                    // console.log('CheckConnection', response.data)
+                    console.log('CheckConnection', response.data)
                     if(response.data.result){
                         self.conn_icon = 'checkmark'
                         self.currentStep = step;
