@@ -102,7 +102,12 @@
                             <tr class="ivu-table-row" v-for="(item, index) in formSchema.entity">
                                 <td class="">
                                     <div class="ivu-table-cell">
+                                      <Form-item
+                                      :prop="'entity.' + index + '.name'"
+                                      :rules="entityrules"
+                                      >
                                         <Input type="text" v-model="item.name" placeholder="name" size="small" class="schema-form-input"></Input>
+                                      </Form-item>
                                     </div>
                                 </td>
                                 <td class="">
@@ -419,7 +424,7 @@
         </Form>
       </Col>
     </Row>
-    <!-- {{formSchema}} -->
+    {{formSchema}}
     <!-- <div class="">
     <GrapesComponent :is='active'></GrapesComponent>
     </div> -->
@@ -453,6 +458,19 @@ export default {
         // console.log('res..// ', res)
         if (res === 'yes') {
           callback(new Error('Already Exist....'))
+        } else {
+          callback();
+        }
+      }
+    };
+    const validateEntField = async(rule, value, callback) => {
+      var patt = new RegExp(/\`|\~|\!|\@|\#|\$|\%|\^|\&|\*|\(|\)|\+|\=|\[|\{|\]|\}|\||\\|\'|\<|\,|\>|\?|\/|\"|\;|\:/)
+      var _res = patt.test(value)
+      if (_res) {
+        callback(new Error('Invalid Input'))
+      } else {
+        if (value === 'id' || value === '_id') {
+          callback(new Error('Not allowed. Please enter another name.'))
         } else {
           callback();
         }
@@ -502,7 +520,17 @@ export default {
       { 
         validator: validateTitle,
         trigger: 'blur' 
-      }]
+      }],
+      entityrules: [{
+        required: true,
+        message: 'Please enter name',
+        trigger: 'blur'
+      },
+      {
+        validator: validateEntField,
+        trigger: 'blur'
+      }
+      ]
     }
   },
   mounted () {
@@ -731,7 +759,7 @@ export default {
             })
           }
         } else {
-          this.$Message.error('error!')
+          // this.$Message.error('error!')
         }
       })
     },

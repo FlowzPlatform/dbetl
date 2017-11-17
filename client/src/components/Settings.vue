@@ -498,6 +498,15 @@ export default {
       } else {
         callback();
       }
+    };validateDbname
+    const validateDbname = async(rule, value, callback) => {
+      var patt = new RegExp(/\`|\~|\!|\@|\#|\$|\%|\^|\&|\*|\(|\)|\+|\=|\[|\{|\]|\}|\||\\|\'|\<|\,|\.|\>|\?|\/|\"|\;|\:|\-|\s/)
+      var _res = patt.test(value)
+      if (_res) {
+        callback(new Error('Invalid database name....'))
+      } else {
+        callback();
+      }
     };
     return {
       checkdefault: false,
@@ -534,10 +543,10 @@ export default {
       },
       frmSettings: {
         isenable: true,
-        connection_name: 'aaaa',
+        connection_name: '',
         host: 'localhost',
         port: '',
-        dbname: 'qqq',
+        dbname: '',
         username: '',
         password: '',
         selectedDb: '',
@@ -578,6 +587,9 @@ export default {
         dbname: [{
           required: true,
           message: 'Please enter database name',
+          trigger: 'blur'
+        },{
+          validator: validateDbname,
           trigger: 'blur'
         }],
         rdoCrt: [{
@@ -1441,16 +1453,23 @@ export default {
         return result.mongo
       }
     },
-
+    getPostObj(mObj) {
+      // console.log('Calling.........................', mObj)
+      var obj = {}
+      _.forEach(mObj, (v, k) => {
+        if (k === 'isenable' || k === 'connection_name' || k === 'host' || k === 'port' || k === 'dbname' || k === 'username' || k === 'password' || k === 'upldIcn' || k === 'notes' || k === 'isdefault' || k === 'selectedDb') {
+          obj[k] = v
+        }
+      })
+      return obj
+    },
     handleSubmit(name) {
       this.$refs[name].validate((valid) => {
         if (valid) {
           let guid = (this.S4() + this.S4() + "-" + this.S4() + "-4" + this.S4().substr(0, 3) + "-" + this.S4() + "-" + this.S4() + this.S4() + this.S4()).toLowerCase();
-          let obj = this.frmSettings;
-          delete obj.optCrt
-          delete obj.rdoCrt
-          delete obj.Database
+          let obj = this.getPostObj(this.frmSettings);
           obj.id = guid;
+          console.log('obj', obj)
           api.request('post', '/settings', obj)
             .then(response => {
               // this.$Message.success('Success');
