@@ -50,7 +50,7 @@ const routes = [{
       required: false
     }
   }, {
-    path: 'schema-instance/edit/:id',
+    path: 'schema-instance/schemaid/:schemaid/edit/:id',
     component: SchemaInstance,
     name: 'schema-instance/edit',
     meta: { description: 'SchemaInstance' },

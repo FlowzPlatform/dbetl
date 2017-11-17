@@ -9,35 +9,12 @@ var file = require(db);
 var _ = require('lodash');
 var dbapi = [];
 
-// if (file.mongo.dbdefault == 'true') {
-//     console.log('***************inside mongo api****************');
-//     var api = require('../DBConnection/mongoapi')
-//     dbapi.push({db: 'mongo',api: api});
-//      // console.log('api',dbapi);
-// }
-// if (file.rethink.dbdefault == 'true') {
-//     console.log('***************inside rethink api**************');
-//     var api = require('../DBConnection/rethinkapi')
-//     dbapi.push({db: 'rethink',api: api});
-//     // console.log('api',dbapi);
-// }
-// if (file.elastic.dbdefault == 'true') {
-//   console.log('***************inside elastic api**************');
-//   var api = require('../DBConnection/elasticapi')
-//   dbapi.push({db: 'elastic',api: api});
-// }
-// if (file.nedb.dbdefault == 'true') {
-//   console.log('***************inside nedb api**************');
-//   var api = require('../DBConnection/nedbapi')
-//   dbapi.push({db: 'nedb',api: api});
-// }
-
 _.forEach(file, function (dbs, i) {
   // console.log('dbs', dbs)
   var flag = false
   _.forEach(dbs.dbinstance, function(instance) {
     // console.log(instance)
-    if (instance.isenable) {
+    if (instance.isdefault) {
       flag = true
       // console.log('qqqq', instance.connection_name)
     }
@@ -64,13 +41,13 @@ let readfile = async(function () {
     _.forEach(file, function (dbs, i) {
       var flag = false
       _.forEach(dbs.dbinstance, function(instance) {
-        if (instance.isenable) {
+        if (instance.isdefault) {
           flag = true
         }
       })
       if(flag) {
         var api = require('../DBConnection/' + i + 'api')
-        dbapi.push({ db: i, api: api });
+        dbapi.push({ db: i, api: api});
         // console.log('From..........................................schema')
         api.choose()
       }
@@ -96,6 +73,21 @@ chokidar.watch(path.join(__dirname, '../DBConnection/db.json'), { ignored: /(^|[
 }))
 
 
+  var saveSchema = async( function(data) {
+    var db;
+    if(data.database != undefined) {
+      db = require('../DBConnection/' + data.database[0] + 'api')
+      var createTable = await (db.generateInstanceTable(data))
+      // console.log('createTable >>>>>>>>>>>>>>>>>', createTable)
+    } else {
+      // db = require()
+      // var createTable = await (dbapi[0].api.generateInstanceTable(dbapi[0], data.title))
+      // console.log('createTable >>>>>>>>>>>>>>>>>', createTable)
+    }
+    var dbdata = await (dbapi[0].api.postSchema(data));
+    return dbdata
+  })
+
 class Service {
   constructor(options) {
     this.options = options || {};
@@ -105,7 +97,7 @@ class Service {
     console.log('find feathers...');
     if (params.query.dbname == undefined) {
       if(params.query.name !== undefined ){
-        console.log('000000000000000000000000000000000000000000000', params.query.name)
+        // console.log('000000000000000000000000000000000000000000000', params.query.name)
         var instance = []
         dbapi.forEach(function (db) {
             let _promise = new Promise((resolve, reject) => {
@@ -116,7 +108,7 @@ class Service {
             instance.push(_promise)
         });    
         var _data = Promise.all(instance).then(function (response) {
-          console.log('response...................22',response)
+          // console.log('response...................22',response)
           // return response[0]
           var Extract = []
           response.forEach(function (item) {
@@ -131,6 +123,7 @@ class Service {
       }
       else{
         var instance = []
+        // console.log(dbapi)
         dbapi.forEach(function (db) {
           let _promise = new Promise((resolve, reject) => {
             db.api.getSchema().then((data) => {
@@ -141,7 +134,7 @@ class Service {
         });
 
         var _data = Promise.all(instance).then(function (response) {
-          // console.log('response', response.length)
+          // console.log('response', response)
             // _.map(response,function(d){ 
             //   console.log('d',d)
             // });
@@ -225,7 +218,7 @@ class Service {
     // var instance = []
     if (params.query.type !== undefined) {
       var instance = []
-      console.log("234")
+      // console.log("234")
       dbapi.forEach(function (db) {
         let _promise = new Promise((resolve, reject) => {
           db.api.getThisSchemaType(id, params.query.type).then((data) => {
@@ -235,7 +228,7 @@ class Service {
         instance.push(_promise)
       });
       var _data = Promise.all(instance).then(function (response) {
-        console.log('_data...type..............................\n', response)
+        // console.log('_data...type..............................\n', response)
         var Extract = []
             response.forEach(function (item) {
               item.forEach(function (result) {
@@ -273,7 +266,7 @@ class Service {
       // var dbdata = dbapi.getThisSchemaFieldName(id, params.query.fieldname)
     } else {
       var instance = []
-      // console.log("12")
+      // console.log("1222222222222222222222222")
       dbapi.forEach(function (db) {
         let _promise = new Promise((resolve, reject) => {
           db.api.getThisSchema(id).then((data) => {
@@ -283,6 +276,7 @@ class Service {
       instance.push(_promise)
       });
       var _data = Promise.all(instance).then(function (response) {
+          // console.log(response)
             // var Extract = []
             // response.forEach(function (item) {
             //   item.forEach(function (result) {
@@ -291,14 +285,14 @@ class Service {
             // })
             // console.log('Extract', Extract)
         // return Extract
-        var obj;
-        response.forEach(function (i) {
-          if (i[0] != undefined) {
-            obj = i[0]
-          }
-        })
+        // var obj;
+        // response.forEach(function (i) {
+        //   if (i[0] != undefined) {
+        //     obj = i[0]
+        //   }
+        // })
         // console.log('_data.................', obj)
-        return obj
+        return response[0]
       })
       return _data;
   
@@ -323,7 +317,7 @@ class Service {
       // return _data;
     }
     var _data = Promise.all(instance).then(function (response) {
-      console.log('_data.................', response)
+      // console.log('_data.................', response)
       var Extract = []
           response.forEach(function (item) {
             item.forEach(function (result) {
@@ -355,15 +349,17 @@ class Service {
 
   create(data, params) {
     console.log('create feathers...');
-    var _dbindex = _.findIndex(dbapi, { 'db': data.database[0] });
-    var dbdata = dbapi[_dbindex].api.postSchema(data);
-    return Promise.resolve(dbdata);
+    // var _dbindex = _.findIndex(dbapi, { 'db': data.database[0] });
+    var res = saveSchema(data)
+    // var dbdata = dbapi[0].api.postSchema(data);
+    return Promise.resolve(data);
   }
 
   update(id, data, params) {
-    console.log('Update feathers...');
+    console.log('Update feathers...', data, id);
     var _dbindex = _.findIndex(dbapi, { 'db': data.database[0] });
-    var dbdata = dbapi[_dbindex].api.putSchema(data, id);
+    // console.log(_dbindex)
+    var dbdata = dbapi[0].api.putSchema(data, id);
     return Promise.resolve(dbdata);
   }
 

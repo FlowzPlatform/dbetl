@@ -134,10 +134,11 @@ export default {
     },
     show (index) {
     	console.log(this.data5[index]._id)
-    	this.$router.push('/schema-instance/edit/'+this.data5[index]._id)
+    	// this.$router.push('/schema-instance/edit/'+this.data5[index]._id)
+    	this.$router.push('/schema-instance/schemaid/'+this.data5[index].Schemaid+'/edit/'+this.data5[index]._id)
     },
     remove (index) {
-      api.request('delete', '/instance/' + this.data5[index]._id)
+      api.request('delete', '/instance/' + this.data5[index]._id + '?schemaid=' + this.$route.params.id)
         .then(response => {
       		this.data5.splice(index, 1)
 		      this.$Notice.success({

@@ -73,7 +73,13 @@
                     </FormItem> -->
   <FormItem>
     <Checkbox v-model="frmSettings.isenable" label="enable">Enable</Checkbox>
-    <Checkbox v-model="frmSettings.isdefault" label="default">is Default</Checkbox>
+    <!-- {{checkdefault}} -->
+    <span v-if="checkdefault">
+      <Checkbox v-model="frmSettings.isdefault" label="default" disabled>is Default</Checkbox>
+    </span>
+    <span v-else>
+      <Checkbox v-model="frmSettings.isdefault" label="default">is Default</Checkbox>
+    </span>
   </FormItem>
   </Col>
   <Col span="12" style="padding-left:10px;padding-right:10px">
@@ -248,11 +254,11 @@
               <table>
                 <colgroup>
                   <col width="300">
-                  <col width="300">
+                  <col width="250">
                   <col width="200">
                   <col width="70">
-                  <col width="300">
-                  <col width="100">
+                  <col width="250">
+                  <col width="250">
                 </colgroup>
                 <thead>
                   <tr>
@@ -279,13 +285,13 @@
                     <td class="">
                       <div class="ivu-table-cell">
                         <Select @on-change="type(index)" v-model="csvData[index].type" size="small" class="schema-form-input">
-                                              <Option v-for="t in optType" :value="t.value" :key="t.value">{{t.label}}</Option>
-                                              <!-- <Option value="email" key="email">Email</Option>
-                                              <Option value="number" key="number">Number</Option>
-                                              <Option value="boolean" key="boolean">Boolean</Option>
-                                              <Option value="phone" key="phone">Phone</Option>
-                                              <Option value="date" key="date">Date</Option> -->
-                                          </Select>
+                            <Option v-for="t in optType" :value="t.value" :key="t.value">{{t.label}}</Option>
+                            <!-- <Option value="email" key="email">Email</Option>
+                            <Option value="number" key="number">Number</Option>
+                            <Option value="boolean" key="boolean">Boolean</Option>
+                            <Option value="phone" key="phone">Phone</Option>
+                            <Option value="date" key="date">Date</Option> -->
+                        </Select>
                       </div>
                     </td>
 
@@ -341,18 +347,14 @@
                       </div>
                     </td>
 
-                    <td class="">
-                      <div class="ivu-table-cell">
-                        <a @click="model = true">
-                          <Icon type="compose"></Icon>
-                        </a>
-                        <Modal v-model="model" title="Transform" @on-ok="handleModalOk" width="900px">
-                          <Row>
-                            <Col span="20">Script</Col>
-                            <Col span="4">Opration</Col>
-                          </Row>
-                        </Modal>
-                      </div>
+                    <td class="transform-block">
+                        <div class="ivu-table-cell">
+                            <a @click="modelshow(item,index)"><Icon type="compose"></Icon></a>
+                        </div>
+                        <div v-if="csvData[index].transformMethod" class="transform-function" title="">
+                            <span>{{csvData[index].transform}}</span>
+                            <span @click="removeTransform(item,index)"><Icon type="close-circled" /></span>
+                        </div>
                     </td>
                   </tr>
                 </tbody>
@@ -365,11 +367,14 @@
     <Row>
       <Col span="6">
       <FormItem>
+<<<<<<< HEAD
 
+=======
+>>>>>>> develop
         <Button type="primary" :loading="loadingData" v-on:click="insertCsvData(frmSettings.upldCSV)" v-if="validateButton">
-                      <span v-show="!loadingData">Validate Data</span>
-                      <span v-show ="loadingData">Loading...</span>
-                    </Button>
+          <span v-show="!loadingData">Validate Data</span>
+          <span v-show ="loadingData">Loading...</span>
+        </Button>
         <Button type="primary" @click="saveData()" v-if="saveButton">Save Data</Button>
       </FormItem>
       </Col>
@@ -383,6 +388,52 @@
   <Button type="primary" @click="handleSubmit('frmSettings')">Create Connection</Button>
 <!-- <div>{{validatingData}}</div> -->
 </Card>
+  <Modal v-model="model" title="Transform" @on-ok="handleModalOk" width="900px" :mask-closable="false ">
+    <Row style="padding: 10px;">
+      <Col span="18">
+          <codemirror v-model='transformData' :options="editorOptions"></codemirror>
+      </Col>
+      <Col span="6">
+        <div class="transform-method">
+          <ul>
+            <li>
+              <a href="javascript:void(0)" data-method="toUpperCase()"  @click="transform">UpperCase</a>
+            </li>
+            <li>
+              <a href="javascript:void(0)" data-method="toLowerCase()"  @click="transform">LowerCase</a>
+            </li>
+            <li>
+              <a href="javascript:void(0)" data-method="ltrim()" @click="transform">Right Trim</a>
+            </li>
+            <li>
+              <a href="javascript:void(0)" data-method="rtrim()" @click="transform">Left Trim</a>
+            </li>
+            <li>
+              <a href="javascript:void(0)" data-method="concate()" @click="transform">Concate</a>
+            </li>
+            <li>
+              <a href="javascript:void(0)" data-method="capitalize()"  @click="transform">Capitalize</a>
+            </li>
+            <li>
+              <a href="javascript:void(0)" data-method="stripHTMLTags()"  @click="transform">Stripe HTML Tags</a>
+            </li>
+            <li>
+              <a href="javascript:void(0)" data-method="stripSpecialCharacter()"  @click="transform">Stripe Special Character</a>
+            </li>
+            <li>
+              <a href="javascript:void(0)" data-method="formatDate('dd-mm-yyyy')"  @click="transform">Date Format</a>
+            </li>
+            <li>
+              <a href="javascript:void(0)" data-method="toDecimal(2)"  @click="transform">Decimal</a>
+            </li>
+            <li>
+              <a href="javascript:void(0)" data-method="toInteger()"  @click="transform">Integer</a>
+            </li>
+          </ul>
+        </div>
+      </Col>
+    </Row>
+  </Modal>
 </template>
 </Form>
 </div>
@@ -393,6 +444,8 @@
 const $ = require('jquery')
 var Schema = require('simpleschema')
 let axios = require("axios")
+import VueCodeMirror from 'vue-codemirror'
+import Vue from 'vue'
 import Papa from 'papaparse'
 import api from '../api'
 import schema from '../api/schema'
@@ -449,8 +502,18 @@ export default {
       } else {
         callback();
       }
+    };validateDbname
+    const validateDbname = async(rule, value, callback) => {
+      var patt = new RegExp(/\`|\~|\!|\@|\#|\$|\%|\^|\&|\*|\(|\)|\+|\=|\[|\{|\]|\}|\||\\|\'|\<|\,|\.|\>|\?|\/|\"|\;|\:|\-|\s/)
+      var _res = patt.test(value)
+      if (_res) {
+        callback(new Error('Invalid database name....'))
+      } else {
+        callback();
+      }
     };
     return {
+      checkdefault: false,
       check_conn: false,
       conn_icon: 'load-a',
       displaymessage: false,
@@ -465,10 +528,27 @@ export default {
       currentStep: 0,
       check: this.checked,
       expand: false,
+      modelData: '',
+      transformData: '',
+      transformMethod: '',
+      modelIndex: '',
+      editorOptions: {
+        tabSize: 4,
+        mode: 'text/javascript',
+        theme: 'base16-light',
+        lineNumbers: true,
+        line: true,
+        extraKeys: { 'Ctrl': 'autocomplete' },
+        foldGutter: true,
+        gutters: ['CodeMirror-linenumbers', 'CodeMirror-foldgutter'],
+        styleSelectedText: true,
+        highlightSelectionMatches: { showToken: /\w/, annotateScrollbar: true },
+        autofocus: true
+      },
       frmSettings: {
         isenable: true,
         connection_name: '',
-        host: '',
+        host: 'localhost',
         port: '',
         dbname: '',
         username: '',
@@ -493,7 +573,11 @@ export default {
           required: true,
           message: 'Please enter connection name',
           trigger: 'blur'
-        }],
+        },
+        { 
+          validator: validateConn_name,
+          trigger: 'blur' }
+        ],
         host: [{
           required: true,
           message: 'Please enter host name',
@@ -503,10 +587,13 @@ export default {
           required: true,
           message: 'Please enter port number',
           trigger: 'blur'
-        }, ],
+        }, { validator: validatePort, trigger: 'blur' }],
         dbname: [{
           required: true,
           message: 'Please enter database name',
+          trigger: 'blur'
+        },{
+          validator: validateDbname,
           trigger: 'blur'
         }],
         rdoCrt: [{
@@ -519,6 +606,7 @@ export default {
       rethink,
       elastic,
       nedb,
+      mysql,
       model: false,
       csvData: [],
       errmsg: [],
@@ -568,6 +656,53 @@ export default {
     }
   },
   methods: {
+    setTransForm : function() {
+      this.transformData = this.modelData
+      if(this.csvData[this.modelIndex].transformMethod) {
+        this.dataMethod = this.csvData[this.modelIndex].transformMethod
+        this.transformData = this.modelData + '.' + this.dataMethod
+      }
+    },
+    modelshow:  function (item,index) {
+      this.model = true
+      this.modelData = 'return row["' + item + '"]'
+      this.modelIndex = index
+      this.dataMethod = ''
+      this.setTransForm()
+    },
+    transform: function(event) {
+      var targetEl = event.currentTarget;
+      console.log('targetEl', targetEl)
+      if(targetEl.getAttribute('data-method')){
+        this.dataMethod = targetEl.getAttribute('data-method')
+        console.log('set Transform', targetEl.getAttribute('data-method'))
+        if(this.dataMethod){
+          this.transformData = this.modelData + '.' + this.dataMethod
+        }
+      }
+      console.log('transformData', this.transformData)
+      return this.transformData
+    },
+    removeTransform: function (item,index) {
+      this.modelData = 'return row["' + item + '"]'
+      this.csvData[index].transformMethod = ''
+      this.setTransForm()
+      this.handleModalOk()
+    },
+    checkdefaultfun: async function() {
+      // console.log('................')
+      var _res = await api.request('get', '/settings')
+      var dbins_l = 0
+      for(let db in _res.data) {
+        dbins_l += _res.data[db].dbinstance.length
+      }
+      // console.log(dbins_l)
+      if(dbins_l === 0) {
+        // return false
+        this.checkdefault = true
+        this.frmSettings.isdefault = true
+      }
+    },
     validateName: async function(value, db) {
       // console.log('value', value, db)
       var _res = await api.request('get', '/settings?dbname=' + db)
@@ -659,6 +794,7 @@ export default {
               self.csvData = [],
               self.frmSettings.uploadCsv = []
               self.frmSettings.upldCSV = results.data;
+              self.uploadedCSVData = results.data;
               console.log("--------------------->", self.frmSettings.upldCSV, self.frmSettings.upldCSV)
               self.headers = Object.keys(self.frmSettings.upldCSV[0]);
 
@@ -668,6 +804,7 @@ export default {
               console.log("self.options ", self.options);
               _.forEach(self.headers, (f) => {
                 self.csvData.push({
+                  id: f,
                   header: f,
                   type: '',
                   min: 0,
@@ -679,7 +816,8 @@ export default {
                   placeholder: '',
                   optional: true,
                   IsArray: '',
-                  transform: ''
+                  transform: '',
+                  transformMethod : ''
                 })
               })
             },
@@ -1206,8 +1344,7 @@ export default {
               })
               // console.log('flag = ', flag, c_name)
               if (!flag){
-                console.log(data)
-                api.request('post', '/settings?check=' + data.selectedDb, data)
+                api.request('post', '/settings?checkconn=' + data.selectedDb, data)
                   .then(response => {
                     console.log('CheckConnection', response.data)
                     if(response.data.result){
@@ -1247,8 +1384,37 @@ export default {
         }
     },
     handleModalOk() {
-      console.log('OK');
-
+      let methodName  = this.transformData.split('.')
+        this.dataMethod = methodName[1]
+        console.log('dataMethod', this.dataMethod)
+        console.log('transformData', this.transformData)
+        if(this.dataMethod){
+          this.csvData[this.modelIndex].transform = this.transformData
+          this.csvData[this.modelIndex].transformMethod = this.dataMethod
+        }
+        else {
+          this.csvData[this.modelIndex].transform = this.transformData
+          this.csvData[this.modelIndex].transformMethod = ''
+        }
+        console.log('uploadCSV1', this.frmSettings.upldCSV)
+        var self = this
+        console.log('uploadCSV2', self.uploadedCSVData)
+        
+        self.frmSettings.upldCSV = _.map(self.uploadedCSVData, function(row, rinx) {
+          return  _.reduce(row, function(result, value, key){
+            console.log('self.csvData', self.csvData)
+            console.log('key', key)
+            let inx = _.find(self.csvData, (f) => { return (f.id == key) })
+            console.log('index', inx)
+            if(inx.transform != ''){
+              result[key] = new Function("row", inx.transform).call(this, row)
+            } else {
+              result[key] = value
+            }
+             console.log('Result', result)
+            return result
+          }, {})
+      })
     },
     enable(value) {
       this.tabsData = {
@@ -1285,16 +1451,23 @@ export default {
         return result.mongo
       }
     },
-
+    getPostObj(mObj) {
+      // console.log('Calling.........................', mObj)
+      var obj = {}
+      _.forEach(mObj, (v, k) => {
+        if (k === 'isenable' || k === 'connection_name' || k === 'host' || k === 'port' || k === 'dbname' || k === 'username' || k === 'password' || k === 'upldIcn' || k === 'notes' || k === 'isdefault' || k === 'selectedDb') {
+          obj[k] = v
+        }
+      })
+      return obj
+    },
     handleSubmit(name) {
       this.$refs[name].validate((valid) => {
         if (valid) {
           let guid = (this.S4() + this.S4() + "-" + this.S4() + "-4" + this.S4().substr(0, 3) + "-" + this.S4() + "-" + this.S4() + this.S4() + this.S4()).toLowerCase();
-          let obj = this.frmSettings;
-          delete obj.optCrt
-          delete obj.rdoCrt
-          delete obj.Database
+          let obj = this.getPostObj(this.frmSettings);
           obj.id = guid;
+          console.log('obj', obj)
           api.request('post', '/settings', obj)
             .then(response => {
               // this.$Message.success('Success');
@@ -1311,6 +1484,7 @@ export default {
                   title: 'Success!!',
                   desc: 'Connection Created...'
                 })
+                this.$store.dispatch('getSchema')
                 this.$router.push('/db');
 
               }
@@ -1365,6 +1539,7 @@ export default {
     }
   },
   mounted() {
+    this.checkdefaultfun()
     this.frmSettings.selectedDb = this.$route.params.db;
     this.$on('schemaData', this.acceptData)
     this.$on('expandTrue', this.expands)
@@ -1403,6 +1578,77 @@ export default {
     this.$on('on-schema-change', this.handleSchemaChange);
   }
 }
+
+String.prototype.capitalize = function() {
+  return this.charAt(0).toUpperCase() + this.slice(1);
+}
+
+String.prototype.stripHTMLTags = function() {
+    return this.replace(/<[^>]*>/g, '');
+}
+
+String.prototype.stripSpecialCharacter = function() {
+    return this.replace(/[\/\\#,+()$~%'":*<>{}]/g, '');
+}
+
+String.prototype.toDecimal = function(precision) {
+    return parseFloat(this).toFixed(precision);
+}
+
+String.prototype.toInteger = function() {
+    return parseInt(this);
+}
+
+String.prototype.concate = function(str) {
+    return this.concat(str);
+}
+
+String.prototype.formatDate = function (format) {
+  var date = new Date(this),
+      day = date.getDate(),
+      month = date.getMonth() + 1,
+      year = date.getFullYear(),
+      hours = date.getHours(),
+      minutes = date.getMinutes(),
+      seconds = date.getSeconds();
+
+  if (!format) {
+      format = "MM/dd/yyyy";
+  }
+  format = format.replace("MM", month.toString().replace(/^(\d)$/, '0$1'));
+  if (format.indexOf("yyyy") > -1) {
+      format = format.replace("yyyy", year.toString());
+  } else if (format.indexOf("yy") > -1) {
+      format = format.replace("yy", year.toString().substr(2, 2));
+  }
+  format = format.replace("dd", day.toString().replace(/^(\d)$/, '0$1'));
+  if (format.indexOf("t") > -1) {
+      if (hours > 11) {
+          format = format.replace("t", "pm");
+      } else {
+          format = format.replace("t", "am");
+      }
+  }
+  if (format.indexOf("HH") > -1) {
+      format = format.replace("HH", hours.toString().replace(/^(\d)$/, '0$1'));
+  }
+  if (format.indexOf("hh") > -1) {
+      if (hours > 12) {
+          hours -= 12;
+      }
+      if (hours === 0) {
+          hours = 12;
+      }
+      format = format.replace("hh", hours.toString().replace(/^(\d)$/, '0$1'));
+  }
+  if (format.indexOf("mm") > -1) {
+      format = format.replace("mm", minutes.toString().replace(/^(\d)$/, '0$1'));
+  }
+  if (format.indexOf("ss") > -1) {
+      format = format.replace("ss", seconds.toString().replace(/^(\d)$/, '0$1'));
+  }
+  return format;
+};
 </script>
 
 <style>
@@ -1529,5 +1775,32 @@ export default {
   border-bottom: 1px solid #e9eaec;
   /*padding: 13px 16px;*/
   line-height: 1;
+}
+.transform-method {
+  border: 1px solid #ddd;
+  display: inline-block;
+  overflow: auto;
+  min-height: 300px;
+  width: 100%;
+  margin-left: 10px; 
+  padding: 10px;
+}
+.transform-function {
+  float: right;
+}
+.ivu-table-cell, .ivu-input-wrapper {
+  padding: 0px 9px 0px 9px;
+  text-align: center
+}
+.mapping-table > .ivu-table-cell {
+  display: inline-block;
+}
+.property > .ivu-poptip {
+  display: block;
+  text-align: center;
+}
+.transform-block > .ivu-table-cell {
+  display: inline-block;
+  vertical-align: middle;
 }
 </style>

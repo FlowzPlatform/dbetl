@@ -48,7 +48,7 @@
         <Col span="16">
           <Row type="flex" justify="end">
             <Col col="8">
-              <Checkbox @on-change="handleGroupBy" label="groupby" size="small" style="color:#fff;margin-top:5px;">Group By</Checkbox>
+              <Checkbox v-model="groupby" label="groupby" size="small" style="color:#fff;margin-top:5px;">Group By</Checkbox>
             </Col>
             <Col span="8">
               <router-link to="/schema/new">
@@ -72,6 +72,7 @@
               <img v-else-if="itm.iconpath === 'rethink'" :src="rethink" class="schema-icon">
               <img v-else-if="itm.iconpath === 'elastic'" :src="elastic" class="schema-icon">
               <img v-else-if="itm.iconpath === 'nedb'" :src="nedb" class="schema-icon">
+              <img v-else-if="itm.iconpath === 'mysql'" :src="mysql" class="schema-icon">
               <img v-else :src="itm.iconpath" class="schema-icon">
               <span>
                 {{itm.title}}
@@ -113,6 +114,7 @@
               <img v-else-if="item.iconpath === 'rethink'" :src="rethink" class="schema-icon">
               <img v-else-if="item.iconpath === 'elastic'" :src="elastic" class="schema-icon">
               <img v-else-if="item.iconpath === 'nedb'" :src="nedb" class="schema-icon">
+              <img v-else-if="item.iconpath === 'mysql'" :src="mysql" class="schema-icon">
               <img v-else :src="item.iconpath" class="schema-icon">
               <span>
                 {{item.title}}
@@ -159,16 +161,18 @@
   import rethink from '../assets/images/rethink.png'
   import elastic from '../assets/images/elasticsearch.png'
   import nedb from '../assets/images/nedb.png'
+  import mysql from '../assets/images/mysql.png'
   const _ = require('lodash')
   export default {
     data () {
       return {
         orderby: 'asc',
-        groupby: false,
+        groupby: true,
         mongo,
         rethink,
         elastic,
         nedb,
+        mysql,
         deleteSchemaValue: 'softdel'
       }
     },
@@ -323,9 +327,6 @@
       },
       handleCommand (name) {
         this.orderby = name
-      },
-      handleGroupBy () {
-        this.groupby = !this.groupby
       }
     }
   }
