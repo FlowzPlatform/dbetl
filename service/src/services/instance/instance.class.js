@@ -626,6 +626,23 @@ var getIdbySchemaName = async( function(id, name) {
   return _res;
 })
 
+var removeIdbySchemaName = async( function(id, name) {
+  var Schema = await (getallSchemaData())
+  var Schemaid;
+  for(let [i, obj] of Schema.entries()) {
+    if( obj.title == name ) {
+      Schemaid = obj._id
+    }
+  }
+  var _res = await (removeIdbySchemaId(id, Schemaid))
+  return _res;
+})
+var removeIdbySchemaId = async (function (id, schemaid) {
+   var res = await (getSchemaData(schemaid))
+   var _res = await (deleteData(id, res))
+   return _res
+})
+
 class Service {
   constructor(options) {
     this.options = options || {};
@@ -775,8 +792,17 @@ class Service {
     return Promise.resolve(data);
   }
   remove(id, params) {
-    var dbdata = dbapi.deleteThisflowsInstance(id);
-    return Promise.resolve(dbdata);
+    if (params.query.schemaid != undefined) {
+      var res = removeIdbySchemaId(id, params.query.schemaid)
+      return Promise.resolve(res)
+    } else if (params.query.schemaname != undefined) {
+      var res = removeIdbySchemaName(id, params.query.schemaname)
+      return Promise.resolve(res)
+    } else {
+      return Promise.resolve('You Must Enter schemaid Or schemaname as parameter for result..')
+    }
+    // var dbdata = dbapi.deleteThisflowsInstance(id);
+    // return Promise.resolve(dbdata);
     // return Promise.resolve({ id });
   }
 }

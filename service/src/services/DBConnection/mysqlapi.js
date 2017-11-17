@@ -47,139 +47,139 @@ db1.mysql.dbinstance.forEach(function (instance, inx) {
   // }
 })
 
-var schemadataWithId = async(function (id, selectedDB) {
-  var result = []
-  var commonSelectWithCondition = await(getQuery('mysql','select','commonSelectWithCondition'));
-  commonSelectWithCondition = commonSelectWithCondition.replace('{{ table_name }}','tbl_schema');
-  commonSelectWithCondition = commonSelectWithCondition.replace('{{ fields }}','*');
-  commonSelectWithCondition = commonSelectWithCondition.replace('{{ where }}','id='+id);
+// var schemadataWithId = async(function (id, selectedDB) {
+//   var result = []
+//   var commonSelectWithCondition = await(getQuery('mysql','select','commonSelectWithCondition'));
+//   commonSelectWithCondition = commonSelectWithCondition.replace('{{ table_name }}','tbl_schema');
+//   commonSelectWithCondition = commonSelectWithCondition.replace('{{ fields }}','*');
+//   commonSelectWithCondition = commonSelectWithCondition.replace('{{ where }}','id='+id);
 
-  return new Promise((resolve, reject) => {
-    selectedDB.conn.query(commonSelectWithCondition, function (error, results, fields) {
-      _.forEach(results, function (instance) {
-        var table_name = instance.title.replace(' ', '_');
-        result.push(table_name) 
-      })
-      resolve(result)
-    })
-  }).then(content => {
-    return content;
-  }).catch(err=> {
-    return err;
-  })
-});
+//   return new Promise((resolve, reject) => {
+//     selectedDB.conn.query(commonSelectWithCondition, function (error, results, fields) {
+//       _.forEach(results, function (instance) {
+//         var table_name = instance.title.replace(' ', '_');
+//         result.push(table_name) 
+//       })
+//       resolve(result)
+//     })
+//   }).then(content => {
+//     return content;
+//   }).catch(err=> {
+//     return err;
+//   })
+// });
 
-var getSchemaIdFromEntity = async(function (selectedDB,Schemaid,columnName) {
-  var result = []
-  var commonSelect = await(getQuery('mysql','select','commonSelectWithCondition'));
-  commonSelect = commonSelect.replace('{{ table_name }}','tbl_entity');
-  commonSelect = commonSelect.replace('{{ fields }}','type');
-  commonSelect = commonSelect.replace('{{ where }}','name="'+columnName+'" AND schemaid="'+Schemaid+'" AND customtype="1"');
+// var getSchemaIdFromEntity = async(function (selectedDB,Schemaid,columnName) {
+//   var result = []
+//   var commonSelect = await(getQuery('mysql','select','commonSelectWithCondition'));
+//   commonSelect = commonSelect.replace('{{ table_name }}','tbl_entity');
+//   commonSelect = commonSelect.replace('{{ fields }}','type');
+//   commonSelect = commonSelect.replace('{{ where }}','name="'+columnName+'" AND schemaid="'+Schemaid+'" AND customtype="1"');
   
-  return new Promise((resolve, reject) => {
-    selectedDB.conn.query(commonSelect, function (error, results, fields) {
-      _.forEach(results, function (instance) {
-        var orgSchemaId = parseInt(instance.type);
-        result.push(orgSchemaId) 
-      })
-      resolve(result)
-    })
-  }).then(content => {
-    return content;
-  }).catch(err=> {
-    return err;
-  })
-});
+//   return new Promise((resolve, reject) => {
+//     selectedDB.conn.query(commonSelect, function (error, results, fields) {
+//       _.forEach(results, function (instance) {
+//         var orgSchemaId = parseInt(instance.type);
+//         result.push(orgSchemaId) 
+//       })
+//       resolve(result)
+//     })
+//   }).then(content => {
+//     return content;
+//   }).catch(err=> {
+//     return err;
+//   })
+// });
 
-var getSchemaOriginalId = async(function (id, selectedDB) {
-  var result = []
-  var commonSelectWithCondition = await(getQuery('mysql','select','commonSelectWithCondition'));
-  commonSelectWithCondition = commonSelectWithCondition.replace('{{ table_name }}','tbl_schema');
-  commonSelectWithCondition = commonSelectWithCondition.replace('{{ fields }}','id');
-  commonSelectWithCondition = commonSelectWithCondition.replace('{{ where }}','id='+id);
+// var getSchemaOriginalId = async(function (id, selectedDB) {
+//   var result = []
+//   var commonSelectWithCondition = await(getQuery('mysql','select','commonSelectWithCondition'));
+//   commonSelectWithCondition = commonSelectWithCondition.replace('{{ table_name }}','tbl_schema');
+//   commonSelectWithCondition = commonSelectWithCondition.replace('{{ fields }}','id');
+//   commonSelectWithCondition = commonSelectWithCondition.replace('{{ where }}','id='+id);
 
-  return new Promise((resolve, reject) => {
-    selectedDB.conn.query(commonSelectWithCondition, function (error, results, fields) {
-      _.forEach(results, function (instance) {
+//   return new Promise((resolve, reject) => {
+//     selectedDB.conn.query(commonSelectWithCondition, function (error, results, fields) {
+//       _.forEach(results, function (instance) {
   
-        result.push(instance.id) 
-      })
-      resolve(result)
-    })
-  }).then(content => {
-    return content;
-  }).catch(err=> {
-    return err;
-  })
-});
+//         result.push(instance.id) 
+//       })
+//       resolve(result)
+//     })
+//   }).then(content => {
+//     return content;
+//   }).catch(err=> {
+//     return err;
+//   })
+// });
 
-var tabledataWithId = async(function (table_name, id, selectedDB) {
-  var result1 = []
-  var commonSelectWithCondition = await(getQuery('mysql','select','commonSelectWithCondition'));
-  commonSelectWithCondition = commonSelectWithCondition.replace('{{ table_name }}',table_name);
-  commonSelectWithCondition = commonSelectWithCondition.replace('{{ fields }}','_id');
-  commonSelectWithCondition = commonSelectWithCondition.replace('{{ where }}','id='+id);
-  //'SELECT _id from '+table_name+' where id='+id
+// var tabledataWithId = async(function (table_name, id, selectedDB) {
+//   var result1 = []
+//   var commonSelectWithCondition = await(getQuery('mysql','select','commonSelectWithCondition'));
+//   commonSelectWithCondition = commonSelectWithCondition.replace('{{ table_name }}',table_name);
+//   commonSelectWithCondition = commonSelectWithCondition.replace('{{ fields }}','_id');
+//   commonSelectWithCondition = commonSelectWithCondition.replace('{{ where }}','id='+id);
+//   //'SELECT _id from '+table_name+' where id='+id
   
-  return new Promise((resolve, reject) => {
-    selectedDB.conn.query(commonSelectWithCondition, function (error, results, fields) {
-      _.forEach(results, function (instance) {
-        result1.push(instance._id);
-      })
-      resolve(result1)
-    })
-  }).then(content => {
-    return content;
-  }).catch(err=> {
-    return err;
-  })
-});
+//   return new Promise((resolve, reject) => {
+//     selectedDB.conn.query(commonSelectWithCondition, function (error, results, fields) {
+//       _.forEach(results, function (instance) {
+//         result1.push(instance._id);
+//       })
+//       resolve(result1)
+//     })
+//   }).then(content => {
+//     return content;
+//   }).catch(err=> {
+//     return err;
+//   })
+// });
 
-var schemadetailWithId = async(function (id, selectedDB) {
-  var result1 = []
+// var schemadetailWithId = async(function (id, selectedDB) {
+//   var result1 = []
 
-  var commonSelectWithCondition = await(getQuery('mysql','select','commonSelectWithCondition'));
-  commonSelectWithCondition = commonSelectWithCondition.replace('{{ table_name }}','tbl_schema');
-  commonSelectWithCondition = commonSelectWithCondition.replace('{{ fields }}','title,database_name');
-  commonSelectWithCondition = commonSelectWithCondition.replace('{{ where }}','id='+id);
+//   var commonSelectWithCondition = await(getQuery('mysql','select','commonSelectWithCondition'));
+//   commonSelectWithCondition = commonSelectWithCondition.replace('{{ table_name }}','tbl_schema');
+//   commonSelectWithCondition = commonSelectWithCondition.replace('{{ fields }}','title,database_name');
+//   commonSelectWithCondition = commonSelectWithCondition.replace('{{ where }}','id='+id);
 
-  return new Promise((resolve, reject) => {
-    selectedDB.conn.query(commonSelectWithCondition, function (error, results, fields) {
-      _.forEach(results, function (instance) {
-        result1.push(instance);
-      })
-      resolve(result1)
-    })
-  }).then(content => {
-    return content;
-  }).catch(err=> {
-    return err;
-  })
-});
+//   return new Promise((resolve, reject) => {
+//     selectedDB.conn.query(commonSelectWithCondition, function (error, results, fields) {
+//       _.forEach(results, function (instance) {
+//         result1.push(instance);
+//       })
+//       resolve(result1)
+//     })
+//   }).then(content => {
+//     return content;
+//   }).catch(err=> {
+//     return err;
+//   })
+// });
 
-var schemaTabledata = async(function (selectedDB,Schemaid) {
-  var result = []
-  var query = await(getQuery('mysql','select','schemaTabledata'));
-  if(typeof Schemaid !== 'undefined')
-  {
-    query = query.replace('{{ where }}','where s.id='+Schemaid); 
-  }
-  else{
-    query = query.replace('{{ where }}','');
-  }
-  return new Promise((resolve, reject) => {
-    selectedDB.conn.query(query, function (error, results, fields) {
-      _.forEach(results, function (instance) {
-        result.push(instance);
-      })
-      resolve(result)
-    })
-  }).then(content => {
-    return content;
-  }).catch(err=> {
-    return err;
-  })
-});
+// var schemaTabledata = async(function (selectedDB,Schemaid) {
+//   var result = []
+//   var query = await(getQuery('mysql','select','schemaTabledata'));
+//   if(typeof Schemaid !== 'undefined')
+//   {
+//     query = query.replace('{{ where }}','where s.id='+Schemaid); 
+//   }
+//   else{
+//     query = query.replace('{{ where }}','');
+//   }
+//   return new Promise((resolve, reject) => {
+//     selectedDB.conn.query(query, function (error, results, fields) {
+//       _.forEach(results, function (instance) {
+//         result.push(instance);
+//       })
+//       resolve(result)
+//     })
+//   }).then(content => {
+//     return content;
+//   }).catch(err=> {
+//     return err;
+//   })
+// });
 
 // var schemaTableAllData = async(function (selectedDB) {
 //   var result = []
@@ -841,7 +841,12 @@ module.exports = {
           instanceVal1 = [];
           
           var p1 = new Promise((resolve, reject) => {
-            dbinstance.conn.query("SELECT * from "+tableName+" where id="+id, function (error, results, fields) {
+            var commonSelect = await(getQuery('mysql','select','commonSelectWithCondition'));
+            commonSelect = commonSelect.replace('{{ table_name }}',tableName);
+            commonSelect = commonSelect.replace('{{ fields }}','*');
+            commonSelect = commonSelect.replace('{{ where }}','id="'+id+'"');
+
+            dbinstance.conn.query(commonSelect, function (error, results, fields) {
               if (error) throw error;
               // console.log('results', results[0])
               // _.forEach(results, function (instance) {
@@ -1130,20 +1135,20 @@ module.exports = {
         }
         if(isLastElement)
         {
-          var createTableQuery = await(getQuery('mysql','create','createTable'));
-          createTableQuery = createTableQuery.replace('{{ table_name }}',table_name);
-          createTableQuery = createTableQuery.replace('{{ fields }}',fields);
-          createTableQuery = createTableQuery.replace(',)',')');
+          // var createTableQuery = await(getQuery('mysql','create','createTable'));
+          // createTableQuery = createTableQuery.replace('{{ table_name }}',table_name);
+          // createTableQuery = createTableQuery.replace('{{ fields }}',fields);
+          // createTableQuery = createTableQuery.replace(',)',')');
           
-          selectedDB.conn.query(createTableQuery);
+          // selectedDB.conn.query(createTableQuery);
           
-          var alterTableAndAddPrimaryKey = await(getQuery('mysql','alter','alterTableAndAddPrimaryKey'));
-          alterTableAndAddPrimaryKey = alterTableAndAddPrimaryKey.replace('{{ table_name }}',table_name);
-          alterTableAndAddPrimaryKey = alterTableAndAddPrimaryKey.replace('{{ field }}','id');
-          alterTableAndAddPrimaryKey = alterTableAndAddPrimaryKey.replace('{{ primary_field }}','id');
+          // var alterTableAndAddPrimaryKey = await(getQuery('mysql','alter','alterTableAndAddPrimaryKey'));
+          // alterTableAndAddPrimaryKey = alterTableAndAddPrimaryKey.replace('{{ table_name }}',table_name);
+          // alterTableAndAddPrimaryKey = alterTableAndAddPrimaryKey.replace('{{ field }}','id');
+          // alterTableAndAddPrimaryKey = alterTableAndAddPrimaryKey.replace('{{ primary_field }}','id');
 
           
-          selectedDB.conn.query(alterTableAndAddPrimaryKey);
+          // selectedDB.conn.query(alterTableAndAddPrimaryKey);
 
           // var alterTableAndAddField = await(getQuery('mysql','alter','alterTableAndAddField'));
           // alterTableAndAddField = alterTableAndAddField.replace('{{ table_name }}',table_name);
@@ -1260,7 +1265,7 @@ module.exports = {
       var id = parseInt(data.Schemaid);
     }
 
-    var res = await (schemadataWithId(id, defaultDb[0]))
+    // var res = await (schemadataWithId(id, defaultDb[0]))
 
     table_name = _id;//res[0];
 
@@ -1576,24 +1581,22 @@ module.exports = {
     
     return id;
   }),
-  putflowsInstance: async(function (data, id, dbid) {
+  putflowsInstance: async(function (id, data, tableName, inst_id) {
     console.log('mysql put flowsInstance');
 
     // var selectedDB = _.find(db, (d) => {
     //   return d.id == data.database[1]
     // })
     var selectedDB = _.find(db, (d) => {
-      return d.id == dbid
+      return d.id == inst_id
     })
 
-    var resSchema = await (getSchemaOriginalId(parseInt(data.Schemaid), selectedDB))
+    // var resSchema = await (getSchemaOriginalId(parseInt(data.Schemaid), selectedDB))
     
-    var schemaid = resSchema[0];
+    // var schemaid = resSchema[0];
     
-    var res = await (schemadataWithId(schemaid, defaultDb[0]))
+    // var res = await (schemadataWithId(schemaid, selectedDB))
     
-    table_name = res[0];
-
     var schemadata = function () {
       var result = []
       var tableFields='';
@@ -1603,21 +1606,35 @@ module.exports = {
         if(key != 'Schemaid' && key != '_id' && key != 'id' && key != 'database')
         {
           if(k==0)
-            tableFields += key+"='"+d+"'";
+          {
+            if(typeof d == 'object')
+            {
+              tableFields += key+"='"+JSON.stringify(d)+"'";
+            }
+            else {
+              tableFields += key+"='"+d+"'";
+            }
+          }
           else
-            tableFields += ","+key+"='"+d+"'";
+          {
+            if(typeof d == 'object')
+              {
+                tableFields += ","+key+"='"+JSON.stringify(d)+"'";                
+              }
+              else {
+                tableFields += ","+key+"='"+d+"'";
+              }
+          }
           k++; 
         }
       })
 
-
       return new Promise((resolve, reject) => {
         var commonUpdate = await(getQuery('mysql','update','commonUpdate'));
-        commonUpdate = commonUpdate.replace('{{ table_name }}',table_name);
+        commonUpdate = commonUpdate.replace('{{ table_name }}',tableName);
         commonUpdate = commonUpdate.replace('{{ fields }}',tableFields);
-        commonUpdate = commonUpdate.replace('{{ where }}','id='+data.id);
-      
-        // selectedDB.conn.query("UPDATE "+table_name+" SET "+tableFields+" where id="+data.id, function (error, result, fields) {
+        commonUpdate = commonUpdate.replace('{{ where }}','id='+id);
+        
         selectedDB.conn.query(commonUpdate, function (error, result, fields) {
           error? reject(error) : resolve(data.id)
         })
@@ -1628,7 +1645,6 @@ module.exports = {
       })
     };
     var res = await (schemadata())
-    
     return res;
 
   }),
@@ -1656,7 +1672,18 @@ module.exports = {
       return res;
     }
   }),
-  deleteThisflowsInstance: async(function (id) {
+  deleteThisflowsInstance: async(function (id, tableName, inst_id) {
     console.log('mysql delete flowsInstance');
+    var selectedDB = _.find(db, (d) => {
+        return d.id == inst_id
+    })
+
+    var commonDelete = await(getQuery('mysql','delete','commonDelete'));
+    commonDelete = commonDelete.replace('{{ table_name }}',tableName);
+    commonDelete = commonDelete.replace('{{ where }}','id='+id);
+
+    selectedDB.conn.query(commonDelete);
+
+    return id;
   })
 }
