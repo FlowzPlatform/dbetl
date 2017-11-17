@@ -9,6 +9,7 @@ import InstanceList from '@/components/InstanceList'
 import SchemaMapping from '@/components/SchemaMapping'
 import SchemaMappingList from '@/components/SchemaMappingList'
 import Settings from '@/components/Settings'
+import Import from '@/components/Import'
 import Db from '@/components/Db'
 import Login from '@/components/Login'
 import Register from '@/components/Register'
@@ -92,6 +93,10 @@ const routes = [{
     path: 'db/:db/new',
     name: 'settings',
     component: Settings
+  }, {
+    path: 'Dbsetting/import/:id',
+    name: 'import',
+    component: Import
   }]
 }, {
   path: '/Login',

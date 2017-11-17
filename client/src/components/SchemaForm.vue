@@ -121,7 +121,7 @@ import SchemaForm from './SchemaForm'
           })
           .catch(error => {
             console.log('Errorrr')
-          }) 
+          })
         return arrObj
       },
       getObject (eIndex, dataIndex, fname, ftype) {
@@ -168,7 +168,7 @@ import SchemaForm from './SchemaForm'
       //   return (this.S4() + this.S4() + "-" + this.S4() + "-4" + this.S4().substr(0,3) + "-" + this.S4() + "-" + this.S4() + this.S4() + this.S4()).toLowerCase()
       // },
       // S4() {
-      //     return (((1+Math.random())*0x10000)|0).toString(16).substring(1); 
+      //     return (((1+Math.random())*0x10000)|0).toString(16).substring(1);
       // },
       getObjectType (type) {
         return ['text', 'email', 'number', 'phone', 'boolean', 'date', 'dropdown'].indexOf(type) === -1

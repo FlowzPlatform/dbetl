@@ -1,8 +1,8 @@
 <template>
   <div class="schema-instance">
     <Form ref="formSchemaInstance" :model="formSchemaInstance">
-      <!-- <Form-item 
-        label="Title" 
+      <!-- <Form-item
+        label="Title"
         prop="name"
         :label-width="100"
         :rules="{required: true, message: 'Please enter your schema title', trigger: 'blur'}">
