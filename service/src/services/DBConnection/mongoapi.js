@@ -359,17 +359,17 @@ module.exports = {
     var schema = await (defaultDb[0].conn.collection('schema').updateOne({ _id: id }, { $set: data }));
     return schema;
   }),
-  putflowsInstance: async(function (data, id, dbid) {
-    // var _data = JSON.parse(data);
+  putflowsInstance: async(function (id, data, tableName, inst_id) {
     console.log('mongo put flowsInstance');
     delete data._id
+    delete data.id
     var id = new mongoose.Types.ObjectId(id);
     // console.log('id from putflowsInstance:',id);
     var selectedDB = _.find(db, (d) => {
-      return d.id == dbid
+      return d.id == inst_id
     })
-    var flowsInstance = await (selectedDB.conn.collection('flows-instance').updateOne({ _id: id }, { $set: data }));
-    return flowsInstance;
+    var flowsInstance = await (selectedDB.conn.collection(tableName).updateOne({ _id: id }, { $set: data }));
+    return flowsInstance.result;
   }),
 
   //delete methods
@@ -423,10 +423,13 @@ module.exports = {
     }
     // // var schema = await (db.collection('schema').deleteOne({ _id: id }));
   }),
-  deleteThisflowsInstance: async(function (id) {
-    console.log('mongo delete flowsInstance');
+  deleteThisflowsInstance: async(function (id, tableName, inst_id) {
+    console.log('mongo delete this flowsInstance');
     var id = new mongoose.Types.ObjectId(id);
-    var flowsInstance = await (db.collection('flows-instance').deleteOne({ _id: id }));
+    var selectedDB = _.find(db, (d) => {
+      return d.id == inst_id
+    })
+    var flowsInstance = await (selectedDB.conn.collection(tableName).deleteOne({ _id: id }));
     return flowsInstance;
   })
 

@@ -1,17 +1,124 @@
 {
     "mongo": {
-        "dbinstance": []
+        "dbinstance": [
+            {
+                "isenable": true,
+                "connection_name": "Mongo-SB",
+                "host": "localhost",
+                "port": "27017",
+                "dbname": "schema_builder",
+                "username": "",
+                "password": "",
+                "upldIcn": "",
+                "upldCSV": [],
+                "rdodb": "",
+                "rdosync": "",
+                "keep_sync": "",
+                "notes": "",
+                "schemaData": [],
+                "isdefault": false,
+                "id": "934c24c3-bf0e-4446-568b-bef4d5d3371b"
+            }
+        ]
     },
     "rethink": {
-        "dbinstance": []
+        "dbinstance": [
+            {
+                "isenable": true,
+                "connection_name": "Rethink",
+                "host": "localhost",
+                "port": "28015",
+                "dbname": "FlowzEngine",
+                "username": "",
+                "password": "",
+                "upldIcn": "",
+                "notes": "",
+                "isdefault": false,
+                "id": "f613518b-200b-46ca-bebd-90db7d45c553"
+            },
+            {
+                "isenable": true,
+                "connection_name": "Rethink-SB",
+                "host": "localhost",
+                "port": "28015",
+                "dbname": "schema_builder",
+                "username": "",
+                "password": "",
+                "upldIcn": "",
+                "upldCSV": [],
+                "rdodb": "",
+                "rdosync": "",
+                "keep_sync": "",
+                "notes": "",
+                "schemaData": [],
+                "isdefault": false,
+                "id": "ea0fb85a-51d1-4027-b7e6-a8a36438d7de"
+            },
+            {
+                "isenable": true,
+                "connection_name": "Rethink-fs",
+                "host": "localhost",
+                "port": "28015",
+                "dbname": "flowsservice",
+                "username": "",
+                "password": "",
+                "upldIcn": "",
+                "upldCSV": [],
+                "rdodb": "",
+                "rdosync": "",
+                "keep_sync": "",
+                "notes": "",
+                "schemaData": [],
+                "isdefault": true,
+                "id": "fc03995e-fa95-46cf-d401-2c0eb66bbb22"
+            }
+        ]
     },
     "elastic": {
-        "dbinstance": []
+        "dbinstance": [
+            {
+                "isenable": true,
+                "connection_name": "Elastic-SB",
+                "host": "localhost",
+                "port": "9200",
+                "dbname": "schema_builder",
+                "username": "",
+                "password": "",
+                "upldIcn": "",
+                "upldCSV": [],
+                "rdodb": "",
+                "rdosync": "",
+                "keep_sync": "",
+                "notes": "",
+                "schemaData": [],
+                "isdefault": false,
+                "id": "2f566c6c-37f6-4b2d-4893-96b6296b06e3"
+            }
+        ]
     },
     "nedb": {
         "dbinstance": []
     },
     "mysql": {
-        "dbinstance": []
+        "dbinstance": [
+            {
+                "isenable": true,
+                "connection_name": "mysql-SB",
+                "host": "localhost",
+                "port": "3306",
+                "dbname": "schemabuilder",
+                "username": "root",
+                "password": "01d8c5c9ecb5",
+                "upldIcn": "",
+                "upldCSV": [],
+                "rdodb": "",
+                "rdosync": "",
+                "keep_sync": "",
+                "notes": "",
+                "schemaData": [],
+                "isdefault": false,
+                "id": "079862d6-4f18-4086-7c14-faaa3b5b1400"
+            }
+        ]
     }
 }

@@ -1334,7 +1334,7 @@ export default {
               })
               // console.log('flag = ', flag, c_name)
               if (!flag){
-                api.request('post', '/settings?check=' + data.selectedDb, data)
+                api.request('post', '/settings?checkconn=' + data.selectedDb, data)
                   .then(response => {
                     // console.log('CheckConnection', response.data)
                     if(response.data.result){

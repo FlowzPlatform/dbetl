@@ -382,12 +382,12 @@ module.exports = {
     // var schema = await (r.table('schema').get(id).replace(data).run());
     // return schema;dr[0]
   }),
-  putflowsInstance: async(function (data, id, dbid) {
+  putflowsInstance: async(function (id, data, tableName, inst_id) {
     console.log('rethink put flowsInstance');
     var selectedDB = _.find(r, (d) => {
-        return d.id == dbid
+        return d.id == inst_id
     })
-    var flowsinstance = await (selectedDB.conn.table('flowsinstance').get(id).replace(data).run());
+    var flowsinstance = await (selectedDB.conn.table(tableName).get(id).replace(data).run());
     return flowsinstance;
   }),
 
@@ -426,9 +426,12 @@ module.exports = {
   //   var flowsinstance = await (r.table('flowsinstance').delete().run());
   //   return flowsinstance;
   // }),
-  deleteThisflowsInstance: async(function (id) {
-    console.log('rethink delete flowsInstance');
-    var flowsinstance = await (r.table('flowsinstance').filter({ 'id': id }).delete().run());
+  deleteThisflowsInstance: async(function (id, tableName, inst_id) {
+    console.log('rethink delete this flowsInstance');
+    var selectedDB = _.find(r, (d) => {
+        return d.id == inst_id
+    })
+    var flowsinstance = await (selectedDB.conn.table(tableName).filter({ 'id': id }).delete().run());
     return flowsinstance;
   })
 }

@@ -566,18 +566,18 @@ module.exports = {
 
     // return schemadata;
   }),
-  putflowsInstance: async(function (data, id, dbid) {
+  putflowsInstance: async(function (id, data, tableName, inst_id) {
     var instanceid = id;
     delete data._id
     // console.log('DATA:',data);
     // var schemaid = id;
     var selectedDB = _.find(client, (d) => {
-      return d.id == dbid
+      return d.id == inst_id
     })
     var result = await (
       selectedDB.conn.index({
         index: selectedDB.dbname,
-        type: 'instance',
+        type: tableName,
         id: instanceid,
         body: data
       }))
@@ -696,13 +696,16 @@ module.exports = {
   //   // return result;
 
   // }),
-  deleteThisflowsInstance: async(function (id) {
+  deleteThisflowsInstance: async(function (id, tableName, inst_id) {
     console.log('elastic delete this flowsInstance');
+    var selectedDB = _.find(client, (d) => {
+      return d.id == inst_id
+    })
     var instanceid = id;
     var result = await (
-        client.delete({
-          index: db,
-          type: 'instance',
+        selectedDB.conn.delete({
+          index: selectedDB.dbname,
+          type: tableName,
           id: instanceid
         }))
       // console.log('result',result);

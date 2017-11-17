@@ -285,8 +285,8 @@ var setData = async(function(data) {
   var res = await (getSchemaData(id))
     // console.log('entity???????????', res)
     // console.log('id.............', id)
-  var res = await (checkDataObj(data, id, res))
-  return res
+  var _res = await (checkDataObj(data, id, res))
+  return _res
 })
 var getInstance = async(function(id, schemaid, columnname) {
   var instance = []
@@ -367,71 +367,54 @@ var getallInstance = async(function(data) {
   }
   return data
 })
-var getActualInstance = async(function(id) {
+var getActualInstance = async(function(id, res) {
   var instance = []
   dbapi.forEach(function(db) {
-    let _promise = new Promise((resolve, reject) => {
-      db.api.getThisflowsInstance(id).then((data) => {
-        resolve(data);
-      })
-    });
-    instance.push(_promise)
+    if(db.db == res.database[0]) {
+      let _promise = new Promise((resolve, reject) => {
+        db.api.getThisflowsInstance(id, res.title, res.database[1]).then((data) => {
+          resolve(data);
+        })
+      });
+      instance.push(_promise)
+    }
   });
   // }
   var _data = Promise.all(instance).then(async(function(response) {
-    var obj;
-    response.forEach(function(item) {
-        if (item[0] != undefined) {
-          obj = item[0]
-        }
-      })
-      // console.log('????????????????????', obj)
-      // var flag = await (checkFlagforGet(obj))
-      // console.log(flag)
-      // if(!flag) {
-      //     return obj
-      // }
-      // else {
-      //     for(let okey in obj) {
-      //         // console.log(okey, '=', obj[okey])
-      //         if (okey == 'database') {
-      //         }
-      //         else {
-      //             if (Array.isArray(obj[okey])) {
-      //                 for(let [index, insideObj] of obj[okey].entries()) {
-      //                     // console.log('111111111111111111111111111111111', insideObj)
-      //                     obj[okey][index] = await (getInstance(insideObj.refid))
-      //                     // console.log('222222222222222222222222222222222', obj[okey][index], insideObj)
-      //                 }
-      //             }
-      //         } 
-      //     }
-      //     return obj
-    return obj
-      // }
+    return response[0]
   }))
   return _data;
 })
-var updateData = async(function(id, data, dbid) {})
-var checkUpdateData = async(function(id, new_data) {
-  // console.log('updateData,,,,', id, data)
-  // if(new_data[0].hasOwnProperty(Schemaid)) {
-  var res = await (axios.get('http://' + config.get('host') + ':' + config.get('port') + '/schema/' + new_data[0].Schemaid))
-  putSchemaData = res.data
-    // }
-    // console.log('putSchemaData', putSchemaData.data)
-  var old_data = await (getActualInstance(id))
-    // console.log('getActualInstance old_data', old_data)
-  var res = await (compareData(id, old_data, new_data))
-  return res
+var updateData = async(function(id, data, res) {
+  console.log('update calling...................')
+  var _dbindex = _.findIndex(dbapi, { 'db': res.database[0] });
+  var dbdata = await (dbapi[_dbindex].api.putflowsInstance(id, data, res.title, res.database[1]));
+  console.log('dbdata..........')
+  return dbdata;
 })
-var compareData = async(function(id, old_data, new_data) {
+var deleteData = async(function(id, res) {
+  console.log('delete calling...................')
+  var _dbindex = _.findIndex(dbapi, { 'db': res.database[0] });
+  var dbdata = await (dbapi[_dbindex].api.deleteThisflowsInstance(id, res.title, res.database[1]));
+  console.log('dbdata..........')
+  return dbdata;
+})
+var checkUpdateData = async(function(id, data) {
+  var sid = data[0].Schemaid
+  var res = await (getSchemaData(sid))
+  var old_data = await (getActualInstance(id, res))
+  // console.log('old_data', data)
+  // var new_data = 
+  var _res = await ( compareData(id, old_data, data[0], res) ) 
+  return _res
+})
+
+var compareData = async(function(id, old_data, new_data, res) {
   var new_status = await (checkFlagforGet(old_data))
-  console.log('new_status', new_status, old_data)
+  console.log('new_status...........................', new_status)
   if (!new_status) {
     // console.log('Here..................')
-    var _dbindex = _.findIndex(dbapi, { 'db': putSchemaData.database[0] });
-    var dbdata = await (dbapi[_dbindex].api.putflowsInstance(new_data[0], id, putSchemaData.database[1]));
+    var dbdata = await (updateData(id, new_data, res))
     return dbdata
   } else {
     // for(let [inxx, object] of new_data.entries()) {
@@ -439,28 +422,75 @@ var compareData = async(function(id, old_data, new_data) {
       // console.log(object, sKey)
       if (Array.isArray(old_data[sKey])) {
         console.log('....................')
-        console.log(old_data[sKey], sKey)
-        var entityType = await (FindEntitytype(sKey, putSchemaData))
-        var database = await (giveDatabase(entityType))
-        console.log('Database', database)
-        for (let [i, sObj] of old_data[sKey].entries()) {
-          var _dbindex = _.findIndex(dbapi, { 'db': database[0] });
-          var dbdata = await (dbapi[_dbindex].api.putflowsInstance(new_data[0][sKey][i], sObj.refid, database[1]))
+        // console.log(old_data[sKey], sKey)
+        var entityType = await (FindEntitytype(sKey, res))
+        // var database = await (giveDatabase(entityType))
+        var _res = await (getSchemaData(entityType))
+        // console.log('Database', _res)
+        var flag = false
+        for(let [inx, ent] of _res.entity.entries()) {
+          if(ent.customtype) {
+            flag = true
+          }
         }
-        // var status = await (checkFlagforGet(object[sKey]))
-        // if(!status) {
-        //   console.log('Hieeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee')
-        //   for (let sObj in object[sKey]) {
-        //     console.log('sKey', sKey)
-        //     // var _dbindex = _.findIndex(dbapi, { 'db': putSchemaData.database[0]});
-        //     // var dbdata = await (dbapi[_dbindex].api.putflowsInstance(new_data[0], sObj.refid, putSchemaData.database[1]));
-        //   }
-        // } else {
-        // }
+
+        if(!flag) {
+          var s = []
+          if(old_data[sKey].length == new_data[sKey].length) {
+            for(let [i, sObj] of old_data[sKey].entries()) {
+              // console.log(sObj.refid, new_data[sKey][i], _res)
+              var n = await (updateData(sObj.refid, new_data[sKey][i], _res))
+              s.push(n)
+              new_data[sKey][i] = {}
+              new_data[sKey][i].refid = sObj.refid
+              // console.log(new_data[sKey][i])
+              // new_data[sKey][i] = old_data[sKey][i]
+            }
+          } else if (old_data[sKey].length > new_data[sKey].length) {
+            var s = []
+            var diff = old_data[sKey].length - new_data[sKey].length
+            var upLen = old_data[sKey].length - diff
+            for(let i = 0; i < upLen; i++) {
+              var n = await (updateData(old_data[sKey][i].refid, new_data[sKey][i], _res))
+              s.push(n)
+              new_data[sKey][i] = {}
+              new_data[sKey][i].refid = old_data[sKey][i].refid
+            }
+            for(let j = upLen; j < old_data[sKey].length; j++) {
+              var n = await (deleteData(old_data[sKey][j].refid, _res))
+              s.push(n)
+            }
+          } else if (old_data[sKey].length < new_data[sKey].length) {
+            for(let i = 0; i < old_data[sKey].length; i++) {
+              var n = await (updateData(old_data[sKey][i].refid, new_data[sKey][i], _res))
+              s.push(n)
+              new_data[sKey][i] = {}
+              new_data[sKey][i].refid = old_data[sKey][i].refid
+            }
+            for(let j = old_data[sKey].length; j < new_data[sKey].length; j++) {
+              var sres = await (saveData(new_data[sKey][j], _res))
+              new_data[sKey][j] = {}
+              new_data[sKey][j].refid = sres
+              s.push(n)
+            }
+          }
+          // old_data[sKey] = s;
+        } else {
+          var s = []
+          // console.log('/////////////////////////////////////////////////////////////////////////////////////', new_data[sKey])
+          for(let [i, sObj] of old_data[sKey].entries()) {
+            var oData = await (getActualInstance(sObj.refid, _res))
+            var n = await (compareData(sObj.refid, oData, new_data[sKey][i], _res))
+            new_data[sKey][i] = {}
+            new_data[sKey][i].refid = sObj.refid
+            s.push(n)
+          }
+        }
       }
     }
     // }
-    return 'refid'
+    var s = await (updateData (id, new_data, res))
+    return s
   }
 })
 var singleLevelsave = async(function(data) {
@@ -515,7 +545,7 @@ var findAllInstance = async(function() {
       fExtract.push(idObj)
     }
   }
-  console.log('Extract', JSON.stringify(fExtract))
+  // console.log('Extract', JSON.stringify(fExtract))
 
   for (let [inxx, mObj] of fExtract.entries() ) {
     fExtract[inxx] = await (getIdbySchemaId(mObj._id, mObj.Schemaid))
