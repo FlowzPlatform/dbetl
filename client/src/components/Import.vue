@@ -198,16 +198,18 @@ import api from '../api'
             })
           },
           async Import(){
+            var self = this
             console.log("mapdata", this.arr)
             this.target = this.data
             delete this.target.DB
             console.log("target", this.target)
             var self = this
-            await api.request('get', '/settings').then(function(response) {
-              _.forEach(response.data, function(value){
-                _.forEach(value.dbinstance, function(value){
-                  if(value.id == self.$route.params.id){
-                    self.source = value
+            await api.request('get', '/settings/' + self.$route.params.id).then(function(response) {
+              self.source = response.data
+              // _.forEach(response.data, function(value){
+              //   _.forEach(value.dbinstance, function(value){
+              //     if(value.id == self.$route.params.id){
+              //       self.source = value
                     delete self.source.isdefault
                     delete self.source.isenable
                     delete self.source.keep_sync
@@ -217,13 +219,18 @@ import api from '../api'
                     delete self.source.schemaData
                     delete self.source.upldCSV
                     delete self.source.upldIcn
-                    console.log("source", self.source)
-                  }
-                })
+              //       console.log("source", self.source)
+              //     }
+              //   })
 
-              })
+              // })
             })
             this.importedData = {target: this.source, source: this.target, mapdata: this.arr}
+              api.request('post', '/import-to-external-db', self.importedData).then(function(_res) {
+                self.$Notice.success({title: 'Success!', desc: 'Saved....'})
+              }).catch(function(err) {
+                self.$Notice.error({title: 'Error!', desc: 'Not Saved....'})
+              })
             console.log("final imported data", this.importedData)
           }
     }

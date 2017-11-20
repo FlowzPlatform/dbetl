@@ -280,6 +280,7 @@ class Service {
         var obj = _.find(instances.dbinstance, { id: id })
         if (obj != undefined) {
           instance = obj
+          instance.selectedDb = db
         }
       })
       return instance
