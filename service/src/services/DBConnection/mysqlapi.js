@@ -510,31 +510,39 @@ module.exports = {
       });
     return 'success';
   }),
-  updateInstanceTable: async(function (data){
-    console.log('mysql generate instance collection..........');
+  updateInstanceTable: async(function (data,old_data){
+    console.log('mysql generate update collection..........');
+    old_fields = [];
 
+    _.forEach(old_data, function (nameArray,key) {
+      old_fields.push(nameArray.name);
+    })
+    
     var selectedDB;
     for (let i = 0; i< db.length; i++) {
       if (db[i].id == data.database[1]) {
         selectedDB = db[i]
       }  
     }
-    if(data.old_title != data.title)
-      {
-        var commonRename = await(getQuery('mysql','rename','commonRename'));
-        commonRename = commonRename.replace('{{ old_table_name }}',data.old_title);
-        commonRename = commonRename.replace('{{ new_table_name }}',data.title.replace(' ', '_'));
-  
-        selectedDB.conn.query(commonRename);
-      }
-  
-  var updateSchemaData = async(function () {
+    // if(data.old_title != data.title)
+    //   {
+    //     var commonRename = await(getQuery('mysql','rename','commonRename'));
+    //     commonRename = commonRename.replace('{{ old_table_name }}',data.old_title);
+    //     commonRename = commonRename.replace('{{ new_table_name }}',data.title.replace(' ', '_'));
+    //     try{
+    //       selectedDB.conn.query(commonRename);        
+    //     } catch (e) {
+    //       console.log('exception',e)
+    //     }
+    //   }
+      var dbName = await(getDatabaseName(data.database[1]));  
+      var updateSchemaData = async(function () {
         var promises = []
   
         table_name = data.title.replace(' ', '_');
         
         new_fields=[]
-        
+    
         _.forEach(data.entity, function (entity,index) {
   
           if(entity.name != 'id' && entity.name != '_id')
@@ -550,10 +558,10 @@ module.exports = {
   
             
             var process = new Promise((resolve, reject) => {
-              schemaDb.conn.query(checkColumn, function (error, result, fields) {
+              selectedDB.conn.query(checkColumn, function (error, result, fields) {
                 error? reject(error) : result.length == 0 ? resolve(entity.name.replace(' ', '_')) : resolve('')
               })
-            })
+            })    
           }
   
           promises.push(process); 
@@ -574,18 +582,18 @@ module.exports = {
             alterTableAndAddField = alterTableAndAddField.replace('{{ field }}',field);
             alterTableAndAddField = alterTableAndAddField.replace('{{ type }}','TEXT NULL DEFAULT NULL');
             alterTableAndAddField = alterTableAndAddField.replace('{{ after }}','');
-  
+    
             selectedDB.conn.query(alterTableAndAddField);
           }
       })
-  
-      difference = _.difference(data.old_fields,new_fields)
+
+      difference = _.difference(old_fields,new_fields)
   
       _.forEach(difference, function (value,index) {
         var dropField = await(getQuery('mysql','alter','dropField'));
         dropField = dropField.replace('{{ table_name }}',table_name);
         dropField = dropField.replace('{{ field }}',value);
-  
+        
         selectedDB.conn.query(dropField);
       });
       return 'success';
@@ -622,8 +630,6 @@ module.exports = {
   }),
   getSchema: async(function () {
     console.log('mysql get Schema');
-    
-    
 
     var schemadata = async(function () {
       var result = []
