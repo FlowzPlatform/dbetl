@@ -2,6 +2,7 @@
 let async = require('asyncawait/async');
 let await = require('asyncawait/await');
 var axios = require('axios');
+let config = require('config');
 var fs = require('fs');
 var path = require('path');
 var db = '../DBConnection/db.json';
@@ -72,7 +73,10 @@ chokidar.watch(path.join(__dirname, '../DBConnection/db.json'), { ignored: /(^|[
   }
 }))
 
-
+  var getSchemaData = async(function(id) {
+    var res = await (axios.get('http://' + config.get('host') + ':' + config.get('port') + '/schema/' + id))
+    return res.data
+  })
   var saveSchema = async( function(data) {
     var db;
     if(data.database != undefined) {
@@ -88,6 +92,19 @@ chokidar.watch(path.join(__dirname, '../DBConnection/db.json'), { ignored: /(^|[
     return dbdata
   })
 
+  var updateSchema = async( function(data,id) {
+    var old_data = await (getSchemaData(id))
+
+    var db;
+    if(data.database != undefined) {
+      db = require('../DBConnection/' + data.database[0] + 'api')
+      var updateTable = await (db.updateInstanceTable(data,old_data.entity))
+      // console.log('updateTable >>>>>>>>>>>>>>>>>', updateTable)
+    } else {
+    }
+    var dbdata = dbapi[0].api.putSchema(data, id);
+    return Promise.resolve(dbdata);
+  })
 class Service {
   constructor(options) {
     this.options = options || {};
@@ -359,8 +376,16 @@ class Service {
     console.log('Update feathers...', data, id);
     var _dbindex = _.findIndex(dbapi, { 'db': data.database[0] });
     // console.log(_dbindex)
-    var dbdata = dbapi[0].api.putSchema(data, id);
-    return Promise.resolve(dbdata);
+    if(data.database[0] == 'mysql')
+    {
+      var res = updateSchema(data,id)
+      return res;
+    }
+    else
+    {
+      var dbdata = dbapi[0].api.putSchema(data, id);
+      return Promise.resolve(dbdata);
+    }
   }
 
   patch(id, data, params) {
