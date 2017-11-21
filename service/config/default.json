@@ -17,6 +17,7 @@
   "qJobTimeout": 3600000,
   "qJobRetryMax": 0,
   "import": "importSchema",
+  "importToExternal": "import_to_external_db",
   "instance_table": "flowzinstance",
   "approvar_table": "approvalClass",
   "mongodb": "mongodb://localhost:27017/flowzPDM"

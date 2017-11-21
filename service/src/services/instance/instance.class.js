@@ -545,7 +545,7 @@ var findAllInstance = async(function() {
       fExtract.push(idObj)
     }
   }
-  // console.log('Extract', JSON.stringify(fExtract))
+  console.log('Extract', fExtract)
 
   for (let [inxx, mObj] of fExtract.entries() ) {
     fExtract[inxx] = await (getIdbySchemaId(mObj._id, mObj.Schemaid))
