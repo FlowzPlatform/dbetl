@@ -15,6 +15,32 @@ var endecrypt = require('../encryption/security')
 var mongodb = require('mongodb');
 var elasticsearch = require('elasticsearch');
 var MongoClient = require('mongodb').MongoClient;
+var mysql = require('mysql');
+
+var getQuery = async(function (dbName,type,queryFor) {
+  let result = new Promise((resolve, reject) => {
+    fs.readFile(path.join(__dirname, '../DBConnection/query.json'),function (err, data) {
+      if (err) return console.log(err);
+          resolve(JSON.parse(data));
+          });
+    });
+
+    var _data = Promise.resolve(result).then(function(dbdata){
+        var instance;
+
+        _.forEach(dbdata[dbName][type], function(instances, db){
+            if(Object.keys(instances)[0] == queryFor)
+            {
+              var obj = _.find(instances)
+              if(obj != undefined){
+                instance = obj
+              }
+            }   
+        })
+        return instance
+    });
+    return _data
+});
 
 var check_Connection = async(function (db, data) {
   // console.log('data..', data, 'db', db)
@@ -107,7 +133,15 @@ var check_Connection = async(function (db, data) {
       //   }
       // });
   } else if (db == 'mysql') {
-    return 'success'
+    var connection = mysql.createConnection({
+      host     : data.host,
+      port     : data.port,
+      user     : data.username,
+      password : data.password,
+      database : data.dbname
+    });
+    connection.connect(); 
+    return connection;
   } else {
     var _res = new error()
     return _res
@@ -191,8 +225,47 @@ var getConnectionData = async(function (db, data) {
     // console.log(data1)
     return data1;
   } else if (db == 'mysql') {
-    var s = []
-    return s
+
+     var connection = mysql.createConnection({
+      host     : data.host,
+      port     : data.port,
+      user     : data.username,
+      password : data.password,
+      database : data.dbname
+    });
+
+    //get tables
+    var getDatabaseTables = await(getQuery('mysql','select','getDatabaseTables'));
+    getDatabaseTables = getDatabaseTables.replace('{{ table_name }}','information_schema.tables');
+    getDatabaseTables = getDatabaseTables.replace('{{ database_name }}',data.dbname);
+    getDatabaseTables = getDatabaseTables.replace('{{ fields }}','group_concat(table_name) as table_name');
+    
+    var tableList = function () {
+      var result = []
+      
+      return new Promise((resolve, reject) => {
+        connection.query(getDatabaseTables, function (error, result, fields) {
+          error? reject(error) : resolve(result[0].table_name)
+        })
+      }).then(content => {
+        return content;
+      }).catch(err=> {
+        return err;
+      })     
+    };
+    var resTableList = await (tableList())
+    let res = resTableList.split(",");
+    
+    result = [];
+
+    _.forEach(res, function (results) {
+      instanceVal = {};         
+      
+      instanceVal['name'] = results.toString();
+      result.push(instanceVal);
+    })
+    
+    return result
   } else {
     return 'not_found_db'
   }
@@ -291,9 +364,10 @@ class Service {
   create(data, params) {
     console.log('********* Inside Create Service *********\n');
     if (params.query.check != undefined) {
-      if (params.query.check == 'mysql') {
-        return Promise.resolve({ result: true, data: [] })
-      } else {
+      // if (params.query.check == 'mysql') {
+      //   return Promise.resolve({ result: true, data: [] })
+      // } else 
+      // {
         var _res = check_Connection(params.query.check, data)
         return Promise.resolve(_res).then(function (res) {
             // console.log('result.................', res)
@@ -304,10 +378,10 @@ class Service {
               // return {result: true}
           })
           .catch(function (err) {
-            // console.log('Error..............', err)
+            console.log('Error..............', err)
             return { result: false }
           })
-      }
+      // }
     } else {
       if (params.query.checkconn != undefined) {
         var _res = check_Connection(params.query.checkconn, data)

@@ -18,6 +18,7 @@
     "json-daex": "0.0.13",
     "lodash": "^4.17.4",
     "mongodb": "^2.2.33",
+    "mysql": "^2.15.0",
     "pino": "^4.7.2",
     "rethinkdb": "^2.3.3",
     "rethinkdb-job-queue": "^3.1.4",

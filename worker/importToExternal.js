@@ -9,7 +9,11 @@ var pino = require('pino');
 var mongodb = require('mongodb');
 var elasticsearch = require('elasticsearch');
 var MongoClient = require('mongodb').MongoClient;
+var fs = require('fs');
+var path = require('path');
 // var aurl = 'http://' + job.configData.host + ':' + job.configData.port;
+var mysql = require('mysql');
+var _ = require('lodash')
 
 console.log('importToExternal Worker Started.....')
 const qOptions = app.get('qOptions1')
@@ -38,6 +42,15 @@ var createConn = async (function(data) {
       // console.log(client)
     	return {conn: client, db: data.selectedDb}
 	} else if(data.selectedDb == 'mysql') {
+		var connection = mysql.createConnection({
+			host     : data.host,
+			port     : data.port,
+			user     : data.username,
+			password : data.password,
+			database : data.dbname
+		});
+	
+		return {conn: connection, db: data.selectedDb}
 
 	}
 })
@@ -50,6 +63,43 @@ var getSchemaidByName = async (function(url, name) {
 		}
 	}
 })
+
+var getQuery = async(function (dbName,type,queryFor) {
+  let result = new Promise((resolve, reject) => {
+    fs.readFile(path.join(__dirname, '../service/src/services/DBConnection/query.json'),function (err, data) {
+	  if (err) return console.log(err);
+	  
+          resolve(JSON.parse(data));
+          });
+    });
+
+    var _data = Promise.resolve(result).then(function(dbdata){
+        var instance;
+
+        _.forEach(dbdata[dbName][type], function(instances, db){
+            if(Object.keys(instances)[0] == queryFor)
+            {
+              var obj = _.find(instances)
+              if(obj != undefined){
+                instance = obj
+              }
+            }   
+        })
+        return instance
+    });
+    return _data
+});
+
+var UUID = async(function generateUUID() {
+	var d = new Date().getTime();
+	var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+		var r = (d + Math.random()*16)%16 | 0;
+		d = Math.floor(d/16);
+		return (c=='x' ? r : (r&0x3|0x8)).toString(16);
+	});
+	return uuid;
+});
+
 q.process(async(job, next) => {
 	try {
 			// console.log('job.data\n ', job.data)
@@ -91,9 +141,36 @@ q.process(async(job, next) => {
 					        sData.push(item);
 					    })
 					} else if(job.data.source.selectedDb == 'mysql') {
-					}
+						var getDatabaseTables = await(getQuery('mysql','select','commonSelect'));
+						getDatabaseTables = getDatabaseTables.replace('{{ table_name }}',obj.source);
+						getDatabaseTables = getDatabaseTables.replace('{{ fields }}','*');
 
-					console.log('sData', sData)
+						var tableList = function () {
+						  var result = []
+						  
+						  return new Promise((resolve, reject) => {
+							sConn.conn.query(getDatabaseTables, function (error, result, fields) {
+							  error? reject(error) : resolve(result)
+							})
+						  }).then(content => {
+							return content;
+						  }).catch(err=> {
+							return err;
+						  })     
+						};
+						var resTableList = await (tableList())
+						
+						for (let [i, sObj] of resTableList.entries()) {
+							instanceVal = {};         
+							
+							_.forEach(sObj, function (rs1,key) {
+								  instanceVal[key] = rs1;                        
+							})
+							
+							sData.push(instanceVal);							
+						}
+							
+					}
 
 					if(job.data.target.selectedDb == 'mongo') {
 						var _res = []
@@ -111,13 +188,25 @@ q.process(async(job, next) => {
 					} else if(job.data.target.selectedDb == 'rethink') {
 						var _res = []
 						var sId = await (getSchemaidByName(aurl, obj.target))
+						
 						for (let [i, sObj] of sData.entries()) {
-							sObj.id = (sObj._id).toString()
-							sObj._id = sObj.id
+							
+							if(sObj.hasOwnProperty('_id')) {
+								sObj.id = (sObj._id).toString()
+								sObj._id = sObj.id
+							}
+							else{
+								let uuid = await (UUID())
+								sObj._id = uuid
+								sObj.id = uuid
+							}
+							
 							if(sObj.hasOwnProperty('Schemaid')) {
 								sObj.Schemaid = sId
 								// console.log(sObj.Schemaid)
 							}
+						console.log('sObj',sObj)
+						
 							var s = await (tConn.conn.table(obj.target).insert(sObj).run())
 							_res.push(s)
 						}
