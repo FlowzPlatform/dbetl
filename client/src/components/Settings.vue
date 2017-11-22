@@ -5,8 +5,9 @@
     <span slot="title" style="padding: 10px 10px;">
       <!-- style="padding-top:10px;padding-bottom:10px" -->
           <Steps :current="currentStep"  >
-              <Step title="1"></Step>
-              <Step title="2"></Step>
+              <Step title="1" content="Create"></Step>
+              <Step title="2" content="Upload"></Step>
+              <Step title="3" content="Import"></Step>
           </Steps>
       </span>
   </Card>
@@ -217,8 +218,10 @@
 
           <Button type="primary" @click="modifyData()">Modify Data</Button>
         </div>
-        <div v-if="!showHandson && displaymessage">
-          <div class="schema-form ivu-table-wrapper">
+        <div>
+          <h4 v-if="!showHandson && displaymessage">Preview Details<Button type="primary" icon="ios-arrow-down" class="ios-arrow-down" @click="showPreviewDetails()" v-if="!previewdetails"></Button>
+            <Button type="primary" icon="ios-arrow-up" class="ios-arrow-down" @click="hidePreviewDetails()" v-if="previewdetails"></Button></h4>
+          <div class="schema-form ivu-table-wrapper" v-if="!showHandson && displaymessage && previewdetails">
             <div class="ivu-table ivu-table-border" style="display: block;white-space: nowrap;">
               <div class="ivu-table-body">
                 <table style="min-width: 1077px;overflow-x: auto;">
@@ -239,8 +242,9 @@
                 </table>
               </div>
             </div>
-          </div>
-          <p style="color: grey;font-size: smaller;" >Displaying Some Data As Reference</p>
+              <p style="color: grey;font-size: smaller;" >Displaying Some Data As Reference</p>
+        </div>
+
         </div>
         <!-- <div style="float: right;">
                   <Page :total="frmSettings.upldCSV.length" :current="1"></Page>
@@ -248,7 +252,11 @@
       </FormItem>
 
       <FormItem>
-        <div class="schema-form ivu-table-wrapper" v-if="displaymessage">
+
+       <div>
+        <h4 v-if="displaymessage">Header Details<Button type="primary" icon="ios-arrow-down" class="ios-arrow-down" @click="showHeaderDetails()" v-if="displaymessage && !headerDetails"></Button>
+          <Button type="primary" icon="ios-arrow-up" class="ios-arrow-down" @click="hideHeaderDetails()" v-if="displaymessage && headerDetails"></Button></h4>
+        <div class="schema-form ivu-table-wrapper" v-if="displaymessage && headerDetails">
           <div class="ivu-table ivu-table-border" >
             <div class="ivu-table-body">
               <table>
@@ -284,7 +292,7 @@
 
                     <td class="">
                       <div class="ivu-table-cell">
-                        <Select @on-change="type(index)" v-model="csvData[index].type" size="small" class="schema-form-input">
+                        <Select @on-change="type(index)" v-model="csvData[index].type"  size="small" class="schema-form-input">
                                               <Option v-for="t in optType" :value="t.value" :key="t.value">{{t.label}}</Option>
                                               <!-- <Option value="email" key="email">Email</Option>
                                               <Option value="number" key="number">Number</Option>
@@ -365,18 +373,25 @@
               </table>
             </div>
           </div>
-        </div>
+      </div>
+    </div>
       </FormItem>
     </Row>
     <Row>
       <Col span="6">
       <FormItem>
-        <Button type="primary" @click="handleSubmit('frmSettings')" v-if = "displaymessage">Create Connection</Button>
+        <Button type="primary" @click="handleSubmit('frmSettings')" v-if = "displaymessage" :disabled="!disabled">Create Connection</Button>
         <Button type="primary" :loading="loadingData" v-on:click="insertCsvData(frmSettings.upldCSV)" v-if="validateButton">
                       <span v-show="!loadingData">Validate Data</span>
                       <span v-show ="loadingData">Loading...</span>
                     </Button>
-        <Button type="primary" @click="saveData()" v-if="saveButton">Save Data</Button>
+        <Button type="primary" @click="saveData(2)" v-if="saveButton">
+          <span v-show="!loadingData">Save Data</span>
+          <span v-show ="loadingData">Loading...</span>
+        </Button>
+        <!-- <Button type="primary" @click="importData(frmSettings)" v-if="importButton" :disabled="disableImport">
+
+      </Button> -->
       </FormItem>
       </Col>
       <Col span="6">
@@ -386,7 +401,24 @@
       </Col>
     </Row>
   </div>
+  <!-- {{csvData}} -->
 <!-- <div>{{validatingData}}</div> -->
+</Card>
+</template>
+<template v-if="currentStep == 2">
+  <Card :bordered="true" ><br>
+    <div style="height:80px">
+    <span v-if="importButton" class="msg"> Click the import button to import your data to realdb</span>
+    <!-- <span v-if="!importButton && !completed"  class="msg"> Importing your data -->
+    <Spin v-if="!importButton && !completed" class="msg">
+                <Icon type="load-c" size=18 class="demo-spin-icon-load"></Icon>
+                <div>Importing your data</div>
+            </Spin>
+          <!-- </span> -->
+    <span v-if="completed" class="msg">Import completed</span>
+    <Button type="primary" @click="importData(frmSettings)" v-if="importButton" :disabled="disableImport" style="float:right;margin-right:5%;">ImportData</Button>
+    <Button type="error" @click="undo(frmSettings)" v-if="completed"  style="float:right;margin-right:5%;">Undo Import</Button>
+</div>
 </Card>
 </template>
 </Form>
@@ -415,9 +447,21 @@ import Emitter from '@/mixins/emitter'
 import moment from "moment";
 import VueMomentJS from "vue-momentjs";
 import Multiselect from 'vue-multiselect'
+import io from 'socket.io-client';
+import feathers from 'feathers/client';
+import socketio from 'feathers-socketio/client';
+const socket = io('http://localhost:3030');
+const app = feathers()
+  .configure(socketio(socket));
+moment().format();
+
 let res;
 let finalModifiedDataArray = [];
+let id;
+let logs = []
 let baseUrl = "http://localhost:3030/"
+
+
 export default {
   name: 'Settings',
   mixins: [Emitter],
@@ -431,7 +475,8 @@ export default {
     checked: {
       type: Boolean,
       default: true
-    }
+    },
+    obj: Object
   },
   data() {
     const validatePort = (rule, value, callback) => {
@@ -464,18 +509,25 @@ export default {
       validateButton: false,
       // parsedata: [],
       saveButton: false,
+      importButton: true,
       serverSideValidation: false,
       showHandson: false,
       expandValue: false,
       currentStep: 0,
       check: this.checked,
       expand: false,
+      moment : moment,
+      disabled: false,
+      disableImport : false,
+      headerDetails: true,
+      previewdetails: true,
+      completed : false,
       frmSettings: {
         isenable: true,
-        connection_name: '',
-        host: '',
+        connection_name: 'connection_'+ moment().unix(),
+        host: 'localhost',
         port: '',
-        dbname: '',
+        dbname: 'defaultdb',
         username: '',
         password: '',
         selectedDb: '',
@@ -569,6 +621,18 @@ export default {
     }
   },
   methods: {
+    showHeaderDetails(){
+      this.headerDetails = true
+    },
+    showPreviewDetails(){
+        this.previewdetails = true
+    },
+    hideHeaderDetails(){
+      this.headerDetails = false
+    },
+    hidePreviewDetails(){
+        this.previewdetails = false
+    },
     validateName: async function(value, db) {
       // console.log('value', value, db)
       var _res = await api.request('get', '/settings?dbname=' + db)
@@ -632,7 +696,7 @@ export default {
               _.forEach(self.headers, (f) => {
                 self.csvData.push({
                   header: f,
-                  type: '',
+                  type: 'text',
                   min: 0,
                   max: 0,
                   allowedValue: [],
@@ -644,6 +708,18 @@ export default {
                   IsArray: '',
                   transform: ''
                 })
+              })
+              logs.push({date:Date(),status:"upload_completed"})
+              var obj = {
+                status: 'upload_completed',
+                modified: Date(),
+                log:logs
+              }
+              api.request('patch', '/import-tracker/'+id, obj).then(function(res){
+                console.log("response",res.data)
+              })
+              .catch(error => {
+                console.log(error);
               })
             },
             error: function(error, file) {
@@ -672,12 +748,14 @@ export default {
     },
     type(index) {
       var arr = [];
-      // console.log("iiiiiiiiiiiiiiiiiii",this.csvData[index].type)
+
+      console.log("iiiiiiiiiiiiiiiiiii",this.csvData[index].type)
       // console.log("dsav",this.csvData.length)
       // _.forEach(this.csvData, function(value){
       //   console.log("hiiiii",value)
       //   arr.push(type=value.type)
       // })
+      // this.model1 = this.csvData[index].type
       this.validateButton = true
       this.loadingData = false
       this.errmsg = [];
@@ -873,10 +951,22 @@ export default {
 
       }
       this.complexSchema = headerSchema
+      console.log("++++++++++",this.headers )
     },
     insertCsvData(data) {
       var self = this
       self.loadingData = true
+      logs.push({date:Date(),status:'validation_running'})
+      var obj = {
+        status: 'validation_running',
+        log: logs
+      }
+      api.request('patch', '/import-tracker/'+id, obj).then(function(res){
+        console.log("response",res.data)
+      })
+      .catch(error => {
+        console.log(error);
+      })
 
       setTimeout(function() {
         // alert(this.validatingData)
@@ -940,7 +1030,20 @@ export default {
           document.getElementById("example1").style.display = "none";
           self.errmsg = []
           self.$Message.success('validation successfully complited');
+          self.headerDetails = false
           self.saveButton = true
+          logs.push({date:Date(),status:'validation_completed'})
+          var obj = {
+            status: 'validation_completed',
+            modified: Date(),
+            log:logs
+          }
+          api.request('patch', '/import-tracker/'+id, obj).then(function(res){
+            console.log("response",res.data)
+          })
+          .catch(error => {
+            console.log(error);
+          })
         } else {
           self.$Message.error('validation error');
         }
@@ -1039,7 +1142,20 @@ export default {
         this.saveButton = true
         // alert("proceed")
         this.showHandson = false;
-        this.$Message.success('validation successfully complited');
+        this.$Message.success('validation successfully completed');
+        this.headerDetails = false;
+        logs.push({date:Date(),status:'validation_completed'})
+        var obj = {
+          status: 'validation_completed',
+          modified: Date(),
+          log:logs
+        }
+        api.request('patch', '/import-tracker/'+id, obj).then(function(res){
+          console.log("response",res.data)
+        })
+        .catch(error => {
+          console.log(error);
+        })
       } else {
         // $('.ht_clone_top handsontable').remove()
         $('table.htCore').each(function() {
@@ -1051,32 +1167,210 @@ export default {
       }
       document.getElementById("hot-display-license-info").style.display = "none";
     },
-    saveData() {
+    saveData(step) {
       this.$Loading.start();
       var self = this;
+      self.loadingData = true
       setTimeout(function() {
         self.$Loading.finish();
       }, 3000)
       var self = this;
-      console.log(this.frmSettings.upldCSV)
-      console.log("schema ", this.complexSchema)
-      axios.post(baseUrl + "generatejsondatafile", this.frmSettings.upldCSV)
-        .then(function(response) {
-          console.log(response);
-          if (response.status == 201) {
-            self.$Message.success(response.data);
-            self.saveButton = false;
-            self.serverSideValidation = true;
-          } else {
-            self.$Message.error("Something went wrong, Please try again later")
+      console.log(self.frmSettings.upldCSV)
+      // console.log("schema ", this.complexSchema)
+      for(var i=0;i<self.frmSettings.upldCSV.length;i++){
+        self.frmSettings.upldCSV[i].importTracker_id = id
+      }
+      console.log(self.frmSettings.upldCSV)
+
+      logs.push({date: Date(),status:'import_staging_running'})
+      var obj = {
+        csvDetails: {
+          no_of_records:self.frmSettings.upldCSV.length
+        },
+        status: "import_staging_running",
+        modified: Date(),
+        log:logs
+      }
+      api.request('patch', '/import-tracker/'+id,obj).then(function(res){
+        console.log("response",res.data)
+        socket.emit('stream', self.frmSettings.upldCSV, (error,data) => {
+          if(error){
+            console.log(error)
+            self.$Notice.error({title:"Error!",desc: "Error in saving CSV...!"})
+          }
+        });
+        self.loadingData = false
+        self.saveButton = false
+        // self.importButton = true
+        self.currentStep = step
+      })
+      .catch(error => {
+        console.log(error);
+      })
+      // axios.post(baseUrl + "generatejsondatafile", this.frmSettings.upldCSV)
+      //   .then(function(response) {
+      //     console.log(response);
+      //     if (response.status == 201) {
+      //       self.$Message.success(response.data);
+      //       self.saveButton = false;
+      //       self.serverSideValidation = true;
+      //     } else {
+      //       self.$Message.error("Something went wrong, Please try again later")
+      //     }
+      //   })
+      //   .catch(function(error) {
+      //     console.log(error);
+      //   });
+    },
+    undo(data){
+      var self = this
+      console.log(data)
+      data["deletedFlag"] = true
+      console.log("id.......",id)
+      if(id == undefined){
+        id = this.$route.params.id
+        console.log("inside......",id)
+        socket.emit('import-tracker::find',{ id: id} ,(error, data1) => {
+        console.log('Found all messages', data1);
+        data = data1[0]
+        data["deletedFlag"] = true
+        logs = data1[0].log
+        console.log("data.....222222",data,logs)
+
+      socket.emit('import',data,(error,data) => {
+          console.log("dattaaaa...",data)
+          if(error){
+            console.log(error)
+            this.$Notice.error({title: "Error!",desc:"Error in importing data to realDb...!"})
           }
         })
-        .catch(function(error) {
+
+        logs.push({date:Date(),status:"import_staging_running"})
+        var obj = {
+          status: 'import_staging_running',
+          log:logs
+        }
+        api.request('patch', '/import-tracker/'+id, obj).then(function(res){
+          console.log("response",res.data)
+          self.importButton = true
+          // self.disabled = true
+          self.disableImport = false
+          self.completed = false
+        })
+        .catch(error => {
           console.log(error);
-        });
+        })
+
+      })
+      }
+      else {
+        socket.emit('import',data,(error,data) => {
+          console.log("dattaaaa...",data)
+          if(error){
+            console.log(error)
+            this.$Notice.error({title: "Error!",desc:"Error in importing data to realDb...!"})
+          }
+        })
+
+        logs.push({date:Date(),status:"import_staging_running"})
+        var obj = {
+          status: 'import_staging_running',
+          log:logs
+        }
+        api.request('patch', '/import-tracker/'+id, obj).then(function(res){
+          console.log("response",res.data)
+          self.importButton = true
+          // self.disabled = true
+          self.disableImport = false
+          self.completed = false
+        })
+        .catch(error => {
+          console.log(error);
+        })
+      }
+
     },
 
+    importData(data){
+      var self = this
+      data["deletedFlag"] = false
+      if(data.upldCSV.length == 0){
+       console.log("++++++++++++++++++++++++++++++")
+        id = this.$route.params.id
+        socket.emit('import-tracker::find',{ id: id} ,(error, data3) => {
+        console.log('Found all messages', data3);
+        data = data3[0]
+        logs = data3[0].log
+        console.log("data.....222222",data,logs)
+        self.importButton = false
+        data["deletedFlag"] = false
+        console.log(data)
 
+        socket.emit('customer-uploaded-data::find',{importTracker_id:id},(error,csvdata)=>{
+          data["upldCSV"] = csvdata
+        // })
+
+
+          socket.emit('import',data,(error,data) => {
+            if(error){
+              console.log(error)
+              this.$Notice.error({title: "Error!",desc:"Error in importing data to realDb...!"})
+            }
+          });
+
+
+          console.log("logs.....",logs)
+          logs.push({date:Date(),status:"import_staging_completed"})
+          var obj = {
+            status: 'import_staging_completed',
+            modified: Date(),
+            log:logs
+          }
+          api.request('patch', '/import-tracker/'+id, obj).then(function(res){
+            console.log("response",res.data)
+            self.disabled = true
+            self.disableImport = true
+            self.completed = true
+            // $("Progress").attr("percent",100)
+          })
+          .catch(error => {
+            console.log(error);
+          })
+      })
+    })
+      }
+     else {
+      self.importButton = false
+      data["deletedFlag"] = false
+      console.log(data)
+        socket.emit('import',data,(error,data) => {
+          if(error){
+            console.log(error)
+            this.$Notice.error({title: "Error!",desc:"Error in importing data to realDb...!"})
+          }
+        });
+
+
+        console.log("logs.....",logs)
+        logs.push({date:Date(),status:"import_staging_completed"})
+        var obj = {
+          status: 'import_staging_completed',
+          modified: Date(),
+          log:logs
+        }
+        api.request('patch', '/import-tracker/'+id, obj).then(function(res){
+          console.log("response",res.data)
+          self.disabled = true
+          self.disableImport = true
+          self.completed = true
+          // $("Progress").attr("percent",100)
+        })
+        .catch(error => {
+          console.log(error);
+        })
+      }
+
+    },
     getsettingsAll: function(value) {
       this.tabsData = {
         mongoCols: [],
@@ -1201,8 +1495,30 @@ export default {
     getTableAll: function() {
 
     },
+    createJob: function(data){
+      console.log(data.selectedDb,data.connection_name,data.host,data.port,data.username)
+      var obj = {
+        source: "rethinkdb",
+        destination: data.selectedDb,
+        connection_name: data.connection_name,
+        host: data.host,
+        port: data.port,
+        username: data.username,
+        status: 'upload_pending',
+        modified: Date(),
+        log: {
+          startedAt: Date(),
+          UploadStatus: 'upload_pending'
+        }
+      }
+      api.request('post', '/import-tracker', obj).then(function(res){
+        console.log("response",res.data)
+        id = res.data.id
+      })
+    },
     goToStep: function(step, name, data) {
       var self = this
+      logs = []
       this.$refs[name].validate((valid) => {
         if (valid) {
             this.check_conn = true
@@ -1224,6 +1540,28 @@ export default {
                     if(response.data.result){
                         self.conn_icon = 'checkmark'
                         self.currentStep = step;
+                        console.log(data.selectedDb,data.connection_name,data.host,data.port,data.username)
+                        logs.push({date: Date(),status: 'upload_pending'})
+                        var obj = {
+                          source: "rethinkdb",
+                          destination: data.selectedDb,
+                          connection_name: data.connection_name,
+                          database_name : data.dbname,
+                          host: data.host,
+                          port: data.port,
+                          username: data.username,
+                          status: 'upload_pending',
+                          created: Date(),
+                          log: logs
+                        }
+                        api.request('post', '/import-tracker', obj).then(function(res){
+                          console.log("response",res.data)
+                          id = res.data.id
+                        })
+                        .catch(error => {
+                          console.log(error);
+                          self.$Notice.error({title: 'Error!',desc: 'Error in importing...!'})
+                        })
                     } else {
                         self.conn_icon = 'close'
                         self.$Notice.error({title: 'Connection Not Establish...!', desc: 'Please Check Your Database..'})
@@ -1371,14 +1709,20 @@ export default {
       this.tabsData.mongoDt[value.index].checked = value.value
       console.log('this.tabsData.mongoDt', this.tabsData.mongoDt)
     },
+    getData(value){
+      console.log("dataa cameeeeeeeeeeeeeeee...",value)
+    },
     expands(data) {
       this.expandValue = data
     }
   },
   mounted() {
+    console.log(this.$route.params.id)
+    if(this.$route.params.id == undefined){
     this.frmSettings.selectedDb = this.$route.params.db;
     this.$on('schemaData', this.acceptData)
     this.$on('expandTrue', this.expands)
+
     var self = this;
     $(document).ready(function() {
       $('#upldIcn').change(function() {
@@ -1409,16 +1753,50 @@ export default {
         }
       });
     });
-  },
+  }
+  else {
+    var step = 2
+    this.currentStep = step
+    socket.emit('import-tracker::find',{id:this.$route.params.id} ,(error, data) => {
+    console.log('dataaaaa......', data);
+    if(data[0].status == "import_staging_completed"){
+      console.log("**********************")
+      this.completed = true
+      this.importButton = false
+      this.disableImport = true
+    }
+    else if(data[0].status == "import_staging_running"){
+      console.log("&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
+      this.importButton = false
+      this.completed = false
+      this.disableImport = true
+    }
+  })
+  }
+},
   created() {
     this.$on('on-schema-change', this.handleSchemaChange);
+    // this.$on('data',this.getData)
+
   }
 }
 </script>
 
 <style>
 
-
+.demo-spin-icon-load{
+    animation: ani-demo-spin 1s linear infinite;
+}
+@keyframes ani-demo-spin {
+    from { transform: rotate(0deg);}
+    50%  { transform: rotate(180deg);}
+    to   { transform: rotate(360deg);}
+}
+.demo-spin-col{
+    height: 100px;
+    position: relative;
+    border: 1px solid #eee;
+}
 .ivu-card-body {
   padding: 0px;
 }
@@ -1540,5 +1918,14 @@ export default {
   border-bottom: 1px solid #e9eaec;
   /*padding: 13px 16px;*/
   line-height: 1;
+}
+.ios-arrow-down{
+color: #1f2d3d;
+background-color: white;
+border-color: white;
+}
+.msg{
+  font-size:18px;
+  margin-left:3%;
 }
 </style>

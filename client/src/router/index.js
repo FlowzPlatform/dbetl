@@ -12,6 +12,8 @@ import Settings from '@/components/Settings'
 import Db from '@/components/Db'
 import Login from '@/components/Login'
 import Register from '@/components/Register'
+import JobList from '@/components/JobList'
+
 // import FlowzList from '@/components/FlowList'
 // import Instance from '@/components/instance'
 Vue.use(Router)
@@ -92,6 +94,20 @@ const routes = [{
     path: 'db/:db/new',
     name: 'settings',
     component: Settings
+  },
+  {
+    path: 'db/:db/new/:id',
+    name: 'settings',
+    component: Settings,
+    props: {
+      id: Text,
+      required: false
+    }
+  },
+  {
+    path: 'jobs/list',
+    name: 'joblist',
+    component: JobList
   }]
 }, {
   path: '/Login',
