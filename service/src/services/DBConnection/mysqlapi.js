@@ -13,6 +13,7 @@ db1.mysql.dbinstance.forEach(function (instance, inx) {
   
   var conn1 = mysql.createConnection({
     host     : instance.host,
+    port     : instance.port,
     user     : instance.username,
     password : pass,
   });
@@ -1596,7 +1597,7 @@ module.exports = {
     var selectedDB = _.find(db, (d) => {
       return d.id == inst_id
     })
-
+   
     // var resSchema = await (getSchemaOriginalId(parseInt(data.Schemaid), selectedDB))
     
     // var schemaid = resSchema[0];
