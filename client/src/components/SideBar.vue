@@ -23,7 +23,7 @@
           </Col>
         </Col>
       </Row>
-      
+
       <Row style="padding: 10px;" :gutter="16">
         <Col span="8">
           <!-- <Dropdown trigger="click" @on-click='handleCommand' style="margin-left: 20px;">
@@ -58,6 +58,15 @@
           </Row>
         </Col>
       </Row>
+
+      <Row style="padding: 8px;" :gutter="16">
+        <Col span="8">
+          <router-link to="/jobs/list">
+            <Button type="default" size="default">List Of Jobs</Button>
+          </router-link>
+        </Col>
+      </Row>
+
       <Menu theme="dark" style="max-height:615px; overflow-y: auto" width="auto">
         <Submenu v-show="groupby" :name="index" v-for="(item, index) in schema" :key="index">
           <template slot="title">
@@ -93,13 +102,13 @@
                       <Icon type="ios-compose-outline" class="ficon edit"></Icon>
                   </a>
                   <router-link :to="{name: 'schema/edit', params: {id: itm._id}}" exact>
-                  </router-link> 
+                  </router-link>
                 </Tooltip>
                   <Tooltip content="Mapping" placement="top">
                   <router-link :to="{name: 'schemamappinglist', params: {id: itm._id}}">
                     <Icon type="arrow-swap" class="ficon transform"></Icon>
                   </router-link>
-                </Tooltip> 
+                </Tooltip>
                 <Tooltip content="Delete" placement="top">
                   <a @click="handleRemove(indx)">
                     <Icon type="android-delete" class="ficon delete"></Icon>
@@ -275,7 +284,7 @@
                 .catch(error => {
                   this.$Notice.error({title: 'Error!!', desc:'Schema Not Deleted...'});
                   console.log(error)
-                })  
+                })
             }
             else if(this.deleteSchemaValue == 'harddel') {
               // alert(this.deleteSchemaValue)
@@ -287,7 +296,7 @@
                 .catch(error => {
                   console.log(error)
                 })
-            } 
+            }
             else {
               this.$Message.error('Error!!');
             }

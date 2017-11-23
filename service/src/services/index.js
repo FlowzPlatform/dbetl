@@ -12,8 +12,10 @@ const addInputToJobQue = require('./addInputToJobQue/addInputToJobQue.service.js
 
 const importtodb = require('./importtodb/importtodb.service.js');
 const customerUploadedSchema = require('./customerUploadedSchema/customerUploadedSchema.service.js');
+const importTracker = require('./import-tracker/import-tracker.service.js');
+const customerUploadedData = require('./customer-uploaded-data/customer-uploaded-data.service.js');
 const importToExternalDb = require('./import-to-external-db/import-to-external-db.service.js');
-module.exports = function() {
+module.exports = function () {
   const app = this; // eslint-disable-line no-unused-vars
   app.configure(schema);
   app.configure(instance);
