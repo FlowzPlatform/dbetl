@@ -1,40 +1,12 @@
 {
     "mongo": {
-        "dbinstance": [
-            {
-                "isenable": true,
-                "connection_name": "mongodb",
-                "host": "localhost",
-                "port": "3001",
-                "dbname": "mongodefault",
-                "username": "",
-                "password": "",
-                "upldIcn": "",
-                "notes": "",
-                "isdefault": false,
-                "id": "70a23286-1400-44de-7719-560ad3ec551e"
-            }
-        ]
+        "dbinstance": []
     },
     "rethink": {
-        "dbinstance": [
-            {
-                "isenable": true,
-                "connection_name": "rethinkdb",
-                "host": "localhost",
-                "port": "28015",
-                "dbname": "rethinkdefault",
-                "username": "",
-                "password": "",
-                "upldIcn": "",
-                "notes": "",
-                "isdefault": true,
-                "id": "457aed78-6d68-4b04-da2b-46f1f2e763d7"
-            }
-        ]
+        "dbinstance": []
     },
     "elastic": {
-        "dbinstance": []
+       "dbinstance": []
     },
     "nedb": {
         "dbinstance": []
