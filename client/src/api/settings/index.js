@@ -7,5 +7,17 @@ export default {
     } else {
       return api.request('get', '/' + model + '?dbname=' + db)
     }
+  },
+  getDb: (id) => {
+    return api.request('get', '/' + model + '/' + id).then(response => {
+      return response.data
+    })
+  },
+  checkConnection (data) {
+    return api.request('post', '/settings?check=' + data.selectedDb, data).then(response => {
+      return response.data
+    }).catch(error => {
+      throw error.message
+    })
   }
 }
