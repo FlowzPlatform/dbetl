@@ -9,13 +9,16 @@ export default {
   get: () => {
     return api.request('get', '/' + model)
   },
-  getThis: (id) => {
-    return api.request('get', '/' + model + '/' + id)
+  getThis: (id, Schemaid) => {
+    return api.request('get', '/' + model + '/' + id + '?schemaid=' + Schemaid)
   },
   post: (data) => {
     return api.request('post', '/' + model, data)
   },
   put: (id, data) => {
-    return api.request('pot', '/' + model + '/' + id, data)
+    return api.request('put', '/' + model + '/' + id, data)
+  },
+  delThis: (id, Schemaid) => {
+    return api.request('delete', '/' + model + '/' + id + '?schemaid=' + Schemaid)
   }
 }

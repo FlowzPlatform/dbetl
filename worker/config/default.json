@@ -11,28 +11,16 @@
     "concurrency": 1,
     "removeFinishedJobs": false
   },
+  "qOptions1": {
+    "name": "import_to_external_db",
+    "masterInterval": 60000,
+    "changeFeed": true,
+    "concurrency": 1,
+    "removeFinishedJobs": false
+  },
   "flowz_table": "flowzinstance",
   "scheduler_table": "scheduler",
   "syetem_logs_table": "flowz_system_logs",
   "qJobTimeout": 3600000,
   "qJobRetryMax": 0
 }
-// {
-//   "rethinkdb": {
-//     "host": "139.59.35.45",
-//     "port": 28016,
-//     "db": "FlowzEngine"
-//   },
-//   "qOptions": {
-//     "name": "scheduler",
-//     "masterInterval": 60000,
-//     "changeFeed": true,
-//     "concurrency": 1,
-//     "removeFinishedJobs": false
-//   },
-//   "flowz_table": "flowzinstance",
-//   "scheduler_table": "scheduler",
-//   "syetem_logs_table": "flowz_system_logs",
-//   "qJobTimeout": 3600000,
-//   "qJobRetryMax": 0
-// }

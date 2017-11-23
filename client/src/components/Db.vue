@@ -21,6 +21,7 @@
         </TabPane>
         <Button type="primary" icon="plus" @click="addSettings" size="small" slot="extra">Add</Button>
       </Tabs>
+      <!-- {{rethinkDt}} -->
     </div>
 </template>
 <script>
@@ -55,6 +56,24 @@ export default {
                         }
                     },
                     {
+                        title: 'Default',
+                        width: 80,
+                        align: 'center',
+                        render: (h, params) => {
+                            return h('Radio', {
+                                props: {
+                                  value: this.mongoDt[params.index].isdefault
+                                },
+                                on: {
+                                  'on-change': (value) => {
+                                    this.defaultDBInstance(this.tabPane, params.index, value)
+                                    // console.log(this.mongoDt[params.index].isenable);
+                                  }
+                                }
+                            })
+                        }
+                    },
+                    {
                         title: 'Connection Name',
                         key: 'connection_name'
                     },
@@ -70,9 +89,36 @@ export default {
                         title: 'Database Name',
                         key: 'dbname'
                     },
-                    {   
+                    {
                         title: 'Notes',
                         key: 'notes'
+                    },
+                    {
+                      title: 'Import',
+                      key: 'import',
+                      render: (h, params) => {
+                        return h('div', [
+                          h('Button', {
+                            props: {
+                              type: 'text',
+                              size: 'large',
+                              icon: 'upload'
+                            },
+                            style: {
+                              // color: '#CC0000',
+                              marginRight: '3px',
+                              padding: '0px',
+                              fontSize: '20px'
+                            },
+                            on: {
+                              click: () => {
+                                // alert(this.tabPane)
+                                this.import(params.row.id)
+                              }
+                            }
+                          }, '')
+                        ])
+                      }
                     },
                     {
                       title: 'Action',
@@ -88,7 +134,7 @@ export default {
                               icon: 'trash-b'
                             },
                             style: {
-                              color: '#CC0000',
+                              // color: '#CC0000',
                               marginRight: '3px',
                               padding: '0px',
                               fontSize: '20px'
@@ -124,6 +170,24 @@ export default {
                         }
                     },
                     {
+                        title: 'Default',
+                        width: 80,
+                        align: 'center',
+                        render: (h, params) => {
+                            return h('Radio', {
+                                props: {
+                                  value: this.rethinkDt[params.index].isdefault
+                                },
+                                on: {
+                                  'on-change': (value) => {
+                                    this.defaultDBInstance(this.tabPane, params.index, value)
+                                    // console.log(this.mongoDt[params.index].isenable);
+                                  }
+                                }
+                            })
+                        }
+                    },
+                    {
                         title: 'Connection Name',
                         key: 'connection_name'
                     },
@@ -139,9 +203,36 @@ export default {
                         title: 'Database Name',
                         key: 'dbname'
                     },
-                    {   
+                    {
                         title: 'Notes',
                         key: 'notes'
+                    },
+                    {
+                      title: 'Import',
+                      key: 'import',
+                      render: (h, params) => {
+                        return h('div', [
+                          h('Button', {
+                            props: {
+                              type: 'text',
+                              size: 'large',
+                              icon: 'upload'
+                            },
+                            style: {
+                              // color: '#CC0000',
+                              marginRight: '3px',
+                              padding: '0px',
+                              fontSize: '20px'
+                            },
+                            on: {
+                              click: () => {
+                                // alert(params)
+                                this.import(params.row.id)
+                              }
+                            }
+                          }, '')
+                        ])
+                      }
                     },
                     {
                       title: 'Action',
@@ -193,6 +284,24 @@ export default {
                         }
                     },
                     {
+                        title: 'Default',
+                        width: 80,
+                        align: 'center',
+                        render: (h, params) => {
+                            return h('Radio', {
+                                props: {
+                                  value: this.elasticDt[params.index].isdefault
+                                },
+                                on: {
+                                  'on-change': (value) => {
+                                    this.defaultDBInstance(this.tabPane, params.index, value)
+                                    // console.log(this.mongoDt[params.index].isenable);
+                                  }
+                                }
+                            })
+                        }
+                    },
+                    {
                         title: 'Connection Name',
                         key: 'connection_name'
                     },
@@ -208,9 +317,36 @@ export default {
                         title: 'Database Name',
                         key: 'dbname'
                     },
-                    {   
+                    {
                         title: 'Notes',
                         key: 'notes'
+                    },
+                    {
+                      title: 'Import',
+                      key: 'import',
+                      render: (h, params) => {
+                        return h('div', [
+                          h('Button', {
+                            props: {
+                              type: 'text',
+                              size: 'large',
+                              icon: 'upload'
+                            },
+                            style: {
+                              // color: '#CC0000',
+                              marginRight: '3px',
+                              padding: '0px',
+                              fontSize: '20px'
+                            },
+                            on: {
+                              click: () => {
+                                // alert(this.tabPane)
+                                this.import(params.row.id)
+                              }
+                            }
+                          }, '')
+                        ])
+                      }
                     },
                     {
                       title: 'Action',
@@ -260,6 +396,24 @@ export default {
                                 }
                             })
                         }
+                    },
+                    {
+                        title: 'Default',
+                        width: 80,
+                        align: 'center',
+                        render: (h, params) => {
+                            return h('Radio', {
+                                props: {
+                                  value: this.nedbDt[params.index].isdefault
+                                },
+                                on: {
+                                  'on-change': (value) => {
+                                    this.defaultDBInstance(this.tabPane, params.index, value)
+                                    // console.log(this.mongoDt[params.index].isenable);
+                                  }
+                                }
+                            })
+                        }
                     },  
                     {
                         title: 'Connection Name',
@@ -277,9 +431,36 @@ export default {
                         title: 'Database Name',
                         key: 'dbname'
                     },
-                    {   
+                    {
                         title: 'Notes',
                         key: 'notes'
+                    },
+                    {
+                      title: 'Import',
+                      key: 'import',
+                      render: (h, params) => {
+                        return h('div', [
+                          h('Button', {
+                            props: {
+                              type: 'text',
+                              size: 'large',
+                              icon: 'upload'
+                            },
+                            style: {
+                              // color: '#CC0000',
+                              marginRight: '3px',
+                              padding: '0px',
+                              fontSize: '20px'
+                            },
+                            on: {
+                              click: () => {
+                                // alert(this.tabPane)
+                                this.import(params.row.id)
+                              }
+                            }
+                          }, '')
+                        ])
+                      }
                     },
                     {
                       title: 'Action',
@@ -329,6 +510,24 @@ export default {
                                 }
                             })
                         }
+                    },
+                    {
+                        title: 'Default',
+                        width: 80,
+                        align: 'center',
+                        render: (h, params) => {
+                            return h('Radio', {
+                                props: {
+                                  value: this.mysqlDt[params.index].isdefault
+                                },
+                                on: {
+                                  'on-change': (value) => {
+                                    this.defaultDBInstance(this.tabPane, params.index, value)
+                                    // console.log(this.mongoDt[params.index].isenable);
+                                  }
+                                }
+                            })
+                        }
                     },  
                     {
                         title: 'Connection Name',
@@ -346,9 +545,36 @@ export default {
                         title: 'Database Name',
                         key: 'dbname'
                     },
-                    {   
+                    {
                         title: 'Notes',
                         key: 'notes'
+                    },
+                    {
+                      title: 'Import',
+                      key: 'import',
+                      render: (h, params) => {
+                        return h('div', [
+                          h('Button', {
+                            props: {
+                              type: 'text',
+                              size: 'large',
+                              icon: 'upload'
+                            },
+                            style: {
+                              // color: '#CC0000',
+                              marginRight: '3px',
+                              padding: '0px',
+                              fontSize: '20px'
+                            },
+                            on: {
+                              click: () => {
+                                // alert(this.tabPane)
+                                this.import(params.row.id)
+                              }
+                            }
+                          }, '')
+                        ])
+                      }
                     },
                     {
                       title: 'Action',
@@ -387,7 +613,12 @@ export default {
         addSettings (){
             this.$router.push('db/'+this.tabPane+'/new')
         },
+        import (id){
+          console.log(id)
+          this.$router.push('Dbsetting/import/'+id)
+        },
         instanceRemove (db, index) {
+          console.log(index,db)
             this.$Modal.confirm({
                 title: 'Confirm',
                 content: '<p>Are you sure you want to delete Connection?</p>',
@@ -408,6 +639,7 @@ export default {
               })
         },
         enableDbInstance (db, index, value) {
+          console.log('enableDbInstance....')
             this.$Modal.confirm({
                 title: 'Confirm',
                 content: '<p>Are you sure you want to enable Connection?</p>',
@@ -418,9 +650,10 @@ export default {
                         .then(response => {
                           var result = response.data
                           this[db+'Dt'][index].isenable = value
-                          
+
                           this.$Notice.success({duration:3, title:'Success!!', desc:'Connection Enable Successfully..'})
                           this.$store.dispatch('getSchema')
+                          this.getSettings()
                           console.log('result put ',result)
                         })
                         .catch(error => {
@@ -429,10 +662,54 @@ export default {
                         })
                   },
                 onCancel: () => {
-                  // this[db+'Dt'][index].isenable = !value
+                  // console.log('Here............', !value)
+                  this.getSettings()
+                  // this.$router.push('/')
                 }
             })
-        }
+        },
+        defaultDBInstance (db, index, value) {
+          this.$Modal.confirm({
+                    title: 'Confirm',
+                    content: '<p>Are you sure you want to change default Connection?</p>',
+                    onOk: () => {
+                        // alert(this[db+'Dt'][index].id)
+                        var id = this[db+'Dt'][index].id
+                        console.log(db, index, value, id)
+                        api.request('patch', '/settings/'+id+'?db='+db, {isdefault: value})
+                            .then(response => {
+                              var result = response.data
+                              this[db+'Dt'][index].isdefault = value
+                              
+                              this.$Notice.success({duration:3, title:'Success!!', desc:'Connection set Default Successfully..'})
+                              this.$store.dispatch('getSchema')
+                              this.getSettings()
+                              console.log('result patch ',result)
+                            })
+                            .catch(error => {
+                              console.log(error)
+                              this.$Notice.error({duration:3, title:'Error!!', desc:'Connection not set Default...'})
+                            })
+                      },
+                    onCancel: () => {
+                      this.getSettings()
+                      // this[db+'Dt'][index].isenable = !value
+                    }
+                })
+            },
+            getSettings() {
+              let self = this
+              api.request('get', '/settings')
+              .then(response => {
+                  _.forEach(response.data, function(instances, db){
+                      self[db+'Dt'] = response.data[db].dbinstance
+                  })
+              })
+              .catch(error => {
+                  this.$Notice.error({title:'Network Error!!'})
+                  console.log(error)
+              })
+            }
     },
     mounted () {
         let self = this

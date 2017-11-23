@@ -8,17 +8,16 @@
   },
   "rethinkdb": {
     "db": "FlowzEngine",
-    "servers": [
-      {
-        "host": "localhost",
-        "port": "28015"
-      }
-    ]
+    "servers": [{
+      "host": "172.16.160.117",
+      "port": "28015"
+    }]
   },
   "scheduler_table": "scheduler",
   "qJobTimeout": 3600000,
   "qJobRetryMax": 0,
   "import": "importSchema",
+  "importToExternal": "import_to_external_db",
   "instance_table": "flowzinstance",
   "approvar_table": "approvalClass",
   "mongodb": "mongodb://localhost:3001/flowzPDM"

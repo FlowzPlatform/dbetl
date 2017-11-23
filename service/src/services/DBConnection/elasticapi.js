@@ -6,6 +6,7 @@ var endecrypt = require('../encryption/security')
 var _ = require('lodash')
   // var databasename = 'schema_builder';
 var client = [];
+var dclient = [];
 // var client = new elasticsearch.Client( {  
 //     host: db1.elastic.host+':'+db1.elastic.port,
 //     log: 'error'
@@ -39,7 +40,28 @@ db1.elastic.dbinstance.forEach(function (instance, inx) {
       })
       client.push({ id: instance.id, conn: connection, dbname: db })
     }
+    if (instance.isdefault) {
+      var connection = new elasticsearch.Client({
+        host: instance.host + ':' + instance.port,
+        log: 'error'
+          // hosts: [
+          //   'https://[username]:[password]@[localhost]:[9200]/',
+          //   'https://[username]:[password]@[localhost]:[9200]/'
+          // ]
+      });
+      // var db = ((instance.dbname == '') ? databasename : instance.dbname);
+      var db = instance.dbname;
+      connection.indices.create({
+        index: db
+      }, function (err, resp) {
+        if(resp) {
+           //console.log(JSON.stringify(resp, null, '\t'), resp.status);
+        }
+      })
+      dclient.push({ id: instance.id, conn: connection, dbname: db })
+    }
   })
+
   // console.log('client',client)
   // var check = client.indices.exists({
   //     index: db
@@ -56,6 +78,19 @@ db1.elastic.dbinstance.forEach(function (instance, inx) {
   // }
 
 module.exports = {
+  generateInstanceTable: async(function (ins_id, title){
+    console.log('Elastic generate instance collection..........', ins_id, title);
+    // for(let [i, db_i] of client.entries()) {
+    //   if(db_i.id == ins_id) {
+    //     console.log(client[i].conn)
+    //     var res = await (client[i].conn.tableCreate(title))
+    //     // console.log('res......generateInstanceTable........', res)
+    //     return res
+    //   }
+    // }
+    return 'success'
+  }),
+
   choose: function () {
     console.log('===================ELASTIC_DB=================');
   },
@@ -286,64 +321,64 @@ module.exports = {
   //*************get methods***************
   getSchema: async(function () {
     console.log('elastic get Schema');
-    var schemadata = async(function () {
-      var result1 = [];
-      for (var i = 0; i < client.length; i++) {
-        // var r = await (db[i].conn.collection('schema').find().toArray())
-        var data = [];
-        var result = await (
-          client[i].conn.search({
-            index: client[i].dbname,
-            type: 'schema',
-            body: {
-              query: {
-                match_all: {}
-              },
-            }
-          }))
-        result.hits.hits.forEach(function (hit) {
-          var item = hit._source;
-          item._id = hit._id;
-          data.push(item);
-        })
-        // console.log(client[i].id)
-        for (var j = 0; j < data.length; j++) {
-          result1.push(data[j])
-        }
-      }
-      return result1;
-    });
-    var res = await (schemadata())
-    return res;
-
-    // var data = [];
-    // var result = await( 
-    // client.search({
-    //     index: db,
-    //     type: 'schema',
-    //     body: {
-    //         query: {
-    //             match_all: { }
-    //         },
+    // var schemadata = async(function () {
+    //   var result1 = [];
+    //   for (var i = 0; i < client.length; i++) {
+    //     // var r = await (db[i].conn.collection('schema').find().toArray())
+    //     var data = [];
+    //     var result = await (
+    //       client[i].conn.search({
+    //         index: client[i].dbname,
+    //         type: 'schema',
+    //         body: {
+    //           query: {
+    //             match_all: {}
+    //           },
+    //         }
+    //       }))
+    //     result.hits.hits.forEach(function (hit) {
+    //       var item = hit._source;
+    //       item._id = hit._id;
+    //       data.push(item);
+    //     })
+    //     // console.log(client[i].id)
+    //     for (var j = 0; j < data.length; j++) {
+    //       result1.push(data[j])
     //     }
-    // }))
-    // result.hits.hits.forEach(function(hit){
-    //     var item =  hit._source;
-    //     item._id = hit._id;
-    //     data.push(item);
-    // })
-    // return data;
+    //   }
+    //   return result1;
+    // });
+    // var res = await (schemadata())
+    // return res;
+
+    var data = [];
+    var result = await( 
+    dclient[0].conn.search({
+        index: dclient[0].dbname,
+        type: 'schema',
+        body: {
+            query: {
+                match_all: { }
+            },
+        }
+    }))
+    result.hits.hits.forEach(function(hit){
+        var item =  hit._source;
+        item._id = hit._id;
+        data.push(item);
+    })
+    return data;
 
   }),
   getThisSchema: async(function (id) {
     console.log('elastic get SchemaCurrent');
     var schemadata = async(function () {
       var result1 = [];
-      for (var i = 0; i < client.length; i++) {
+      for (var i = 0; i < dclient.length; i++) {
         var data = [];
         var result = await (
-          client[i].conn.search({
-            index: client[i].dbname,
+          dclient[i].conn.search({
+            index: dclient[i].dbname,
             type: 'schema',
             body: {
               query: {
@@ -358,7 +393,7 @@ module.exports = {
           item._id = hit._id;
           data.push(item);
         })
-        console.log(client[i].id)
+        console.log(dclient[i].id)
         for (var j = 0; j < data.length; j++) {
           result1.push(data[j])
         }
@@ -368,94 +403,120 @@ module.exports = {
     var res = await (schemadata())
     return res;
   }),
-  getflowsInstance: async(function () {
+  getflowsInstance: async(function (typeName, inst_id) {
     console.log('elastic get flowsInstance');
     var flowsInstance = async(function () {
       var result1 = [];
-      for (var i = 0; i < client.length; i++) {
-        // var r = await (db[i].conn.collection('schema').find().toArray())
-        var data = [];
-        var result = await (
-          client[i].conn.search({
+      for (let [i, inst] of client.entries()) {
+        if ( inst.id == inst_id ) {
+          var res = await (inst.conn.search({
             index: client[i].dbname,
-            type: 'instance',
+            type: typeName,
             body: {
               query: {
                 match_all: {}
               },
             }
           }))
-        result.hits.hits.forEach(function (hit) {
+          // console.log('rethink r', res.hits.hits)
+          res.hits.hits.forEach(function (hit) {
           var item = hit._source;
           item._id = hit._id;
-          data.push(item);
+          result1.push(item);
         })
-        // console.log(client[i].id)
-        for (var j = 0; j < data.length; j++) {
-          result1.push(data[j])
+          // return res
         }
       }
-      return result1;
+      return result1
+      // var result1 = [];
+      // for (var i = 0; i < client.length; i++) {
+      //   // var r = await (db[i].conn.collection('schema').find().toArray())
+      //   var data = [];
+      //   var result = await (
+      //     client[i].conn.search({
+      //       index: client[i].dbname,
+      //       type: 'instance',
+      //       body: {
+      //         query: {
+      //           match_all: {}
+      //         },
+      //       }
+      //     }))
+      //   result.hits.hits.forEach(function (hit) {
+      //     var item = hit._source;
+      //     item._id = hit._id;
+      //     data.push(item);
+      //   })
+      //   // console.log(client[i].id)
+      //   for (var j = 0; j < data.length; j++) {
+      //     result1.push(data[j])
+      //   }
+      // }
+      // return result1;
     });
     var res = await (flowsInstance())
     return res;
   }),
-  getThisflowsInstance: async(function (id) {
+  getThisflowsInstance: async(function (id, typeName, inst_id) {
     console.log('elastic get flowsInstanceCurrent');
     var flowsInstance = async(function () {
-      var result1 = [];
+    var result1 = [];
       for (var i = 0; i < client.length; i++) {
-        var data = [];
-        var result = await (
-          client[i].conn.search({
-            index: client[i].dbname,
-            type: 'instance',
-            body: {
-              query: {
-                match: {
-                  '_id': id
-                }
-              },
-            }
-          }))
-        result.hits.hits.forEach(function (hit) {
-          var item = hit._source;
-          item._id = hit._id;
-          data.push(item);
-        })
-        // console.log(client[i].id)
-        for (var j = 0; j < data.length; j++) {
-          result1.push(data[j])
+        if ( client[i].id == inst_id ) {
+          var data = [];
+          var result = await (
+            client[i].conn.search({
+              index: client[i].dbname,
+              type: typeName,
+              body: {
+                query: {
+                  match: {
+                    '_id': id
+                  }
+                },
+              }
+            }))
+          result.hits.hits.forEach(function (hit) {
+            var item = hit._source;
+            item._id = hit._id;
+            data.push(item);
+          })
+          // console.log(client[i].id)
+          for (var j = 0; j < data.length; j++) {
+            result1.push(data[j])
+          }
         }
       }
       return result1;
     });
     var res = await (flowsInstance())
-    return res;
+    // console.log('elastic r...', res)
+    return res[0];
   }),
 
   //********************post methods***********************
   postSchema: async(function (data) {
     console.log('elastic post Schema', JSON.stringify(data));
-    var selectedDB = _.find(client, (d) => {
-      return d.id == data.database[1]
-    })
-    var result = await (
-      selectedDB.conn.index({
-        index: selectedDB.dbname,
-        type: 'schema',
-        body: data
-      }))
-    return result;
-    // var result = await( 
-    // client.index({
-    //     index: db,
+    // var selectedDB = _.find(client, (d) => {
+    //   return d.id == data.database[1]
+    // })
+    // var result = await (
+    //   selectedDB.conn.index({
+    //     index: selectedDB.dbname,
     //     type: 'schema',
     //     body: data
-    // }))
+    //   }))
     // return result;
+
+    var result = await( 
+    dclient[0].conn.index({
+        index: dclient[0].dbname,
+        type: 'schema',
+        body: data
+    }))
+    return result;
   }),
-  postflowsInstance: async(function (data, dbid) {
+  postflowsInstance: async(function (data, dbid, typeName) {
     console.log('........................elastic post flowsInstance....................');
     // data.Schemaid = data._id
     // delete data._id
@@ -473,7 +534,7 @@ module.exports = {
     var result = await (
       selectedDB.conn.index({
         index: selectedDB.dbname,
-        type: 'instance',
+        type: typeName,
         body: data
       }))
     return result._id;
@@ -484,12 +545,12 @@ module.exports = {
     console.log('elastic put schema')
     delete data._id
     var schemaid = id;
-    var selectedDB = _.find(client, (d) => {
-      return d.id == data.database[1]
-    })
+    // var selectedDB = _.find(client, (d) => {
+    //   return d.id == data.database[1]
+    // })
     var result = await (
-      selectedDB.conn.index({
-        index: selectedDB.dbname,
+      dclient[0].conn.index({
+        index: dclient[0].dbname,
         type: 'schema',
         id: schemaid,
         body: data
@@ -505,18 +566,18 @@ module.exports = {
 
     // return schemadata;
   }),
-  putflowsInstance: async(function (data, id, dbid) {
+  putflowsInstance: async(function (id, data, tableName, inst_id) {
     var instanceid = id;
     delete data._id
     // console.log('DATA:',data);
     // var schemaid = id;
     var selectedDB = _.find(client, (d) => {
-      return d.id == dbid
+      return d.id == inst_id
     })
     var result = await (
       selectedDB.conn.index({
         index: selectedDB.dbname,
-        type: 'instance',
+        type: tableName,
         id: instanceid,
         body: data
       }))
@@ -556,10 +617,10 @@ module.exports = {
     var schemaid = id;
     let _promise = new Promise((resolve, reject) => {
         if(type == 'softdel') {
-            for (var i = 0; i < client.length; i++) {
+            for (var i = 0; i < dclient.length; i++) {
                 // console.log(client[i].id, client[i].dbname)
-                client[i].conn.update({
-                    index: client[i].dbname,
+                dclient[i].conn.update({
+                    index: dclient[i].dbname,
                     type: 'schema',
                     id: schemaid,
                     body: {
@@ -571,7 +632,7 @@ module.exports = {
                     // console.log(res)
                     if(res.status == 404){
                         // console.log('if...')
-                        if(i == client.length){
+                        if(i == dclient.length){
                             var abc = []
                             resolve(abc)
                             // console.log('Inside..')
@@ -635,13 +696,16 @@ module.exports = {
   //   // return result;
 
   // }),
-  deleteThisflowsInstance: async(function (id) {
+  deleteThisflowsInstance: async(function (id, tableName, inst_id) {
     console.log('elastic delete this flowsInstance');
+    var selectedDB = _.find(client, (d) => {
+      return d.id == inst_id
+    })
     var instanceid = id;
     var result = await (
-        client.delete({
-          index: db,
-          type: 'instance',
+        selectedDB.conn.delete({
+          index: selectedDB.dbname,
+          type: tableName,
           id: instanceid
         }))
       // console.log('result',result);

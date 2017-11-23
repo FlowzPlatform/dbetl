@@ -13,8 +13,8 @@
             </td>
           </tr>
         </table> -->
-        
-        
+
+
           <div class="schema-form ivu-table-wrapper" >
             <div class="ivu-table ivu-table-border">
               <div class="ivu-table-body">
@@ -22,10 +22,10 @@
                   <thead>
                     <tr>
                       <!-- <th>
-                          <div class="ivu-table-cell-expand ivu-table-cell-expand-expanded" style="width:20px;margin-left:10px;"><i class="ivu-icon ivu-icon-ios-arrow-right"></i></div> 
+                          <div class="ivu-table-cell-expand ivu-table-cell-expand-expanded" style="width:20px;margin-left:10px;"><i class="ivu-icon ivu-icon-ios-arrow-right"></i></div>
                       </th> -->
                       <th class="" v-for="item in getColumn(row)" style="text-align:center;">
-                        <div class="ivu-table-cell">                    
+                        <div class="ivu-table-cell">
                           <span>{{item}}</span>
                         </div>
                       </th>
@@ -33,10 +33,10 @@
                   </thead>
                   <tbody class="ivu-table-tbody">
                     <!-- <template v-for="r in row"> -->
-                      <tr class="ivu-table-row" > 
-                      <!-- <td> 
-                      <div class="ivu-table-cell-expand ivu-table-cell-expand-expanded" style="width:20px;margin-left:10px"><i class="ivu-icon ivu-icon-ios-arrow-right"></i></div> 
-                      </td>  -->              
+                      <tr class="ivu-table-row" >
+                      <!-- <td>
+                      <div class="ivu-table-cell-expand ivu-table-cell-expand-expanded" style="width:20px;margin-left:10px"><i class="ivu-icon ivu-icon-ios-arrow-right"></i></div>
+                      </td>  -->
                         <td class="" v-for="item in getData(row)" style="text-align:center;">
                           <div class="ivu-table-cell" v-if="checkArr(item)">
                             <div v-for="obj in getNewArray(item)">
@@ -46,7 +46,7 @@
                           <div v-else>
                             {{item}}
                           </div>
-                        </td>   
+                        </td>
                       </tr>
                     <!-- </template> -->
                   </tbody>
@@ -54,8 +54,8 @@
               </div>
             </div>
           </div>
-        
-        
+
+
     </Row>
   </div>
 </template>

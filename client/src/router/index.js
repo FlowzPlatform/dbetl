@@ -9,6 +9,7 @@ import InstanceList from '@/components/InstanceList'
 import SchemaMapping from '@/components/SchemaMapping'
 import SchemaMappingList from '@/components/SchemaMappingList'
 import Settings from '@/components/Settings'
+import Import from '@/components/Import'
 import Db from '@/components/Db'
 import Login from '@/components/Login'
 import Register from '@/components/Register'
@@ -51,7 +52,7 @@ const routes = [{
       required: false
     }
   }, {
-    path: 'schema-instance/edit/:id',
+    path: 'schema-instance/schemaid/:schemaid/edit/:id',
     component: SchemaInstance,
     name: 'schema-instance/edit',
     meta: { description: 'SchemaInstance' },
@@ -94,8 +95,7 @@ const routes = [{
     path: 'db/:db/new',
     name: 'settings',
     component: Settings
-  },
-  {
+  }, {
     path: 'db/:db/new/:id',
     name: 'settings',
     component: Settings,
@@ -103,11 +103,14 @@ const routes = [{
       id: Text,
       required: false
     }
-  },
-  {
+  }, {
     path: 'jobs/list',
     name: 'joblist',
     component: JobList
+  }, {
+    path: 'Dbsetting/import/:id',
+    name: 'import',
+    component: Import
   }]
 }, {
   path: '/Login',
