@@ -134,7 +134,15 @@ var getConnectionData = async(function (db, data) {
         if (k !== 'name') {
           delete obj[k]
         }
+        var a = await (conn.collection(obj.name).find().toArray())
+        var cols =[]
+        if(a[0] != undefined) {
+          for(let k in a[0]) {
+            cols.push({name: k})
+          }
+        }
       }
+      result[inx].columns = cols;
     }
     // console.log('Data........................', result)
     return result
@@ -151,7 +159,14 @@ var getConnectionData = async(function (db, data) {
     // var result = await (connection.table('schema').run())
     var result = await (connection.db(data.dbname).tableList())
     for (let [inx, val] of result.entries()) {
-      result[inx] = { name: val }
+      var a = await (connection.db(data.dbname).table(val).run())
+      var cols =[]
+      if(a[0] != undefined) {
+        for(let k in a[0]) {
+          cols.push({name: k})
+        }
+      }
+      result[inx] = { name: val, columns: cols}
     }
     // console.log('result............', result)
     return result
@@ -180,13 +195,36 @@ var getConnectionData = async(function (db, data) {
     });
     // console.log('result........', result.aggregations.typesAgg.buckets)
     for (let [i, obj] of result.aggregations.typesAgg.buckets.entries()) {
-      var mapping = await (
-          conn.indices.getMapping({
-            index: data.dbname,
-            type: obj.key
-          }))
-        // console.log('..............', mapping[data.dbname].mappings[obj.key].properties)
-      data1.push({ name: obj.key, columns: mapping[data.dbname].mappings[obj.key].properties })
+      // var mapping = await (
+      //     conn.indices.getMapping({
+      //       index: data.dbname,
+      //       type: obj.key
+      //     }))
+      //   console.log('..............', mapping[data.dbname].mappings[obj.key].properties)
+      // data1.push({ name: obj.key, columns: mapping[data.dbname].mappings[obj.key].properties })
+      var data = []
+      var a = await (connection.search({
+          index: data.dbname,
+          type: obj.key,
+          body: {
+              query: {
+                  match_all: { }
+              },
+          }
+      }))
+      a.hits.hits.forEach(function(hit){
+        var item =  hit._source;
+        item._id = hit._id;
+        data.push(item);
+    })
+      var cols =[]
+      if(data[0] != undefined) {
+        for(let k in data[0]) {
+          cols.push({name: k})
+        }
+      }
+      // result[inx] = { name: val, columns: cols}
+      data1.push({ name: obj.key, columns: cols })
     }
     // console.log(data1)
     return data1;
@@ -280,6 +318,7 @@ class Service {
         var obj = _.find(instances.dbinstance, { id: id })
         if (obj != undefined) {
           instance = obj
+          instance.selectedDb = db
         }
       })
       return instance

@@ -19,5 +19,5 @@
   "import": "importSchema",
   "instance_table": "flowzinstance",
   "approvar_table": "approvalClass",
-  "mongodb": "mongodb://localhost:27017/flowzPDM"
+  "mongodb": "mongodb://localhost:3001/flowzPDM"
 }
