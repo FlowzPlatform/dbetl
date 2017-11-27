@@ -1,0 +1,91 @@
+2017-11-19T21:45:55.435159776 0.900620s notice: Recursively removing directory /home/software/FlowzDEBTL/DBETL/rethinkdb_data/tmp
+2017-11-19T21:45:55.446794717 0.912255s notice: Initializing directory /home/software/FlowzDEBTL/DBETL/rethinkdb_data
+2017-11-19T21:45:55.446853751 0.912313s info: Creating a default database for your convenience. (This is because you ran 'rethinkdb' without 'create', 'serve', or '--join', and the directory '/home/software/FlowzDEBTL/DBETL/rethinkdb_data' did not already exist or is empty.)
+2017-11-19T21:45:55.447256404 0.912715s notice: Running rethinkdb 2.3.5 (GCC 5.4.0)...
+2017-11-19T21:45:55.448943619 0.914404s notice: Running on Linux 4.4.0-97-generic x86_64
+2017-11-19T21:45:55.448983275 0.914442s notice: Loading data from directory /home/software/FlowzDEBTL/DBETL/rethinkdb_data
+2017-11-19T21:45:55.532523820 0.997986s info: Automatically using cache size of 6745 MB
+2017-11-19T21:45:55.533742386 0.999202s notice: Listening for intracluster connections on port 29015
+2017-11-19T21:45:55.555123914 1.020583s notice: Listening for client driver connections on port 28015
+2017-11-19T21:45:55.555267872 1.020727s notice: Listening for administrative HTTP connections on port 8080
+2017-11-19T21:45:55.555275114 1.020734s notice: Listening on cluster addresses: 127.0.0.1, 127.0.1.1, ::1
+2017-11-19T21:45:55.555277574 1.020736s notice: Listening on driver addresses: 127.0.0.1, 127.0.1.1, ::1
+2017-11-19T21:45:55.555282021 1.020741s notice: Listening on http addresses: 127.0.0.1, 127.0.1.1, ::1
+2017-11-19T21:45:55.555284257 1.020743s notice: To fully expose RethinkDB on the network, bind to all addresses by running rethinkdb with the `--bind all` command line option.
+2017-11-19T21:45:55.555287528 1.020746s notice: Server ready, "OBLAP_75_d8m" 666119c2-bf6f-4134-9c34-6f640f4c0df9
+2017-11-19T21:45:58.440360119 3.905820s notice: A newer version of the RethinkDB server is available: 2.3.6. You can read the changelog at <https://github.com/rethinkdb/rethinkdb/releases>.
+2017-11-19T21:46:07.384032434 12.849494s info: Table 457d8506-7c6f-4db2-a35f-95453a6bd76e: Starting a new Raft election for term 1.
+2017-11-19T21:46:07.391197999 12.856657s info: Table 457d8506-7c6f-4db2-a35f-95453a6bd76e: Added replica on this server.
+2017-11-19T21:46:07.391932021 12.857391s info: Table a075e1a2-7a1c-4b70-b857-4404d14d4dd6: Starting a new Raft election for term 1.
+2017-11-19T21:46:07.392629245 12.858089s info: Table a075e1a2-7a1c-4b70-b857-4404d14d4dd6: Added replica on this server.
+2017-11-19T21:46:07.401711179 12.867170s info: Table 457d8506-7c6f-4db2-a35f-95453a6bd76e: This server is Raft leader for term 1. Latest log index is 0.
+2017-11-19T21:46:07.407962876 12.873422s info: Table a075e1a2-7a1c-4b70-b857-4404d14d4dd6: This server is Raft leader for term 1. Latest log index is 0.
+2017-11-19T21:46:08.037368748 13.502828s info: Table 2df9511d-1a7f-4535-b526-9f94f19cae0b: Starting a new Raft election for term 1.
+2017-11-19T21:46:08.043274807 13.508734s info: Table 2df9511d-1a7f-4535-b526-9f94f19cae0b: Added replica on this server.
+2017-11-19T21:46:08.043584212 13.509044s info: Table 73fcbb4a-b87f-4db4-b534-309d47e4106d: Starting a new Raft election for term 1.
+2017-11-19T21:46:08.044654935 13.510114s info: Table 73fcbb4a-b87f-4db4-b534-309d47e4106d: Added replica on this server.
+2017-11-19T21:46:08.053317567 13.518777s info: Table 2df9511d-1a7f-4535-b526-9f94f19cae0b: This server is Raft leader for term 1. Latest log index is 0.
+2017-11-19T21:46:08.056368203 13.521828s info: Table 73fcbb4a-b87f-4db4-b534-309d47e4106d: This server is Raft leader for term 1. Latest log index is 0.
+2017-11-19T21:46:08.648514683 14.113974s info: Table 112956ca-55e8-4f57-9fa0-432eed88a9a7: Starting a new Raft election for term 1.
+2017-11-19T21:46:08.648866091 14.114325s info: Table 112956ca-55e8-4f57-9fa0-432eed88a9a7: Added replica on this server.
+2017-11-19T21:46:08.659063650 14.124523s info: Table 112956ca-55e8-4f57-9fa0-432eed88a9a7: This server is Raft leader for term 1. Latest log index is 0.
+2017-11-19T21:46:09.255206692 14.720666s info: Table e59a6059-fb6e-468e-a43b-e8da237f7a64: Starting a new Raft election for term 1.
+2017-11-19T21:46:09.255713386 14.721173s info: Table e59a6059-fb6e-468e-a43b-e8da237f7a64: Added replica on this server.
+2017-11-19T21:46:09.265148382 14.730608s info: Table e59a6059-fb6e-468e-a43b-e8da237f7a64: This server is Raft leader for term 1. Latest log index is 0.
+2017-11-19T21:46:09.858385153 15.323845s info: Table a9b6de63-e650-4d4e-9e72-0563db892854: Starting a new Raft election for term 1.
+2017-11-19T21:46:09.858870604 15.324330s info: Table a9b6de63-e650-4d4e-9e72-0563db892854: Added replica on this server.
+2017-11-19T21:46:09.899268091 15.364728s info: Table a9b6de63-e650-4d4e-9e72-0563db892854: This server is Raft leader for term 1. Latest log index is 0.
+2017-11-19T21:46:10.462512066 15.927972s info: Table 7abad653-2d9b-4b8d-8172-36834fc527ef: Starting a new Raft election for term 1.
+2017-11-19T21:46:10.463558626 15.929018s info: Table 7abad653-2d9b-4b8d-8172-36834fc527ef: Added replica on this server.
+2017-11-19T21:46:10.502404214 15.967864s info: Table 7abad653-2d9b-4b8d-8172-36834fc527ef: This server is Raft leader for term 1. Latest log index is 0.
+2017-11-19T21:46:11.058187048 16.523647s info: Table 3892a732-30a9-4139-b934-0115becdf329: Starting a new Raft election for term 1.
+2017-11-19T21:46:11.058789972 16.524250s info: Table 3892a732-30a9-4139-b934-0115becdf329: Added replica on this server.
+2017-11-19T21:46:11.067339108 16.532799s info: Table 3892a732-30a9-4139-b934-0115becdf329: This server is Raft leader for term 1. Latest log index is 0.
+2017-11-19T21:46:11.651305919 17.116765s info: Table e40e1150-b5ec-4eaf-b3f2-31c3692270b6: Starting a new Raft election for term 1.
+2017-11-19T21:46:11.651626138 17.117085s info: Table e40e1150-b5ec-4eaf-b3f2-31c3692270b6: Added replica on this server.
+2017-11-19T21:46:11.660312804 17.125772s info: Table e40e1150-b5ec-4eaf-b3f2-31c3692270b6: This server is Raft leader for term 1. Latest log index is 0.
+2017-11-19T21:46:12.244795219 17.710255s info: Table 5420385f-501c-446a-a44a-d86368bfae2e: Starting a new Raft election for term 1.
+2017-11-19T21:46:12.245265418 17.710725s info: Table 5420385f-501c-446a-a44a-d86368bfae2e: Added replica on this server.
+2017-11-19T21:46:12.253501292 17.718961s info: Table 5420385f-501c-446a-a44a-d86368bfae2e: This server is Raft leader for term 1. Latest log index is 0.
+2017-11-20T09:24:17.095900511 5567.498302s info: Table 981675f6-3289-468f-9203-749f14a21d1a: Starting a new Raft election for term 1.
+2017-11-20T09:24:17.095981411 5567.498383s info: Table 981675f6-3289-468f-9203-749f14a21d1a: Added replica on this server.
+2017-11-20T09:24:17.104290817 5567.506693s info: Table 981675f6-3289-468f-9203-749f14a21d1a: This server is Raft leader for term 1. Latest log index is 0.
+2017-11-20T12:05:06.395797549 15216.798199s notice: Removing file /home/software/FlowzDEBTL/DBETL/rethinkdb_data/981675f6-3289-468f-9203-749f14a21d1a
+2017-11-20T12:05:06.395802729 15216.798204s info: Table 981675f6-3289-468f-9203-749f14a21d1a: Deleted the table.
+2017-11-20T12:10:03.046832153 15513.449235s info: Table e53043c5-69e5-4fc1-8a78-c8442d3b9475: Starting a new Raft election for term 1.
+2017-11-20T12:10:03.047751643 15513.450154s info: Table e53043c5-69e5-4fc1-8a78-c8442d3b9475: Added replica on this server.
+2017-11-20T12:10:03.066494995 15513.468897s info: Table e53043c5-69e5-4fc1-8a78-c8442d3b9475: This server is Raft leader for term 1. Latest log index is 0.
+2017-11-20T12:11:40.341899218 15610.744301s notice: Removing file /home/software/FlowzDEBTL/DBETL/rethinkdb_data/e53043c5-69e5-4fc1-8a78-c8442d3b9475
+2017-11-20T12:11:40.341907601 15610.744309s info: Table e53043c5-69e5-4fc1-8a78-c8442d3b9475: Deleted the table.
+2017-11-20T12:27:51.500233883 16581.902636s info: Table 8f29ff0f-0839-4564-8c09-cf77ecff4132: Starting a new Raft election for term 1.
+2017-11-20T12:27:51.500523966 16581.902926s info: Table 8f29ff0f-0839-4564-8c09-cf77ecff4132: Added replica on this server.
+2017-11-20T12:27:51.509811520 16581.912214s info: Table 8f29ff0f-0839-4564-8c09-cf77ecff4132: This server is Raft leader for term 1. Latest log index is 0.
+2017-11-20T12:36:35.665353559 17106.067755s notice: Removing file /home/software/FlowzDEBTL/DBETL/rethinkdb_data/8f29ff0f-0839-4564-8c09-cf77ecff4132
+2017-11-20T12:36:35.665362982 17106.067764s info: Table 8f29ff0f-0839-4564-8c09-cf77ecff4132: Deleted the table.
+2017-11-20T18:47:13.082155509 38000.734714s info: Table 569a26c4-9fd3-47be-8c7a-1c11cfcc311a: Starting a new Raft election for term 1.
+2017-11-20T18:47:13.082258826 38000.734817s info: Table 569a26c4-9fd3-47be-8c7a-1c11cfcc311a: Added replica on this server.
+2017-11-20T18:47:13.096814706 38000.749373s info: Table 569a26c4-9fd3-47be-8c7a-1c11cfcc311a: This server is Raft leader for term 1. Latest log index is 0.
+2017-11-21T10:57:41.550424397 46257.461475s info: Table 34506649-ff71-4f20-87c8-bee9c60d24d6: Added replica on this server.
+2017-11-21T10:57:41.550796626 46257.461845s info: Table 34506649-ff71-4f20-87c8-bee9c60d24d6: Starting a new Raft election for term 1.
+2017-11-21T10:57:41.563519589 46257.474568s info: Table 34506649-ff71-4f20-87c8-bee9c60d24d6: This server is Raft leader for term 1. Latest log index is 0.
+2017-11-21T11:21:33.375141321 47689.286189s info: Table 7986c3e0-404a-4875-b2a7-6f889b236e1e: Starting a new Raft election for term 1.
+2017-11-21T11:21:33.375307743 47689.286355s info: Table 7986c3e0-404a-4875-b2a7-6f889b236e1e: Added replica on this server.
+2017-11-21T11:21:33.384674724 47689.295722s info: Table 7986c3e0-404a-4875-b2a7-6f889b236e1e: This server is Raft leader for term 1. Latest log index is 0.
+2017-11-21T17:10:48.812886828 67261.715883s notice: Removing file /home/software/FlowzDEBTL/DBETL/rethinkdb_data/7986c3e0-404a-4875-b2a7-6f889b236e1e
+2017-11-21T17:10:48.812895702 67261.715891s info: Table 7986c3e0-404a-4875-b2a7-6f889b236e1e: Deleted the table.
+2017-11-21T17:10:52.990183807 67265.893180s notice: Removing file /home/software/FlowzDEBTL/DBETL/rethinkdb_data/34506649-ff71-4f20-87c8-bee9c60d24d6
+2017-11-21T17:10:52.990195562 67265.893191s info: Table 34506649-ff71-4f20-87c8-bee9c60d24d6: Deleted the table.
+2017-11-21T17:11:10.931211837 67283.834208s notice: Removing file /home/software/FlowzDEBTL/DBETL/rethinkdb_data/569a26c4-9fd3-47be-8c7a-1c11cfcc311a
+2017-11-21T17:11:10.931220151 67283.834216s info: Table 569a26c4-9fd3-47be-8c7a-1c11cfcc311a: Deleted the table.
+2017-11-21T17:33:50.019815338 68642.922811s info: Table 6b4b1c95-4ec8-445c-a4fd-b0a08d3d52da: Starting a new Raft election for term 1.
+2017-11-21T17:33:50.019953885 68642.922949s info: Table 6b4b1c95-4ec8-445c-a4fd-b0a08d3d52da: Added replica on this server.
+2017-11-21T17:33:50.027693060 68642.930689s info: Table 6b4b1c95-4ec8-445c-a4fd-b0a08d3d52da: This server is Raft leader for term 1. Latest log index is 0.
+2017-11-21T18:04:43.162259032 70496.065255s notice: Removing file /home/software/FlowzDEBTL/DBETL/rethinkdb_data/6b4b1c95-4ec8-445c-a4fd-b0a08d3d52da
+2017-11-21T18:04:43.162263850 70496.065259s info: Table 6b4b1c95-4ec8-445c-a4fd-b0a08d3d52da: Deleted the table.
+2017-11-21T18:10:22.103501392 70835.006497s info: Table 7a92585e-94af-4165-8e23-d3555523aa71: Starting a new Raft election for term 1.
+2017-11-21T18:10:22.103649406 70835.006645s info: Table 7a92585e-94af-4165-8e23-d3555523aa71: Added replica on this server.
+2017-11-21T18:10:22.112593314 70835.015589s info: Table 7a92585e-94af-4165-8e23-d3555523aa71: This server is Raft leader for term 1. Latest log index is 0.
+2017-11-22T11:15:18.140741310 81116.887748s info: Table 38193f4c-24fd-41ba-aa37-efd02b2d234c: Starting a new Raft election for term 1.
+2017-11-22T11:15:18.140806319 81116.887813s info: Table 38193f4c-24fd-41ba-aa37-efd02b2d234c: Added replica on this server.
+2017-11-22T11:15:18.149302897 81116.896310s info: Table 38193f4c-24fd-41ba-aa37-efd02b2d234c: This server is Raft leader for term 1. Latest log index is 0.
+2017-11-22T15:48:22.428368234 97501.175376s warn: Some RethinkDB data on this server has been placed into swap memory. This may impact performance.
