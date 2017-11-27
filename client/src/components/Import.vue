@@ -1,199 +1,302 @@
 <template>
-  <div>
-    <Row :gutter="20">
-    <Col span="12">
-      <h1 style="text-align: center;">Source</h1>
-      <br>
-  <Form ref="frmSourceDbForm" :model="source" :rules="ruleValidate" :label-width="80">
-    <FormItem label="Select DB" prop="selectedDb">
-      <Select v-model="source.selectedDb" style="width:200px">
-          <Option v-for="item in dbList" :value="item.value" :key="item.value">{{ item.label }}</Option>
-      </Select>
-    </FormItem>
-    <FormItem label="Database name" prop="dbname">
-      <Input v-model="source.dbname"></Input>
-    </FormItem>
-    <FormItem label="Host" prop="host">
-      <Input v-model="source.host"></Input>
-    </FormItem>
-    <FormItem label="Port" prop="port">
-      <Input v-model="source.port"></Input>
-    </FormItem>
-    <Col span="12">
-    <FormItem label="Username">
-      <Input placeholder="Username" v-model="source.username"></Input>
-    </FormItem>
-  </Col>
-  <Col span="12">
-    <FormItem label="Password">
-      <Input type="password" placeholder="Password" v-model="source.password"></Input>
-    </FormItem>
-  </Col>
-    <FormItem>
-      <Button type="primary" @click="handleContinue('frmSourceDbForm')" style="margin-left: 8px">Continue
-        <span>
-            <Icon  v-if="check_conn" :type="conn_icon" style="padding-left:5px;font-size:12px;"/>
-        </span>
-      </Button>
-    </FormItem>
-  </Form>
-</Col>
-<Col span="12" >
-  <h1 style="text-align: center;">Target</h1>
-  <br>
-  <Form :label-width="80">
-    <FormItem label="Selected DB">
-        <Input v-model="target.connection_name" readonly></Input>
-    </FormItem>
-    <FormItem label="Database name">
-        <Input v-model="target.dbname" readonly></Input>
-    </FormItem>
-    <FormItem label="Host">
-      <Input v-model="target.host" readonly></Input>
-    </FormItem>
-    <FormItem label="Port">
-      <Input v-model="target.port" readonly></Input>
-    </FormItem>
-</Form>
-</Col>
-</Row>
-  {{source.collection}}
-  <div v-if='source.collection.length > 0'>
-    <div class="ivu-tabs-tabpane">
-      <div class="ivu-table-wrapper">
-        <div class="ivu-table ivu-table-small">
-          <div class="ivu-table-header">
-            <table cellspacing="0" cellpadding="0" border="0" style="width: 100%;">
-              <colgroup>
-                  <col width="3">
-                      <col width="25">
-                          <col width="25">
-              </colgroup>
-              <thead>
-                <tr>
-                  <th class=""></th>
-                  <th class="">
-                    <div class="ivu-table-cell">
-                      <span>{{source.selectedDb}} / {{source.dbname}}</span>
+<div>
+    <Row style="border:2px solid #eee;padding:20px;background-color:#eee">
+        <Col span="14" style="border:1px solid #eee; ">
+            <Card :bordered="false">
+                <p slot="title">SOURCE</p>
+                <Form ref="frmSourceDbForm" :model="source" :rules="ruleValidate" :label-width="80">
+                    <Row>
+                        <Col span="12">
+                            <FormItem label="Select DB" prop="selectedDb">
+                                <Select v-model="source.selectedDb" style="width:200px" :disabled="sourceDisable">
+                                    <Option v-for="item in dbList" :value="item.value" :key="item.value">{{ item.label }}</Option>
+                                </Select>
+                            </FormItem>
+                        </Col>
+                        <Col span="12">
+                            <FormItem label="Database" prop="dbname">
+                                <Input v-model="source.dbname" :readonly="sourceDisable"></Input>
+                            </FormItem>
+                        </Col>
+                    </Row>
+                    <Row>
+                        <Col span="12">
+                            <FormItem label="Host" prop="host">
+                                <Input v-model="source.host" :readonly="sourceDisable"></Input>
+                            </FormItem>
+                        </Col>
+                        <Col span="12">
+                            <FormItem label="Port" prop="port">
+                                <Input v-model="source.port" :readonly="sourceDisable"></Input>
+                            </FormItem>
+                        </Col>
+                    </Row>
+                    <Row>
+                        <Col span="12">
+                            <FormItem label="Username">
+                                <Input placeholder="Username" v-model="source.username" :readonly="sourceDisable"></Input>
+                            </FormItem>
+                        </Col>
+                        <Col span="12">
+                            <FormItem label="Password">
+                                <Input type="password" placeholder="Password" v-model="source.password" :readonly="sourceDisable"></Input>
+                            </FormItem>
+                        </Col>
+                    </Row>
+                    <Button type="primary" @click="handleConnect('frmSourceDbForm')"  :disabled="sourceDisable" style="margin-left: 80px">Connect
+                        <span>
+                      <Icon  v-if="check_conn" :type="conn_icon" style="padding-left:5px;font-size:12px;"/>
+                  </span>
+                    </Button>
+                </Form>
+            </Card>
+        </Col>
+        <Col span="1">
+          <Row>&nbsp;</Row>
+          <Row>&nbsp;</Row>
+          <Row>&nbsp;</Row>
+          <Row>&nbsp;</Row>
+          <Row>&nbsp;</Row>
+          <Row>&nbsp;</Row>
+          <Row>&nbsp;</Row>
+          <Row type="flex" justify="center" align="middle">
+              <Icon type="arrow-right-c" style="font-size:35px;float:center"></Icon>
+          </Row>
+        </Col>
+        <Col span="9" style="border:1px solid #eee;">
+            <Card shadow style="padding:10px">
+                <p slot="title">TARGET</p>
+                <div class="schema-form ivu-table-wrapper">
+                    <div class="ivu-table ivu-table-border">
+                        <div class="ivu-table-body">
+                            <table cellspacing="0" cellpadding="0" border="0" style="width: 100%;">
+                                <tbody class="ivu-table-tbody">
+                                    <tr class="ivu-table-row">
+                                        <td class="" style="font-size:13px">
+                                            <div class="ivu-table-cell">
+                                                <b>Connection Name</b>
+                                            </div>
+                                        </td>
+                                        <td class="">
+                                            <div class="ivu-table-cell">
+                                                {{target.connection_name}}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr class="ivu-table-row">
+                                        <td class="" style="font-size:13px">
+                                            <div class="ivu-table-cell">
+                                                <b>Database Name</b>
+                                            </div>
+                                        </td>
+                                        <td class="">
+                                            <div class="ivu-table-cell">
+                                                {{target.dbname}}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr class="ivu-table-row">
+                                        <td class="" style="font-size:13px">
+                                            <div class="ivu-table-cell">
+                                                <b>Host</b>
+                                            </div>
+                                        </td>
+                                        <td class="">
+                                            <div class="ivu-table-cell">
+                                                {{target.host}}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr class="ivu-table-row">
+                                        <td class="" style="font-size:13px">
+                                            <div class="ivu-table-cell">
+                                                <b>Port</b>
+                                            </div>
+                                        </td>
+                                        <td class="">
+                                            <div class="ivu-table-cell">
+                                                {{target.port}}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
-                  </th>
-                  <th class="">
-                    <div class="ivu-table-cell">
-                      <span>{{target.connection_name}} / {{target.dbname}}</span>
-                    </div>
-                  </th>
-                </tr>
-              </thead>
-              <tbody class="ivu-table-tbody">
-                <template v-for="(item, index) in source.collection">
-                  <tr class="ivu-table-row">
-                    <td class="">
-                      <Button @click="item.expand = true"><Icon type="chevron-right" style="margin-left: 10px;"></Icon></Button>
-                    </td>
-                    <td class="">
-                      <div class="ivu-table-cell">
-                        <span>{{item.name}}</span>
-                      </div>
-                    </td>
-                    <td class="">
-                      <div class="ivu-table-cell">
-                        <AutoComplete
-                            placeholder="input here"
-                            style="width:200px">
-                            <Option v-for="item in target.collection" :value="item.name" :key="item.name">{{ item.name }}</Option>
-                        </AutoComplete>
-                        <!-- <i-autoComplete>
-                          <div class="demo-auto-complete-item" v-for="item in target.collection">
-                            <div class="demo-auto-complete-group">
-                                <span>{{ item.name }}</span>
-                            </div>
-                          </div>
-                        </i-autoComplete> -->
-                        <!-- <Select @on-change="selectedtablelist(index)" v-model="table[index]" style="width:200px">
-                            <Option v-for="item in target.collection" :value="item.name" :key="item.name">{{ item.name }}</Option> -->
-                        <!-- </Select> -->
-                      </div>
-                    </td>
-                  </tr>
-                  <tr v-show="item.expand" class="ivu-table-row">
-                    <td>
-                      <table width="2200%">
-                        <!-- <tbody v-for="(item1,index1) in schemaList"> -->
-                        <tbody>
-                          <div v-for="(item1,index1) in columns">
-                            <div v-if="table[index]===item1.name">
-                          <tr v-for="(item2,index2) in item1.columns">
-                        <!-- <tr v-if="index===index1" v-for="(item2,index2) in item1.entity"> -->
-                          <!-- <td class="ivu-table-cell">
-                              <Checkbox v-model="index2">{{item2.name}}</Checkbox>
-                          </td> -->
-
-                          <td class="">
-                            <div class="ivu-table-cell" >
-                              <!-- <CheckboxGroup v-model="checked[item2.name]" @on-change="checkedfunction()"> -->
-                                <Checkbox v-model="arr[index].colsData[index2].checked">{{item2.name}}</Checkbox>
-                              <!-- </CheckboxGroup> -->
-                             </div>
-                          </td>
-                          <td>
-                            <auto-complete
-                            v-model="arr[index].colsData[index2].input"
-                            :data="schemaList"
-                            :filter-method="filterMethod"
-                            placeholder="input here"
-                            style="width:200px">
-                            </auto-complete>
-                          </td>
-                        </tr>
-                      </div>
-                      </div>
-                      </tbody>
-                      </table>
-                    </td>
-                  </tr>
-                </template>
-                </tbody>
-                </table>
-              </div>
-            </table>
-          </div>
+                </div>
+            </Card>
+        </Col>
+    </Row>
+    <div v-if='s_collection.length > 0'>
+        <div class="ivu-table-wrapper">
+            <div class="ivu-table ivu-table-small">
+                <div class="ivu-table-header">
+                    <table cellspacing="0" cellpadding="0" border="0" style="width: 100%;">
+                        <colgroup>
+                            <col width="15">
+                                <col width="30">
+                                    <col width="30">
+                                        <col width="25">
+                        </colgroup>
+                        <thead>
+                            <tr>
+                                <th class="" style="padding-left:20px">SelectTable</th>
+                                <th class="">
+                                    <div class="ivu-table-cell">
+                                        <span>{{source.selectedDb}} / {{source.dbname}}</span>
+                                    </div>
+                                </th>
+                                <th class="">
+                                    <div class="ivu-table-cell">
+                                        <span>{{target.connection_name}} / {{target.dbname}}</span>
+                                    </div>
+                                </th>
+                                <th class="">Mapping</th>
+                            </tr>
+                        </thead>
+                        <tbody class="ivu-table-tbody">
+                            <template v-for="(item, index) in s_collection">
+                                <tr class="ivu-table-row">
+                                    <td class="" style="padding-left:20px">
+                                        <!-- <Button @click="item.expand = true">
+                                            <Icon type="chevron-right" style="margin-left: 10px;"></Icon>
+                                        </Button> -->
+                                        <Checkbox v-model="tableData[index].isSelect"></Checkbox>
+                                    </td>
+                                    <td class="">
+                                        <div class="ivu-table-cell">
+                                            <span>{{item.name}}</span>
+                                        </div>
+                                    </td>
+                                    <td class="">
+                                        <div class="ivu-table-cell">
+                                            <AutoComplete placeholder="input here" v-model="tableData[index].target" @on-search="fillColsData(tableData[index].target, index)" @on-select="fillColsData(tableData[index].target, index)"  style="width:200px" :disabled="abc(index)" clearable>
+                                                <Option v-for="(obj, inx) in t_collection" :value="obj.name" :key="inx">{{ obj.name }}</Option>
+                                            </AutoComplete>
+                                            <a v-if ="abc(index)" @click="clearField(index)">Clear</a>
+                                            <!-- <i-autoComplete>
+                                            <div class="demo-auto-complete-item" v-for="item in target.collection">
+                                              <div class="demo-auto-complete-group">
+                                                  <span>{{ item.name }}</span>
+                                              </div>
+                                            </div>
+                                          </i-autoComplete> -->
+                                                                      <!-- <Select @on-change="selectedtablelist(index)" v-model="table[index]" style="width:200px">
+                                              <Option v-for="item in target.collection" :value="item.name" :key="item.name">{{ item.name }}</Option> -->
+                                                                      <!-- </Select> -->
+                                        </div>
+                                    </td>
+                                    <td class="">
+                                        <div class="ivu-table-cell"v-if="tableData[index].target">
+                                            <a @click="openTrasformEditor(index)">Field Mapping</a>
+                                        </div>
+                                    </td>
+                                </tr>
+                              <tr v-if="tableData[index].target && openTrasformEditorIndex === index">
+                                <td colspan="4" style="padding: 15px 100px 15px 100px; background-color:#eee;">
+                                  <!-- {{tableData[index].source}} -->
+                                  <div class="ivu-table-wrapper">
+                                    <div class="ivu-table ivu-table-small">
+                                        <div class="ivu-table-header">
+                                            <table cellspacing="0" cellpadding="0" border="0" style="width: 100%;">
+                                                <colgroup>
+                                                    <col width="10">
+                                                        <col width="35">
+                                                            <col width="35">
+                                                                <!-- <col width="25"> -->
+                                                </colgroup>
+                                                <thead>
+                                                    <tr>
+                                                        <th class="" style="padding-left:10px;background-color:#f8f8f9; color:#394263;font-size:13px">SelectField</th>
+                                                        <th class="" style="background-color:#f8f8f9; color:#394263;font-size:13px">
+                                                            <div class="ivu-table-cell">
+                                                                <span>{{tableData[index].source}} / Fields</span>
+                                                            </div>
+                                                        </th>
+                                                        <th class="" style="background-color:#f8f8f9; color:#394263;font-size:13px">
+                                                            <div class="ivu-table-cell">
+                                                                <span>{{tableData[index].target}} / Fields</span>
+                                                            </div>
+                                                        </th>
+                                                        <!-- <th class="">Mapping</th> -->
+                                                    </tr>
+                                                </thead>
+                                                <tbody class="ivu-table-tbody">
+                                                    <template v-for="(mitem, i) in s_collection[index].columns">
+                                                        <tr class="ivu-table-row">
+                                                            <td class="" style="padding-left:20px">
+                                                                <Checkbox v-model="tableData[index].colsData[i].isField"></Checkbox>
+                                                            </td>
+                                                            <td class="">
+                                                                <div class="ivu-table-cell">
+                                                                    <span>{{mitem.name}}</span>
+                                                                </div>
+                                                            </td>
+                                                            <td class="">
+                                                                <div class="ivu-table-cell">
+                                                                    <AutoComplete placeholder="input here" v-model="tableData[index].colsData[i].input" style="width:200px">
+                                                                        <Option v-for="(obj1, inxx) in getFiledNames(index)" :value="obj1.name" :key="inxx">{{ obj1.name }}</Option>
+                                                                    </AutoComplete>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    </template>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                    </div>
+                                </td>
+                              </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
-      </div>
+        <div style="padding-top:5px">
+            <Button type="primary" @click="handleImport('')" style="margin-left: 8px">Import</Button>
+            <!-- <Button type="primary" @click="clearImport('')" style="margin-left: 8px">Clear</Button> -->
+        </div>
     </div>
-    <Button type="primary" @click="handleImport('')" style="margin-left: 8px">Import</Button>
-  </div>
+    <!-- <hr><hr><hr><hr> -->
+    <!-- {{s_collection}} -->
+    <!-- <hr><hr><hr><hr> -->
+    <!-- {{tableData}} -->
+    <!-- <hr><hr><hr><hr> -->
+    <!-- {{disableCheck}} -->
+    <!-- {{importedData}} -->
 </div>
 </template>
 <script>
-// import _ from 'lodash'
-// import api from '../api'
+import _ from 'lodash'
+import api from '../api'
 import modelSettings from '@/api/settings'
 // import modelSchema from '@/api/schema'
 export default {
   data () {
     return {
+      openTrasformEditorIndex: -1,
       check_conn: false,
+      sourceDisable: false,
       conn_icon: 'load-a',
       // showtable: false,
-      schemaTitle: [],
+      // schemaTitle: [],
       tableList: [],
       schemaList: [],
-      columns: [],
-      arr: [],
+      // columns: [],
+      // arr: [],
       // source: {},
-      target: {
-        collection: []
-      },
+      target: {},
       colsData: [],
-      table: {},
+      // table: {},
       source: {
         selectedDb: 'rethink',
-        dbname: 'rethinkinstance',
+        dbname: 'schema_builder',
         host: 'localhost',
         port: '28015',
         username: '',
-        password: '',
-        collection: []
+        password: ''
       },
       dbList: [
         {
@@ -236,49 +339,92 @@ export default {
           message: 'Please enter port number',
           trigger: 'blur'
         }]
-      }
+      },
+      t_collection: [],
+      s_collection: [],
+      importedData: {},
+      tableData: [],
+      disableCheck: []
     }
   },
   created () {
     this.init()
   },
   methods: {
+    getFiledNames (index) {
+      let _table = _.find(this.t_collection, (f) => {
+        return f.name === this.tableData[index].target
+      })
+      if (_table) {
+        return _table.columns
+      } else {
+        return []
+      }
+    },
+    abc (index) {
+      // console.log('abc', this.disableCheck[index].check)
+      return this.disableCheck[index].check
+    },
+    clearField (index) {
+      this.openTrasformEditorIndex = -1
+      this.tableData[index].target = ''
+      // this.tableData[index].colsData = []
+      this.disableCheck[index].check = false
+    },
     init () {
       var self = this
       modelSettings.getDb(this.$route.params.id).then(response => {
         self.target = response // _.merge(self.target, response)
-        self.target.collection = []
+        self.importedData.source = self.source
+        self.importedData.target = self.target
+        self.importedData.mapdata = []
       })
+    },
+    fillColsData (tSelect, index) {
+      // console.log('this.tableData', this.tableData[index].target)
+      // alert(tSelect)
+      // var s = tSelect
+      // this.tableData[index].target = s
+      // console.log(tSelect, index, this.tableData[index].target)
+      var _inx = _.findIndex(this.t_collection, { 'name': tSelect })
+      if (_inx !== -1) {
+        // this.tableData[index].tCol = this.t_collection[_inx].columns
+        // console.log('this.t_collection', this.t_collection[_inx], _inx)
+      }
+      // console.log('t_collection', this.t_collection[index])
+      // this.tableData[index].colsData = []
+      // var s = this.s_collection[index].columns
+      if (this.tableData[index].colsData.length === 0) {
+        console.log('this.s_collection[index].columns', this.s_collection[index].columns)
+        for (let i = 0; i < this.s_collection[index].columns.length; i++) {
+          this.tableData[index].colsData.push({isField: true, name: this.s_collection[index].columns[i].name, input: this.s_collection[index].columns[i].name, transform: ''})
+        }
+      } else {
+        _.forEach(this.tableData[index].colsData, (obj, i) => {
+          // console.log(obj, i)
+          obj.input = obj.name
+        })
+      }
+    },
+    openTrasformEditor (index) {
+      if (this.openTrasformEditorIndex === index) {
+        this.openTrasformEditorIndex = -1
+        return false
+      }
+      this.openTrasformEditorIndex = index
+      this.disableCheck[index].check = true
     },
     filterMethod (value, option) {
       return option.toUpperCase().indexOf(value.toUpperCase()) !== -1
     },
-    // selectedtablelist (index) {
-    //   var self = this
-    //   this.colsData = []
-    //   _.forEach(this.columns, function (value1, key1) {
-    //     if (self.table[index] === value1.name) {
-    //       _.forEach(value1.columns, function (value2, key2) {
-    //         self.colsData.push({name: value2.name, checked: false, transform: '', input: ''})
-    //       })
-    //     }
-    //   })
-    //   console.log(this.colsData)
-    //     // _.forEach(this.colsData, function(value){
-    //     //   console.log(value.checked)
-    //     //   if(value.checked){
-    //     //
-    //     //   }
-    //     // })
-    //   this.arr.push({target: this.schemaTitle[index], source: this.table[index], colsData: this.colsData})
-    // },
-    handleContinue (name) {
+    handleConnect (name) {
       this.$refs[name].validate(async (valid) => {
         if (valid) {
           this.check_conn = true
           this.conn_icon = 'load-a'
-          this.source.collection = await modelSettings.checkConnection(this.source).then(response => {
+          this.s_collection = await modelSettings.checkConnection(this.source).then(response => {
             if (response.result) {
+              this.sourceDisable = true
               return response.data
             } else {
               this.conn_icon = 'close'
@@ -292,9 +438,14 @@ export default {
             this.$Notice.error({title: 'Error!', desc: error})
             return []
           })
-          if (this.source.collection.length > 0) {
+          for (let i = 0; i < this.s_collection.length; i++) {
+            this.tableData.push({isSelect: true, source: this.s_collection[i].name, target: this.s_collection[i].name, colsData: []})
+            this.disableCheck.push({check: false})
+          }
+          // console.log('this.s_collection', this.s_collection.length)
+          if (this.s_collection.length > 0) {
             this.conn_icon = 'checkmark'
-            this.target['collection'] = await modelSettings.checkConnection(this.target).then(response => {
+            this.t_collection = await modelSettings.checkConnection(this.target).then(response => {
               if (response.result) {
                 return response.data
               } else {
@@ -304,46 +455,44 @@ export default {
                 })
               }
             })
-
-            // this.showtable = true
-            // this.source.collection = _sourceCollection
-            // this.$Notice.success({
-            //   title: 'Success Message',
-            //   desc: 'Connection Successfully Done. '
-            // })
-            // var self = this
-            // var schemaList = []
-
-            // api.request('get', '/schema').then(function (_res) {
-            //   console.log('_res', _res)
-            //   // _.forEach(_res.data, function (value) {
-            //   //   if (value.database[1] === self.$route.params.id) {
-            //   //     _.forEach(value.entity, function (value) {
-            //   //       self.schemaList.push(value.name)
-            //   //     })
-            //   //     self.schemaTitle.push(value.title)
-            //   //   }
-            //   // })
-            // })
-            // self.columns = response.data.data
-            // _.forEach(response.data, function (value) {
-            //   // var from = Object.keys(value.columns)
-            //   self.columns.push(value)
-            //   // _.forEach(value.columns, function (value) {
-            //   //   console.log("2222222", value)
-            //   //   self.columns.push(value)
-            //   // })
-            //
-            //   self.tableList.push({'value': value.name, 'label': value.name})
-            // })
-            // this.tableList = response.data.data
           }
         }
       })
     },
     handleImport () {
-      console.log('final imported data', this.importedData)
+      var mData = this.tableData
+      this.importedData.mapdata = _.reject(mData, { 'isSelect': false })
+      _.forEach(this.importedData.mapdata, (d) => {
+        if (d.colsData.length !== 0) {
+          d.colsData = _.reject(d.colsData, { 'isField': false })
+        }
+      })
+      console.log('this.importedData', this.importedData)
+      api.request('post', '/import-to-external-db', this.importedData).then((res) => {
+        this.$Notice.success({title: 'Imported!', desc: ''})
+      }).catch((err) => {
+        console.log('Error..', err)
+        this.$Notice.error({title: 'Connection Not Establish...!', desc: 'Please Check Your Database..'})
+      })
+    },
+    clearImport () {
+      // alert(this.$route.params.id)
+      this.$router.push('/Dbsetting/import/' + this.$route.params.id)
+    }
+  },
+  watch: {
+    'tableData' (value) {
+      // console.log('new value', value)
     }
   }
 }
 </script>
+<style>
+  .ivu-table th {
+    height: 44px;
+    white-space: nowrap;
+    overflow: hidden;
+    background-color: #394263;
+    color: #fff;
+}
+</style>

@@ -15,6 +15,8 @@ const customerUploadedSchema = require('./customerUploadedSchema/customerUploade
 const importTracker = require('./import-tracker/import-tracker.service.js');
 const customerUploadedData = require('./customer-uploaded-data/customer-uploaded-data.service.js');
 const importToExternalDb = require('./import-to-external-db/import-to-external-db.service.js');
+const connectiondata = require('./connectiondata/connectiondata.service.js');
+
 module.exports = function () {
   const app = this; // eslint-disable-line no-unused-vars
   app.configure(schema);
@@ -31,4 +33,5 @@ module.exports = function () {
   app.configure(importtodb);
   app.configure(customerUploadedSchema);
   app.configure(importToExternalDb);
+  app.configure(connectiondata);
 };

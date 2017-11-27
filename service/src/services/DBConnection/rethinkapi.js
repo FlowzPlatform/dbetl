@@ -76,6 +76,24 @@ module.exports = {
     }
   }),
 
+  getConnsAllData: async (function(ins_id) {
+    for(let [i, db_i] of r.entries()) {
+      if(db_i.id == ins_id) {
+        var arr = []
+        var result = await (r[i].conn.tableList())
+        // console.log(result)
+        for (let [inx, val] of result.entries()) {
+          var obj = {}
+          obj['t_name'] = val
+          var data = await (r[i].conn.table(val).run())
+          obj['t_data'] = data
+          arr.push(obj)
+        }
+        return arr
+      }
+    }
+  }),
+
   choose: async(function () {
     console.log('===================RETHINKDB=================');
   }),

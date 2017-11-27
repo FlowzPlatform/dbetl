@@ -2,7 +2,6 @@ const Queue = require('rethinkdb-job-queue')
 // const func = require('./function')
 const app = require('config')
 var axios = require('axios');
-let config = require('config');
 let async = require('asyncawait/async');
 let await = require('asyncawait/await');
 const cxnOptions = app.get('rethinkdb')
@@ -12,7 +11,6 @@ var elasticsearch = require('elasticsearch');
 var MongoClient = require('mongodb').MongoClient;
 var fs = require('fs');
 var path = require('path');
-var endecrypt = require('../service/src/services/encryption/security')
 // var aurl = 'http://' + job.configData.host + ':' + job.configData.port;
 var mysql = require('mysql');
 var _ = require('lodash')
@@ -21,7 +19,7 @@ console.log('importToExternal Worker Started.....')
 const qOptions = app.get('qOptions1')
 const q = new Queue(cxnOptions, qOptions)
 
-var createConn = async (function(data) {
+var createConn = async (function(data, mapdata) {
 	if(data.selectedDb == 'mongo') {
 		var conn = await (MongoClient.connect('mongodb://' + data.host + ':' + data.port + '/' + data.dbname))
 		return {conn: conn, db: data.selectedDb}
@@ -34,6 +32,16 @@ var createConn = async (function(data) {
 	      host: data.host,
 	      db: data.dbname
 	    })
+	    if (mapdata != undefined) {
+	    	for (let [i, mObj] of mapdata.entries() ) {
+	    		// console.log(mObj.target)
+	    		var existTable = await (r.tableList().contains(mObj.target))
+	    		if(!existTable) {
+	    			var createTable = await (r.tableCreate(mObj.target)) 
+	    		}
+	    		console.log('existTable ' + mObj.target + ' ==> ' + existTable)
+	    	}
+	    }
 	    return {conn: r, db: data.selectedDb}
 	} else if(data.selectedDb == 'elastic') {
 		 var client = await (new elasticsearch.Client({
@@ -44,13 +52,11 @@ var createConn = async (function(data) {
       // console.log(client)
     	return {conn: client, db: data.selectedDb}
 	} else if(data.selectedDb == 'mysql') {
-		var pass = endecrypt.decrypt(data.password)
-
 		var connection = mysql.createConnection({
 			host     : data.host,
 			port     : data.port,
 			user     : data.username,
-			password : pass,
+			password : data.password,
 			database : data.dbname
 		});
 	
@@ -58,105 +64,6 @@ var createConn = async (function(data) {
 
 	}
 })
-
-var updateSchema = async( function(data,table_name,databse_name,conn) {
-	var tableFields='';
-	var tableValues='';
-	k=0;
-
-	_.forEach(data, function (d,key) {
-        // if(key != 'Schemaid' && key != 'id' && key != '_id')
-		if(key != 'id' && key != '_id')
-        {
-          if(k==0)
-          {
-            let res = await (UUID())
-            let uuid = res;
-
-            tableFields += key;
-            
-
-            if(typeof d == 'object')
-              {
-                tableValues += "'"+JSON.stringify(d)+"'";
-              }
-              else{
-                tableValues += "'"+d+"'";
-              }
-              
-          }
-          else
-          {
-            if(typeof d == 'object')
-            {
-              tableFields += ','+key;
-              tableValues += ",'"+JSON.stringify(d)+"'";              
-            }
-            else{
-              tableFields += ','+key;
-              tableValues += ",'"+d+"'";              
-            }
-          }
-          k++; 
-        }
-	  })
-	  
-	  var columns = tableFields.split(",");
-	  
-	  var updateSchemaData = async(function () {
-        var promises = []        
-        new_fields=[]
-    
-        _.forEach(columns, function (entity,index) {
-  
-          if(entity != 'id' && entity != '_id')
-          {
-            var checkColumn = await(getQuery('mysql','select','checkColumn'));
-            checkColumn = checkColumn.replace('{{ table_name }}','information_schema.COLUMNS');
-            checkColumn = checkColumn.replace('{{ tableName }}',table_name);
-            checkColumn = checkColumn.replace('{{ fields }}','*');
-            checkColumn = checkColumn.replace('{{ database_name }}',databse_name);
-            checkColumn = checkColumn.replace('{{ column_name }}',entity.replace(' ', '_'));
-			
-            var process = new Promise((resolve, reject) => {
-				conn.conn.query(checkColumn, function (error, result, fields) {
-                error? reject(error) : result.length == 0 ? resolve(entity.replace(' ', '_')) : resolve('')
-              })
-            })    
-          }
-  
-          promises.push(process); 
-        });
-      
-        return Promise.all(promises).then(content => {
-          return _.union(content)
-        });
-      })
-  
-	  var updateSchemaDataResponse = await (updateSchemaData())
-	  
-	  _.forEach(updateSchemaDataResponse, function (field,index) {
-			if(field != "")
-			{
-			var alterTableAndAddField = await(getQuery('mysql','alter','alterTableAndAddField'));
-			alterTableAndAddField = alterTableAndAddField.replace('{{ table_name }}',table_name);
-			alterTableAndAddField = alterTableAndAddField.replace('{{ field }}',field);
-			alterTableAndAddField = alterTableAndAddField.replace('{{ type }}','TEXT NULL DEFAULT NULL');
-			alterTableAndAddField = alterTableAndAddField.replace('{{ after }}','');
-
-			conn.conn.query(alterTableAndAddField);
-			}
-		})
-		
-		var commonInsert = await(getQuery('mysql','insert','commonInsert'));
-		commonInsert = commonInsert.replace('{{ table_name }}',table_name);
-		commonInsert = commonInsert.replace('{{ fields }}',tableFields);
-		commonInsert = commonInsert.replace('{{ values }}',tableValues);
-		conn.conn.query(commonInsert);
-
-    return "success";
-})
-
 var getSchemaidByName = async (function(url, name) {
 	var _resi = await (axios.get(url +'/schema'))
 	var schema = _resi.data
@@ -203,15 +110,34 @@ var UUID = async(function generateUUID() {
 	return uuid;
 });
 
+var filterObj = async (function(mobj, fArr) {
+	var fobj = {}
+	for( let [i, obj] of fArr.entries()) {
+		for(let k in mobj) {
+			if(k == obj.name) {
+				if(obj.input != "") {
+				// console.log(k, ' == ', obj.input)
+					fobj[obj.input] = mobj[k]
+				} else {
+					fobj[k] = mobj[k]
+				}
+			}
+		}
+	}
+	// console.log('\n >>> ', fobj)
+	// if(mobj.hasOwnProperty('Schemaid'))
+	return fobj
+})
+
 q.process(async(job, next) => {
 	try {
-			// console.log('job.data\n ', job.data)
+			console.log('job.data\n ', JSON.stringify(job.data))
 			var aurl = 'http://' + job.configData.host + ':' + job.configData.port;
 			var res = []
 			var instance = []
 			// var _resi = await (axios.get('http://'+job.configData.host+':'+job.configData.port+'/'))
 			var sConn = await (createConn(job.data.source));
-			var tConn = await (createConn(job.data.target));
+			var tConn = await (createConn(job.data.target, job.data.mapdata));
 			// console.log(sConn, '>>>>>>>>>>>', tConn)
 			// console.log('11111111111111111111111111111111111111')
 			// var _res = await (sConn.conn.table('address_line').run())
@@ -222,6 +148,11 @@ q.process(async(job, next) => {
 				// console.log(obj, i)
 				var sData = []
 				var tData = [] 
+				if(obj.target == '') {
+					obj.target = obj.source
+				}
+
+					// for Getting Source Data
 					if(job.data.source.selectedDb == 'mongo') {
 						sData = await (sConn.conn.collection(obj.source).find().toArray())
 					} else if(job.data.source.selectedDb == 'rethink') {
@@ -274,15 +205,19 @@ q.process(async(job, next) => {
 						}
 							
 					}
-											
+
+					// inserting source data into target table
 					if(job.data.target.selectedDb == 'mongo') {
 						var _res = []
-						var sId = await (getSchemaidByName(aurl, obj.target))
+						// var sId = await (getSchemaidByName(aurl, obj.target))
 						for (let [i, sObj] of sData.entries()) {
-							sObj._id = sObj.id
-							delete sObj.id
-							if(sObj.hasOwnProperty('Schemaid')) {
-								sObj.Schemaid = sId
+							// sObj._id = sObj._id
+							// delete sObj.id
+							// if(sObj.hasOwnProperty('Schemaid')) {
+							// 	sObj.Schemaid = sId
+							// }
+							if (obj.colsData.length !== 0) {
+								sObj = await (filterObj(sObj, obj.colsData))
 							}
 							var s = await (tConn.conn.collection(obj.target).insert(sObj))
 							_res.push(s)
@@ -290,46 +225,55 @@ q.process(async(job, next) => {
 						// await (sConn.conn.collection(obj.source).find().toArray())
 					} else if(job.data.target.selectedDb == 'rethink') {
 						var _res = []
-						var sId = await (getSchemaidByName(aurl, obj.target))
-						
+						// var sId = await (getSchemaidByName(aurl, obj.target))
+						// console.log(sData)
 						for (let [i, sObj] of sData.entries()) {
-							
 							if(sObj.hasOwnProperty('_id')) {
 								sObj.id = (sObj._id).toString()
 								sObj._id = sObj.id
 							}
-							else{
-								let uuid = await (UUID())
-								sObj._id = uuid
-								sObj.id = uuid
-							}
-							
-							if(sObj.hasOwnProperty('Schemaid')) {
-								sObj.Schemaid = sId
-								// console.log(sObj.Schemaid)
-							}
-						console.log('sObj',sObj)
-						
+
+							if (obj.colsData.length !== 0) {
+								sObj = await (filterObj(sObj, obj.colsData))
+							} 
+							// console.log('>>>>> ', sObj)
 							var s = await (tConn.conn.table(obj.target).insert(sObj).run())
-							_res.push(s)
-						}
-						// console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>', _res)
+							_res.push(s)		
+						} 		
+						// for (let [i, sObj] of sData.entries()) {
+							
+						// 	if(sObj.hasOwnProperty('_id')) {
+						// 		sObj.id = (sObj._id).toString()
+						// 		sObj._id = sObj.id
+						// 	}
+						// 	// else{
+						// 	// 	let uuid = await (UUID())
+						// 	// 	sObj._id = uuid
+						// 	// 	sObj.id = uuid
+						// 	// }
+							
+						// 	// if(sObj.hasOwnProperty('Schemaid')) {
+						// 	// 	sObj.Schemaid = sId
+						// 	// 	// console.log(sObj.Schemaid)
+						// 	// }
+						// 	// console.log('sObj',sObj)
+							
+						// 	var s = await (tConn.conn.table(obj.target).insert(sObj).run())
+						// 	_res.push(s)
+						// }
+						console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>', _res)
 
 					} else if(job.data.target.selectedDb == 'elastic') {
 						var _res = []
-						var sId = await (getSchemaidByName(aurl, obj.target))
+						// var sId = await (getSchemaidByName(aurl, obj.target))
 						for (let [i, sObj] of sData.entries()) {
-							if(sObj.hasOwnProperty('_id')) {
-								sObj._id = (sObj._id).toString()
-							}
-							else{
-								let uuid = await (UUID())
-								sObj._id = uuid
-							}
-							
-							delete sObj.id
-							if(sObj.hasOwnProperty('Schemaid')) {
-								sObj.Schemaid = sId
+							sObj._id = (sObj._id).toString()
+							// delete sObj.id
+							// if(sObj.hasOwnProperty('Schemaid')) {
+							// 	sObj.Schemaid = sId
+							// }
+							if (obj.colsData.length !== 0) {
+								sObj = await (filterObj(sObj, obj.colsData))
 							}
 							var s = await (tConn.conn.index({
 						        index: job.data.target.dbname,
@@ -339,13 +283,6 @@ q.process(async(job, next) => {
 							_res.push(s)
 						}
 					} else if(job.data.target.selectedDb == 'mysql') {
-						var _res = []
-						var sId = await (getSchemaidByName(aurl, obj.target))
-						
-						for (let [i, sObj] of sData.entries()) {
-							sObj.Schemaid = sId
-							var response = await (updateSchema(sObj, obj.target,job.data.target.dbname,tConn))
-						}
 					}
 			}
 
