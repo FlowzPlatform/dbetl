@@ -347,7 +347,7 @@ module.exports = {
       // console.log('connid', db[i].id)
       if(db[i].id == dbid) {
         selectedDB = db[i]
-      } 
+      }
     }
     // console.log('selectedDB', selectedDB)
     var schema = await (selectedDB.conn.collection(collName).insert(data));
@@ -417,7 +417,7 @@ module.exports = {
     if (id.length != 24) {
         // console.log('mongo DeleteSchema _blank');
         return [];
-    } 
+    }
     else {
         // console.log('111111')
         var id = new mongoose.Types.ObjectId(id);

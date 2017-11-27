@@ -12,8 +12,9 @@ import feathers from 'feathers/client';
 import socketio from 'feathers-socketio/client';
 import Emitter from '@/mixins/emitter'
 import Settings from './Settings.vue';
+import config from '@/config'
 var _ = require("underscore");
-const socket = io('http://localhost:3030');
+const socket = io(config.serverURI);
 const app = feathers()
   .configure(socketio(socket));
 let index
@@ -73,7 +74,7 @@ export default {
     },
     methods:{
       getData(value){
-        console.log("dataa cameeeeeeeeeeeeeeee...",value)
+        // console.log("dataa cameeeeeeeeeeeeeeee...",value)
         // this.broadcast("Settings","data",value)
       }
     },
@@ -85,18 +86,18 @@ export default {
         for(var i=0;i<response.data.length;i++){
           self.data2.push(response.data[i])
         }
-        console.log("------------>",self.data2)
+        // console.log("------------>",self.data2)
          var desc = _.sortBy(self.data2, 'modified');
          self.data2 = desc.reverse()
       })
 
-      console.log("------------>",self.data)
+      // console.log("------------>",self.data)
       app.service("import-tracker").on("created", (data) => {
          console.log("data.....",data)
          self.data2.push(data)
          var desc = _.sortBy(self.data2, 'modified');
          self.data2 = desc.reverse()
-          console.log("%%%%%%%%%%%%%%%%%%%%%",self.data2)
+          // console.log("%%%%%%%%%%%%%%%%%%%%%",self.data2)
        })
 
 
@@ -108,14 +109,14 @@ export default {
             index = i
           }
         }
-        console.log("index",index)
+        // console.log("index",index)
 
         self.data2.splice(index, 1);
-        console.log("message after splicing...",self.data2)
+        // console.log("message after splicing...",self.data2)
           self.data2.push(message)
           var desc = _.sortBy(self.data2, 'modified');
           self.data2 = desc.reverse()
-          console.log("message after pushing data",self.data2)
+          // console.log("message after pushing data",self.data2)
       })
     }
 }

@@ -8,6 +8,7 @@ import VueRouter from 'vue-router'
 import { sync } from 'vuex-router-sync'
 import routes from './router'
 import store from './store'
+import config from '@/config'
 
 // Include and set up feathers client
 const Feathers = require('feathers/client')
@@ -16,7 +17,7 @@ const hooks = require('feathers-hooks')
 const socketio = require('feathers-socketio/client')
 const io = require('socket.io-client')
 
-const socket = io('http://localhost:3030')
+const socket = io(config.serverURI)
 const feathers = Feathers()
   .configure(socketio(socket))
   .configure(hooks())

@@ -26,11 +26,15 @@ module.exports = function () {
               .run()
               .then(function(response){
               	console.log('Success ',response);
+								socket.emit('response',response)
               })
               .error(function(err){
               	console.log('error occurred ',err);
+								socket.emit('error',error)
               })
+
         });
+
         });
         io.use(function (socket, next) {
          // Exposing a request property to services and hooks

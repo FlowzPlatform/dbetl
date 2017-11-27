@@ -130,16 +130,37 @@ var moment = require('moment');
 import Settings from './Settings.vue';
 import api from '../api'
 import schema from '../api/schema'
-let baseUrl = "http://localhost:3030/"
+let baseUrl = config.serverURI
 import io from 'socket.io-client';
 import feathers from 'feathers/client';
 import socketio from 'feathers-socketio/client';
 import Emitter from '@/mixins/emitter'
-const socket = io('http://localhost:3030');
+import config from '@/config'
+const socket = io(config.serverURI);
 const app = feathers()
   .configure(socketio(socket));
 moment().format();
 let dataObj = {}
+let err
+let logs
+let obj
+socket.on('res',function(res){
+  if(res.stderr == '' || (JSON.parse(res.stdout)).errors == false){
+    err = res.stderr
+    // console.log("+++++++++++++++",res.stdout.search("errors"))
+    if(res.stdout.search("errors") != -1){
+      err = (JSON.parse(res.stdout)).errors
+    }
+    api.request('patch', '/import-tracker/'+dataObj.id, obj).then(function(res){
+      console.log("response",res.data)
+
+    })
+    .catch(error => {
+      console.log(error);
+    })
+
+  }
+})
     export default {
       components: {Settings},
       name: "expandRow",
@@ -157,14 +178,19 @@ let dataObj = {}
         continueImport(rowObj){
           var self = this
         let upldCsv = []
-        let logs = rowObj.log
-        console.log("continue called....",rowObj)
+        logs = rowObj.log
+        console.log("continue called....",rowObj.log)
         socket.emit('customer-uploaded-data::find',{ importTracker_id: rowObj.id} ,(error, data) => {
-        console.log('Found all messages', data);
+        // console.log('Found all messages', data);
         rowObj.upldCSV = data
         console.log("Object after pushing csv.....",rowObj)
+        logs.push({date:Date(),status:"import_staging_completed"})
+        obj = {
+          status: 'import_staging_completed',
+          log:logs
+        }
         dataObj = rowObj
-        console.log("data send....",dataObj)
+        // console.log("data send....",dataObj)
         self.dispatch('joblist','send-data',dataObj)
         socket.emit('import',rowObj,(error,data) => {
           if(error){
@@ -172,25 +198,26 @@ let dataObj = {}
             this.$Notice.error({title: "Error!",desc:"Error in importing data to realDb...!"})
           }
         });
-
-        logs.push({date:Date(),status:"import_staging_completed"})
-        var obj = {
-          status: 'import_staging_completed',
-          log:logs
-        }
-        api.request('patch', '/import-tracker/'+rowObj.id, obj).then(function(res){
-          console.log("response",res.data)
-          window.location.href = "http://localhost:8000/db/mongo/new/"+rowObj.id
-        })
-        .catch(error => {
-          console.log(error);
-        })
+        setTimeout(function() {
+          console.log("err",err)
+          if(err == "" || err == false){
+            // console.log("errr.....",err)
+            self.$router.push('/db/mongo/new/'+rowObj.id);
+          }
+          else {
+              self.$Notice.error({title: "Error!",desc:"Error in importing data to realDb...!"})
+          }
+        },1000)
 
 
+        //
       });
 
        }
-      }
+     },
+     mounted(){
+
+     }
     };
 </script>
 <style scoped>
