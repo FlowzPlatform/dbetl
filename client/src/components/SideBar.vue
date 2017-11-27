@@ -74,7 +74,7 @@
           </template>
           <Submenu :name="ind-ind" v-for="(el, ind) in item[1]" :key="ind-ind">
             <template slot="title">
-              {{el[0]}}
+              &nbsp;&nbsp;&nbsp;&nbsp;{{el[0]}}
             </template>
             <MenuItem :name="indx-indx" v-for="(itm, indx) in el[1]" :key="indx-indx">
               <img v-if="itm.iconpath === 'mongo'" :src="mongo" class="schema-icon">
@@ -104,11 +104,11 @@
                   <router-link :to="{name: 'schema/edit', params: {id: itm._id}}" exact>
                   </router-link>
                 </Tooltip>
-                  <Tooltip content="Mapping" placement="top">
+                 <!--  <Tooltip content="Mapping" placement="top">
                   <router-link :to="{name: 'schemamappinglist', params: {id: itm._id}}">
                     <Icon type="arrow-swap" class="ficon transform"></Icon>
                   </router-link>
-                </Tooltip>
+                </Tooltip> -->
                 <Tooltip content="Delete" placement="top">
                   <a @click="handleRemove(indx)">
                     <Icon type="android-delete" class="ficon delete"></Icon>
