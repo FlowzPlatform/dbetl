@@ -29,6 +29,8 @@ module.exports = function () {
   app.configure(generatejsondatafile);
   app.configure(addInputToJobQue)
   app.configure(importtodb);
+  app.configure(importTracker);
+  app.configure(customerUploadedData);
   app.configure(customerUploadedSchema);
   app.configure(importToExternalDb);
 };

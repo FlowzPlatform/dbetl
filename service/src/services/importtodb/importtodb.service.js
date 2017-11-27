@@ -22,7 +22,7 @@ module.exports = function () {
   io.on('connection', function(socket) {
     console.log("connected successfully to importdb.....")
     // socket.emit('customer_uploaded_data',data);
-    socket.on('import',function( data){
+    socket.on('import',async function( data){
         console.log('Found all imported data', data);
         if(data.deletedFlag == true){
           console.log("inside abort.......",data)
@@ -37,18 +37,21 @@ module.exports = function () {
           if(data.selectedDb == "mongo" || data.destination == "mongo"){
 
             var url = 'mongodb://'+data.host+':'+data.port+'/'+dbname;
-            var cnn_with_mongo = deletedFromMongo(url,trac_id)
+            var cnn_with_mongo = await deletedFromMongo(url,trac_id)
             console.log("cnn_with_mongo...............",cnn_with_mongo)
+            socket.emit('delete',cnn_with_mongo)
           }
           else if(data.selectedDb == "rethink" || data.destination == "rethink"){
             var connection = null;
-            var cnn_with_rethink = deletedFromRethink(data.host,data.port,dbname,trac_id)
+            var cnn_with_rethink = await deletedFromRethink(data.host,data.port,dbname,trac_id)
             console.log("cnn_with_rethink...............",cnn_with_rethink)
+            socket.emit('delete',cnn_with_rethink)
           }
           else if(data.selectedDb == "elastic" || data.destination == "elastic"){
             let tracker_id = "\"" + trac_id+ "\""
-            var elasticcnn = deletedFromElastic(data.host,data.port,dbname,tracker_id)
-            console.log("elasticcnn...............",elasticcnn)
+            var cnn_with_elastic = await deletedFromElastic(data.host,data.port,dbname,tracker_id)
+            console.log("cnn_with_ealstic...............",cnn_with_elastic)
+            socket.emit('delete',cnn_with_elastic)
           }
         }
         else {
@@ -64,7 +67,7 @@ module.exports = function () {
             })
           }
         })
-        resp = writeFile(data);
+        resp = writeFile(data,socket);
         return resp
       }
   });
@@ -94,7 +97,7 @@ module.exports = function () {
   }
 };
 
-async function writeFile(data) {
+async function writeFile(data,socket) {
   let scopeFs;
   try
   {
@@ -104,7 +107,7 @@ async function writeFile(data) {
         console.log(err);
       }
       console.log("file " + file_name + " written ");
-      scopeFs = await saveDataToDb(file_name,data)
+      scopeFs = await saveDataToDb(file_name,data,socket)
     });
   //  scopeFs = await this.uploadToS3(file_name)
 
@@ -135,6 +138,7 @@ var connectToMongo = async function(url,filename,data,host,port,selectedDb,dbnam
     console.log("Connected correctly to server.");
     var stdout = await (shell.exec(`mongo `+host+`:`+port+ ` --eval 'db.getMongo().getDBNames()' --quiet`))
       if(stdout.search(dbname) != -1){
+        // console.log("11111111111111111")
         var response = await (db.listCollections().toArray())
            console.log("collections",response)
            for(var i=0;i<response.length;i++){
@@ -148,6 +152,7 @@ var connectToMongo = async function(url,filename,data,host,port,selectedDb,dbnam
                   console.log(obj.result.n + " document(s) deleted");
                   var res = await (shell.exec("mongoimport -h "+host+":"+port+" --db "+dbname+" --collection customerData --file "+filename+" --jsonArray"))
                     return res
+
               }
               else {
                 var _res = await (shell.exec("mongoimport -h "+host+":"+port+" --db "+dbname+" --collection customerData --file "+filename+" --jsonArray"))
@@ -156,16 +161,16 @@ var connectToMongo = async function(url,filename,data,host,port,selectedDb,dbnam
             // });
           }
           else{
-            console.log("noo")
             var res = await (shell.exec("mongoimport -h "+host+":"+port+" --db "+dbname+" --collection customerData --file "+filename+" --jsonArray"))
               return res
           }
         // })
       }
       else {
+        // console.log("55555555555555")
         shell.exec("mongo "+dbname)
         var res = await (shell.exec("mongoimport -h "+host+":"+port+" --db "+dbname+" --collection customerData --file "+filename+" --jsonArray"))
-          return res
+        return res
 
       }
 }
@@ -254,7 +259,8 @@ var connectToRethink = async function(filename,data,host,port,selectedDb,dbname,
                      console.log("Success",res1)
                      if(res1 == '[]'){
                        console.log("inside if")
-                       shell.exec('rethinkdb import -f '+filename+ ' --table ' +dbname+ '.customerData -c' +host+ ':' +port+ ' --force');
+                       var res = await(shell.exec('rethinkdb import -f '+filename+ ' --table ' +dbname+ '.customerData -c' +host+ ':' +port+ ' --force'));
+                       return res
                     }
                     else {
                     var deletedids = await(r.table('customerData').filter({"importTracker_id": tempid}).delete().run(connection))
@@ -293,7 +299,7 @@ var fileunlinker = function(filename) {
   })
   return _data
 }
-async function saveDataToDb(filename,data){
+async function saveDataToDb(filename,data,socket){
   console.log("file_name.....",filename,data)
   let host = data.host
   let port = data.port
@@ -312,6 +318,7 @@ async function saveDataToDb(filename,data){
     var url = 'mongodb://'+host+':'+port+'/'+dbname;
     var mongocnn = await connectToMongo(url,filename,data,host,port,selectedDb,dbname,flag,temp_id)
     console.log("mongocnn...............",mongocnn)
+    socket.emit('res',{stdout:mongocnn.stdout,stderr:mongocnn.stderr})
     var unlinkfile = await (fileunlinker(filename))
     console.log('unlinkfile???????????????????????', unlinkfile)
   }
@@ -322,6 +329,8 @@ async function saveDataToDb(filename,data){
     var connection = null;
     var rethinkcnn = await connectToRethink(filename,data,host,port,selectedDb,dbname,temp_id)
     console.log("rethinkcnn...............",rethinkcnn)
+    socket.emit('res',{stdout:rethinkcnn.stdout,stderr:rethinkcnn.stderr})
+    // socket.emit('_res',{stdout:rethinkcnn.stdout,stderr:rethinkcnn.stderr})
     var unlinkfile = await (fileunlinker(filename))
     console.log('unlinkfile???????????????????????', unlinkfile)
   }
@@ -332,6 +341,8 @@ async function saveDataToDb(filename,data){
     var connection = null;
     var elasticcnn = await connectToElastic(filename,data,host,port,selectedDb,dbname,tempid)
     console.log("elasticcnn...............",elasticcnn)
+    socket.emit('res',{stdout:elasticcnn.stdout,stderr:elasticcnn.stderr})
+    // socket.emit('_res',{stdout:elasticcnn.stdout,stderr:elasticcnn.stderr})
     var unlinkfile = await (fileunlinker(filename))
     console.log('unlinkfile???????????????????????', unlinkfile)
   }
@@ -357,6 +368,7 @@ var deletedFromMongo = async function(url,id){
     console.log("Connected correctly to server.");
     var obj = await(db.collection("customerData").remove({"importTracker_id":id}))
     console.log(obj.result.n + " document(s) deleted");
+    return obj.result
 }
 var deletedFromRethink = async function(host,port,dbname,id){
   var connection = null;
@@ -365,6 +377,7 @@ var deletedFromRethink = async function(host,port,dbname,id){
   var del_ids = await(r.table('customerData').filter({"importTracker_id": id}).delete().run(connection))
   console.log("deleted...")
   console.log(JSON.stringify(del_ids, null, 2));
+  return del_ids
 }
 
 var deletedFromElastic = async function(host,port,dbname,id){
@@ -397,6 +410,7 @@ var deletedFromElastic = async function(host,port,dbname,id){
           console.log("***************",makeDeleteObj)
           if(makeDeleteObj.length > 0) {
             let retValue = await dumpToES(makeDeleteObj,esClient)
+            return retValue
           }
         }
 }

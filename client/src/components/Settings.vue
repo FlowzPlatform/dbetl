@@ -74,13 +74,7 @@
                     </FormItem> -->
   <FormItem>
     <Checkbox v-model="frmSettings.isenable" label="enable">Enable</Checkbox>
-    <!-- {{checkdefault}} -->
-    <span v-if="checkdefault">
-      <Checkbox v-model="frmSettings.isdefault" label="default" disabled>is Default</Checkbox>
-    </span>
-    <span v-else>
-      <Checkbox v-model="frmSettings.isdefault" label="default">is Default</Checkbox>
-    </span>
+    <Checkbox v-model="frmSettings.isdefault" label="default">is Default</Checkbox>
   </FormItem>
   </Col>
   <Col span="12" style="padding-left:10px;padding-right:10px">
@@ -189,22 +183,28 @@
     </Row>
 
   </FormItem>
-  <FormItem
-    label="Select Database"
-    :label-width="115"
-    v-if="frmSettings.optCrt && frmSettings.rdoCrt == 'rbtDB' && frmSettings.rdodb == 'rbtExstng'"
-    >
-    <!-- :rules="{required: true, message: 'Please select Database'}" -->
-      <!-- <Cascader v-if="formSchema._id" :data="CascaderData" filterable v-model='formSchema.database' disabled></Cascader> -->
-      <Cascader :data="CascaderData" filterable v-model='importDB' @on-change="setTranfer"></Cascader>
-  </FormItem>
-  <FormItem
-      v-if="frmSettings.optCrt && frmSettings.rdoCrt == 'rbtDB' && frmSettings.rdodb == 'rbtExstng' && importDB.length !== 0"  width="100%"
-      >
-      <Transfer :data="ImportSourceDt" :target-keys="ImportTargetDt" :render-format="render1" @on-change="handleChange1">
-      </Transfer>
-  </FormItem>
   </Col>
+
+
+  <div v-if="frmSettings.optCrt && frmSettings.rdoCrt == 'rbtDB' && frmSettings.rdodb == 'rbtExstng'">
+    <Tabs type="card" style="width: 100%;">
+      <TabPane label="mongo">
+        <Table border :columns="tabsData.mongoCols" :data="tabsData.mongoDt"></Table>
+      </TabPane>
+      <TabPane label="rethink">
+        <Table border :columns="tabsData.rethinkCols" :data="tabsData.rethinkDt"></Table>
+      </TabPane>
+      <TabPane label="elastic">
+        <Table border :columns="tabsData.elasticCols" :data="tabsData.elasticDt"></Table>
+      </TabPane>
+      <TabPane label="nedb">
+        <Table border :columns="tabsData.nedbCols" :data="tabsData.nedbDt"></Table>
+      </TabPane>
+      <TabPane label="mysqldb">
+        <Table border :columns="tabsData.mysqlCols" :data="tabsData.mysqlDt"></Table>
+      </TabPane>
+    </Tabs>
+  </div>
 </Row>
 <div v-if="frmSettings.rdoCrt == 'rbtCSV'">
     <div id="example1" class="hot handsontable htColumnHeaders"></div>
@@ -262,11 +262,11 @@
               <table>
                 <colgroup>
                   <col width="300">
-                  <col width="250">
+                  <col width="300">
                   <col width="200">
                   <col width="70">
-                  <col width="250">
-                  <col width="250">
+                  <col width="300">
+                  <col width="100">
                 </colgroup>
                 <thead>
                   <tr>
@@ -292,14 +292,14 @@
 
                     <td class="">
                       <div class="ivu-table-cell">
-                        <Select @on-change="type(index)" v-model="csvData[index].type" size="small" class="schema-form-input">
-                            <Option v-for="t in optType" :value="t.value" :key="t.value">{{t.label}}</Option>
-                            <!-- <Option value="email" key="email">Email</Option>
-                            <Option value="number" key="number">Number</Option>
-                            <Option value="boolean" key="boolean">Boolean</Option>
-                            <Option value="phone" key="phone">Phone</Option>
-                            <Option value="date" key="date">Date</Option> -->
-                        </Select>
+                        <Select @on-change="type(index)" v-model="csvData[index].type"  size="small" class="schema-form-input">
+                                              <Option v-for="t in optType" :value="t.value" :key="t.value">{{t.label}}</Option>
+                                              <!-- <Option value="email" key="email">Email</Option>
+                                              <Option value="number" key="number">Number</Option>
+                                              <Option value="boolean" key="boolean">Boolean</Option>
+                                              <Option value="phone" key="phone">Phone</Option>
+                                              <Option value="date" key="date">Date</Option> -->
+                                          </Select>
                       </div>
                     </td>
 
@@ -355,14 +355,18 @@
                       </div>
                     </td>
 
-                    <td class="transform-block">
-                        <div class="ivu-table-cell">
-                            <a @click="modelshow(item,index)"><Icon type="compose"></Icon></a>
-                        </div>
-                        <div v-if="csvData[index].transformMethod" class="transform-function" title="">
-                            <span>{{csvData[index].transform}}</span>
-                            <span @click="removeTransform(item,index)"><Icon type="close-circled" /></span>
-                        </div>
+                    <td class="">
+                      <div class="ivu-table-cell">
+                        <a @click="model = true">
+                          <Icon type="compose"></Icon>
+                        </a>
+                        <Modal v-model="model" title="Transform" @on-ok="handleModalOk" width="900px">
+                          <Row>
+                            <Col span="20">Script</Col>
+                            <Col span="4">Opration</Col>
+                          </Row>
+                        </Modal>
+                      </div>
                     </td>
                   </tr>
                 </tbody>
@@ -383,9 +387,11 @@
                     </Button>
         <Button type="primary" @click="saveData(2)" v-if="saveButton">
           <span v-show="!loadingData">Save Data</span>
-          <span v-show ="loadingData">Loading...</span>
+          <span v-show ="loadingData" id="loading">Loading...</span>
         </Button>
+        <!-- <Button type="primary" @click="importData(frmSettings)" v-if="importButton" :disabled="disableImport">
 
+      </Button> -->
       </FormItem>
       </Col>
       <Col span="6">
@@ -398,52 +404,6 @@
   <!-- {{csvData}} -->
 <!-- <div>{{validatingData}}</div> -->
 </Card>
-  <Modal v-model="model" title="Transform" @on-ok="handleModalOk" width="900px" :mask-closable="false ">
-    <Row style="padding: 10px;">
-      <Col span="18">
-          <codemirror v-model='transformData' :options="editorOptions"></codemirror>
-      </Col>
-      <Col span="6">
-        <div class="transform-method">
-          <ul>
-            <li>
-              <a href="javascript:void(0)" data-method="toUpperCase()"  @click="transform">UpperCase</a>
-            </li>
-            <li>
-              <a href="javascript:void(0)" data-method="toLowerCase()"  @click="transform">LowerCase</a>
-            </li>
-            <li>
-              <a href="javascript:void(0)" data-method="ltrim()" @click="transform">Right Trim</a>
-            </li>
-            <li>
-              <a href="javascript:void(0)" data-method="rtrim()" @click="transform">Left Trim</a>
-            </li>
-            <li>
-              <a href="javascript:void(0)" data-method="concate()" @click="transform">Concate</a>
-            </li>
-            <li>
-              <a href="javascript:void(0)" data-method="capitalize()"  @click="transform">Capitalize</a>
-            </li>
-            <li>
-              <a href="javascript:void(0)" data-method="stripHTMLTags()"  @click="transform">Stripe HTML Tags</a>
-            </li>
-            <li>
-              <a href="javascript:void(0)" data-method="stripSpecialCharacter()"  @click="transform">Stripe Special Character</a>
-            </li>
-            <li>
-              <a href="javascript:void(0)" data-method="formatDate('dd-mm-yyyy')"  @click="transform">Date Format</a>
-            </li>
-            <li>
-              <a href="javascript:void(0)" data-method="toDecimal(2)"  @click="transform">Decimal</a>
-            </li>
-            <li>
-              <a href="javascript:void(0)" data-method="toInteger()"  @click="transform">Integer</a>
-            </li>
-          </ul>
-        </div>
-      </Col>
-    </Row>
-  </Modal>
 </template>
 <template v-if="currentStep == 2">
   <Card :bordered="true" ><br>
@@ -455,8 +415,8 @@
                 <div>Importing your data</div>
             </Spin>
           <!-- </span> -->
-    <span v-if="completed" class="msg">Import completed</span>
-    <Button type="primary" @click="importData(frmSettings)" v-if="importButton" :disabled="disableImport" style="float:right;margin-right:5%;">ImportData</Button>
+    <span v-if="completed" class="msg" id="msg">Import completed</span>
+    <Button type="primary" @click="importData(frmSettings)" v-if="importButton" :disabled="disableImport" style="float:right;margin-right:5%;" id="import">ImportData</Button>
     <Button type="error" @click="undo(frmSettings)" v-if="completed"  style="float:right;margin-right:5%;">Undo Import</Button>
 </div>
 </Card>
@@ -470,8 +430,6 @@
 const $ = require('jquery')
 var Schema = require('simpleschema')
 let axios = require("axios")
-import VueCodeMirror from 'vue-codemirror'
-import Vue from 'vue'
 import Papa from 'papaparse'
 import api from '../api'
 import schema from '../api/schema'
@@ -482,6 +440,7 @@ import elastic from '../assets/images/elasticsearch.png'
 import nedb from '../assets/images/nedb.png'
 import mysql from '../assets/images/mysql.png'
 import Tab from './Tab'
+import config from '@/config'
 // let _ = require('lodash')
 import _ from 'underscore'
 import expandRow from './table-expand.vue'
@@ -492,7 +451,7 @@ import Multiselect from 'vue-multiselect'
 import io from 'socket.io-client';
 import feathers from 'feathers/client';
 import socketio from 'feathers-socketio/client';
-const socket = io('http://localhost:3030');
+const socket = io(config.serverURI);
 const app = feathers()
   .configure(socketio(socket));
 moment().format();
@@ -501,7 +460,78 @@ let res;
 let finalModifiedDataArray = [];
 let id;
 let logs = []
-let baseUrl = "http://localhost:3030/"
+let baseUrl = config.serverURI
+let savedObj
+let errors
+let err
+let del_err
+let save_err
+socket.on('response',function(res){
+  console.log("++++++++++",res)
+  if(res.errors == 0){
+    errors = res.errors
+    api.request('patch', '/import-tracker/'+id,savedObj).then(function(res){
+      console.log("response",res.data)
+    })
+    .catch(error => {
+      console.log(error);
+    })
+  }
+})
+socket.on('res',function(res){
+
+  if(res.stderr == "" || (JSON.parse(res.stdout)).errors == false){
+    err = res.stderr
+    console.log("+++++++++++++++",res.stdout.search("errors"))
+    if(res.stdout.search("errors") != -1){
+      err = (JSON.parse(res.stdout)).errors
+    }
+    console.log("iiiiiiiiiiiiii",err)
+    console.log("logs.....",logs)
+    logs.push({date:Date(),status:"import_staging_completed"})
+    var obj = {
+      status: 'import_staging_completed',
+      modified: Date(),
+      log:logs
+    }
+    api.request('patch', '/import-tracker/'+id, obj).then(function(res){
+      console.log("response",res.data)
+      console.log("++++++++++++")
+    })
+    .catch(error => {
+      console.log(error);
+    })
+
+  }
+});
+socket.on('error',function(_res){
+  console.log("error.....",_res)
+  save_err = _res
+  self.loadingData = false
+  self.$Notice.error({title:"Error!",desc: "Error in saving CSV...!  Kindly check your data"})
+})
+socket.on('delete',function(res){
+  console.log('delete',res)
+  if(res.ok == 1 || res.errors == 0 || res == "Deleted"){
+    del_err = res
+    logs.push({date:Date(),status:"import_staging_running"})
+    var obj = {
+      status: 'import_staging_running',
+      log:logs
+    }
+    api.request('patch', '/import-tracker/'+id, obj).then(function(res){
+      console.log("response",res.data)
+      self.importButton = true
+      // self.disabled = true
+      self.disableImport = false
+      self.completed = false
+    })
+    .catch(error => {
+      console.log(error);
+    })
+  }
+
+})
 
 
 export default {
@@ -541,18 +571,8 @@ export default {
       } else {
         callback();
       }
-    };validateDbname
-    const validateDbname = async(rule, value, callback) => {
-      var patt = new RegExp(/\`|\~|\!|\@|\#|\$|\%|\^|\&|\*|\(|\)|\+|\=|\[|\{|\]|\}|\||\\|\'|\<|\,|\.|\>|\?|\/|\"|\;|\:|\-|\s/)
-      var _res = patt.test(value)
-      if (_res) {
-        callback(new Error('Invalid database name....'))
-      } else {
-        callback();
-      }
     };
     return {
-      checkdefault: false,
       check_conn: false,
       conn_icon: 'load-a',
       displaymessage: false,
@@ -568,29 +588,12 @@ export default {
       currentStep: 0,
       check: this.checked,
       expand: false,
-      modelData: '',
-      transformData: '',
-      transformMethod: '',
-      modelIndex: '',
       moment : moment,
       disabled: false,
       disableImport : false,
       headerDetails: true,
-      completed : false,
       previewdetails: true,
-      editorOptions: {
-        tabSize: 4,
-        mode: 'text/javascript',
-        theme: 'base16-light',
-        lineNumbers: true,
-        line: true,
-        extraKeys: { 'Ctrl': 'autocomplete' },
-        foldGutter: true,
-        gutters: ['CodeMirror-linenumbers', 'CodeMirror-foldgutter'],
-        styleSelectedText: true,
-        highlightSelectionMatches: { showToken: /\w/, annotateScrollbar: true },
-        autofocus: true
-      },
+      completed : false,
       frmSettings: {
         isenable: true,
         connection_name: 'connection_'+ moment().unix(),
@@ -619,11 +622,7 @@ export default {
           required: true,
           message: 'Please enter connection name',
           trigger: 'blur'
-        },
-        { 
-          validator: validateConn_name,
-          trigger: 'blur' }
-        ],
+        }],
         host: [{
           required: true,
           message: 'Please enter host name',
@@ -633,13 +632,10 @@ export default {
           required: true,
           message: 'Please enter port number',
           trigger: 'blur'
-        }, { validator: validatePort, trigger: 'blur' }],
+        }, ],
         dbname: [{
           required: true,
           message: 'Please enter database name',
-          trigger: 'blur'
-        },{
-          validator: validateDbname,
           trigger: 'blur'
         }],
         rdoCrt: [{
@@ -652,7 +648,6 @@ export default {
       rethink,
       elastic,
       nedb,
-      mysql,
       model: false,
       csvData: [],
       errmsg: [],
@@ -694,11 +689,7 @@ export default {
         mysqlDt: [],
         mysqlCols: []
       },
-      keys: [],
-      CascaderData: [],
-      importDB: [],
-      ImportSourceDt: [],
-      ImportTargetDt: []
+      keys: []
     }
   },
   methods: {
@@ -713,53 +704,6 @@ export default {
     },
     hidePreviewDetails(){
         this.previewdetails = false
-    },
-    setTransForm : function() {
-      this.transformData = this.modelData
-      if(this.csvData[this.modelIndex].transformMethod) {
-        this.dataMethod = this.csvData[this.modelIndex].transformMethod
-        this.transformData = this.modelData + '.' + this.dataMethod
-      }
-    },
-    modelshow:  function (item,index) {
-      this.model = true
-      this.modelData = 'return row["' + item + '"]'
-      this.modelIndex = index
-      this.dataMethod = ''
-      this.setTransForm()
-    },
-    transform: function(event) {
-      var targetEl = event.currentTarget;
-      console.log('targetEl', targetEl)
-      if(targetEl.getAttribute('data-method')){
-        this.dataMethod = targetEl.getAttribute('data-method')
-        console.log('set Transform', targetEl.getAttribute('data-method'))
-        if(this.dataMethod){
-          this.transformData = this.modelData + '.' + this.dataMethod
-        }
-      }
-      console.log('transformData', this.transformData)
-      return this.transformData
-    },
-    removeTransform: function (item,index) {
-      this.modelData = 'return row["' + item + '"]'
-      this.csvData[index].transformMethod = ''
-      this.setTransForm()
-      this.handleModalOk()
-    },
-    checkdefaultfun: async function() {
-      // console.log('................')
-      var _res = await api.request('get', '/settings')
-      var dbins_l = 0
-      for(let db in _res.data) {
-        dbins_l += _res.data[db].dbinstance.length
-      }
-      // console.log(dbins_l)
-      if(dbins_l === 0) {
-        // return false
-        this.checkdefault = true
-        this.frmSettings.isdefault = true
-      }
     },
     validateName: async function(value, db) {
       // console.log('value', value, db)
@@ -777,49 +721,12 @@ export default {
         return 'yes'
       }
     },
-    setTranfer (value ,sfd) {
-        // alert(value[0] + value[1])
-        this.ImportSourceDt = []
-        this.ImportTargetDt = []
-        schema.getByNameId(value[0], value[1]).then(response => {
-            // console.log('response.data', response.data)
-            this.sCurrent = response.data
-            for (let i = 0; i < this.sCurrent.length; i++) {
-                // console.log(sData[i])
-                this.ImportSourceDt.push({
-                    key: i.toString(),
-                    label: this.sCurrent[i].title,
-                    description: this.sCurrent[i]._id,
-                    // disabled: Math.random() * 3 < 1
-                });
-            }
-        })
-    },
-    render1 (item) {
-        return item.label;
-    },
-    handleChange1 (newTargetKeys, direction, moveKeys) {
-        // console.log(newTargetKeys);
-        // console.log(direction);
-        // console.log(moveKeys);
-        this.ImportTargetDt = newTargetKeys;
-    },
-    getIcon: function() {
-        if (this.conn_icon == 'load-a') {
-            return 'process'
-        } else if (this.conn_icon == 'checkmark') {
-            return 'created'
-        } else if (this.conn_icon == 'close') {
-            return 'rejected'
-        }
-    },
     uploadCsv() {
-
       let self = this
-      console.log("uploadCsv called....")
+      // console.log("uploadCsv called....")
       $(document).ready(function() {
         $('#upldCSV').change(function() {
-          console.log("called")
+          // console.log("called")
           let fileChooser = document.getElementById('upldCSV');
           let file = fileChooser.files[0];
 
@@ -849,20 +756,21 @@ export default {
                 label: 'Date'
               }]
 
-              self.csvData = [],
-              self.frmSettings.uploadCsv = []
-              self.frmSettings.upldCSV = results.data;
-              self.uploadedCSVData = results.data;
-              console.log("--------------------->", self.frmSettings.upldCSV, self.frmSettings.upldCSV)
-              self.headers = Object.keys(self.frmSettings.upldCSV[0]);
 
+              self.frmSettings.upldCSV = results.data;
+              // console.log("--------------------->", self.frmSettings.upldCSV, self.frmSettings.upldCSV)
+              self.headers = Object.keys(self.frmSettings.upldCSV[0]);
+              // console.log("*************",self.headers)
+              for(var i=0;i<self.headers.length;i++){
+                self.complexSchema[self.headers[i]] = {"type":"string"}
+              }
+              // console.log("self.complexSchema................",self.complexSchema)
               self.options = self.headers;
               self.displaymessage = true
               self.validateButton = true
               console.log("self.options ", self.options);
               _.forEach(self.headers, (f) => {
                 self.csvData.push({
-                  id: f,
                   header: f,
                   type: 'text',
                   min: 0,
@@ -874,8 +782,7 @@ export default {
                   placeholder: '',
                   optional: true,
                   IsArray: '',
-                  transform: '',
-                  transformMethod : ''
+                  transform: ''
                 })
               })
               logs.push({date:Date(),status:"upload_completed"})
@@ -917,6 +824,14 @@ export default {
     },
     type(index) {
       var arr = [];
+
+      console.log("iiiiiiiiiiiiiiiiiii",this.csvData[index].type)
+      // console.log("dsav",this.csvData.length)
+      // _.forEach(this.csvData, function(value){
+      //   console.log("hiiiii",value)
+      //   arr.push(type=value.type)
+      // })
+      // this.model1 = this.csvData[index].type
       this.validateButton = true
       this.loadingData = false
       this.errmsg = [];
@@ -1017,6 +932,7 @@ export default {
               i = key;
             }
           })
+          console.log("aaaaaaaaaaaaaaaaaa", self.csvData[i].allowedValue)
           if (self.csvData[i].allowedValue.length > 0) {
             if (value != undefined) {
               let check = _.includes(self.csvData[i].allowedValue, value)
@@ -1027,6 +943,7 @@ export default {
         };
 
         let regExValidatorFunc = function(obj, value, fieldName) {
+          console.log("rrrrrrrrrrrrrrr")
           var i;
           _.forEach(self.headers, function(value, key) {
             if (fieldName == value) {
@@ -1110,7 +1027,7 @@ export default {
 
       }
       this.complexSchema = headerSchema
-      console.log("++++++++++",this.headers )
+      console.log("++++++++++",this.complexSchema,this.headers )
     },
     insertCsvData(data) {
       var self = this
@@ -1339,10 +1256,15 @@ export default {
       for(var i=0;i<self.frmSettings.upldCSV.length;i++){
         self.frmSettings.upldCSV[i].importTracker_id = id
       }
-      console.log(self.frmSettings.upldCSV)
 
+      socket.emit('stream', self.frmSettings.upldCSV, (error,data) => {
+        if(error){
+          console.log(error)
+          self.$Notice.error({title:"Error!",desc: "Error in saving CSV...!"})
+        }
+      });
       logs.push({date: Date(),status:'import_staging_running'})
-      var obj = {
+      savedObj = {
         csvDetails: {
           no_of_records:self.frmSettings.upldCSV.length
         },
@@ -1350,188 +1272,148 @@ export default {
         modified: Date(),
         log:logs
       }
-      api.request('patch', '/import-tracker/'+id,obj).then(function(res){
-        console.log("response",res.data)
-        socket.emit('stream', self.frmSettings.upldCSV, (error,data) => {
-          if(error){
-            console.log(error)
-            self.$Notice.error({title:"Error!",desc: "Error in saving CSV...!"})
-          }
-        });
-        self.loadingData = false
-        self.saveButton = false
-        // self.importButton = true
-        self.currentStep = step
-      })
-      .catch(error => {
-        console.log(error);
-      })
-      // axios.post(baseUrl + "generatejsondatafile", this.frmSettings.upldCSV)
-      //   .then(function(response) {
-      //     console.log(response);
-      //     if (response.status == 201) {
-      //       self.$Message.success(response.data);
-      //       self.saveButton = false;
-      //       self.serverSideValidation = true;
-      //     } else {
-      //       self.$Message.error("Something went wrong, Please try again later")
-      //     }
-      //   })
-      //   .catch(function(error) {
-      //     console.log(error);
-      //   });
+
+      setTimeout(function() {
+        console.log("errors",errors)
+        if(errors == 0){
+          self.loadingData = false
+          self.saveButton = false
+          self.currentStep = step
+        }
+        else if(save_err != ""){
+            self.loadingData = false
+            $Notice.error({title:"Error!",desc: "Error in saving CSV...!  Kindly check your data"})
+        }
+        else {
+          self.loadingData = false
+          $Notice.error({title:"Error!",desc: "Error in saving CSV...!  Kindly check your data"})
+        }
+      },3000)
+
     },
     undo(data){
+      // alert("1")
       var self = this
       console.log(data)
       data["deletedFlag"] = true
       console.log("id.......",id)
-      if(id == undefined){
+      if(this.$route.params.id != undefined){
         id = this.$route.params.id
-        console.log("inside......",id)
         socket.emit('import-tracker::find',{ id: id} ,(error, data1) => {
-        console.log('Found all messages', data1);
         data = data1[0]
         data["deletedFlag"] = true
         logs = data1[0].log
-        console.log("data.....222222",data,logs)
 
       socket.emit('import',data,(error,data) => {
-          console.log("dattaaaa...",data)
+          // console.log("dattaaaa...",data)
           if(error){
             console.log(error)
             this.$Notice.error({title: "Error!",desc:"Error in importing data to realDb...!"})
           }
         })
 
-        logs.push({date:Date(),status:"import_staging_running"})
-        var obj = {
-          status: 'import_staging_running',
-          log:logs
+        setTimeout(function() {
+          // console.log("del_err",del_err)
+        if(del_err.ok == 1 || del_err.errors == 0 || del_err == "Deleted"){
+              self.importButton = true
+              self.disableImport = false
+              self.completed = false
         }
-        api.request('patch', '/import-tracker/'+id, obj).then(function(res){
-          console.log("response",res.data)
-          self.importButton = true
-          // self.disabled = true
-          self.disableImport = false
-          self.completed = false
-        })
-        .catch(error => {
-          console.log(error);
-        })
+        else {
+            self.$Notice.error({title: "Error!",desc:"Error in deleting the records!"})
+        }
+      },1000)
 
       })
       }
       else {
         socket.emit('import',data,(error,data) => {
-          console.log("dattaaaa...",data)
           if(error){
             console.log(error)
             this.$Notice.error({title: "Error!",desc:"Error in importing data to realDb...!"})
           }
         })
 
-        logs.push({date:Date(),status:"import_staging_running"})
-        var obj = {
-          status: 'import_staging_running',
-          log:logs
+        setTimeout(function() {
+          console.log("del_err",del_err)
+        if(del_err.ok == 1 || del_err.errors == 0 || del_err == "Deleted"){
+              self.importButton = true
+              self.disableImport = false
+              self.completed = false
         }
-        api.request('patch', '/import-tracker/'+id, obj).then(function(res){
-          console.log("response",res.data)
-          self.importButton = true
-          // self.disabled = true
-          self.disableImport = false
-          self.completed = false
-        })
-        .catch(error => {
-          console.log(error);
-        })
+        else {
+            self.$Notice.error({title: "Error!",desc:"Error in deleting the records!"})
+        }
+      },1000)
       }
 
     },
 
     importData(data){
       var self = this
-      data["deletedFlag"] = false
-      if(data.upldCSV.length == 0){
-       console.log("++++++++++++++++++++++++++++++")
+      if(data == undefined || (data.upldCSV == undefined || data.upldCSV.length == 0) && this.$route.params.id != undefined){
         id = this.$route.params.id
         socket.emit('import-tracker::find',{ id: id} ,(error, data3) => {
-        console.log('Found all messages', data3);
         data = data3[0]
         logs = data3[0].log
-        console.log("data.....222222",data,logs)
         self.importButton = false
         data["deletedFlag"] = false
         console.log(data)
 
         socket.emit('customer-uploaded-data::find',{importTracker_id:id},(error,csvdata)=>{
           data["upldCSV"] = csvdata
-        // })
-
-
           socket.emit('import',data,(error,data) => {
             if(error){
               console.log(error)
-              this.$Notice.error({title: "Error!",desc:"Error in importing data to realDb...!"})
+              self.$Notice.error({title: "Error!",desc:"Error in importing data to realDb...!"})
             }
           });
 
+          setTimeout(function() {
+            console.log("err",err)
+            if(err == "" || err == false){
+              console.log("errr.....",err)
+              self.disabled = true
+               self.disableImport = true
+               self.completed = true
+            }
+              else {
+                self.$Notice.error({title: "Error!",desc:"Error in importing data to realDb...!"})
+              }
+          },1000)
 
-          console.log("logs.....",logs)
-          logs.push({date:Date(),status:"import_staging_completed"})
-          var obj = {
-            status: 'import_staging_completed',
-            modified: Date(),
-            log:logs
-          }
-          api.request('patch', '/import-tracker/'+id, obj).then(function(res){
-            console.log("response",res.data)
-            self.disabled = true
-            self.disableImport = true
-            self.completed = true
-            // $("Progress").attr("percent",100)
-          })
-          .catch(error => {
-            console.log(error);
-          })
+
       })
     })
       }
      else {
       self.importButton = false
       data["deletedFlag"] = false
-      console.log(data)
+      // console.log("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ else",data.log)
         socket.emit('import',data,(error,data) => {
           if(error){
             console.log(error)
-            this.$Notice.error({title: "Error!",desc:"Error in importing data to realDb...!"})
+            self.$Notice.error({title: "Error!",desc:"Error in importing data to realDb...!"})
           }
         });
 
+        setTimeout(function() {
+          console.log("err",err)
+          if(err == "" || err == false){
+            console.log("errr.....",err)
+            self.disabled = true
+             self.disableImport = true
+             self.completed = true
+          }
+            else {
+              self.$Notice.error({title: "Error!",desc:"Error in importing data to realDb...!"})
+            }
+        },1000)
 
-        console.log("logs.....",logs)
-        logs.push({date:Date(),status:"import_staging_completed"})
-        var obj = {
-          status: 'import_staging_completed',
-          modified: Date(),
-          log:logs
-        }
-        api.request('patch', '/import-tracker/'+id, obj).then(function(res){
-          console.log("response",res.data)
-          self.disabled = true
-          self.disableImport = true
-          self.completed = true
-          // $("Progress").attr("percent",100)
-        })
-        .catch(error => {
-          console.log(error);
-        })
       }
 
     },
     getsettingsAll: function(value) {
-      console.log('data', value)
       this.tabsData = {
         mongoCols: [],
         mongoDt: [],
@@ -1546,32 +1428,74 @@ export default {
       }
       api.request('get', '/settings')
         .then(response => {
-          this.CascaderData = []
           this.allSetting = response.data
-          var result = response.data
-          // console.log('settings',result)
-
-          for(var db in result){
-            var obj = {}
-            // if(result[db].dbdefault == 'true'){
-              // console.log('aaaaaaa',db)
-              obj.value = db,
-              obj.label = db,
-              obj.children = []
-              // console.log(result[db].dbinstance)
-              result[db].dbinstance.forEach(function(instance, i){
-                if(instance.isenable){
-                  // console.log(instance.cname)
-                  obj.children.push({label: instance.connection_name, value:instance.id})
+          _.forEach(this.allSetting, (dbInst, db) => {
+            if (dbInst.dbinstance.length != 0) {
+              this.tabsData[db + 'Cols'].push({
+                type: 'expand',
+                width: 50,
+                render: (h, params) => {
+                  return h(expandRow, {
+                    props: {
+                      row: {
+                        db: db,
+                        dbData: this.tabsData[db + 'Dt'][params.index]
+                      },
+                      id: this.tabsData[db + 'Dt'][params.index].id,
+                      index: params.index,
+                      db: 'mongo'
+                    }
+                  })
                 }
               })
-              if(obj.children.length == 0 && obj.label != 'nedb'){
-                obj.disabled = true
+              this.tabsData[db + 'Cols'].push({
+                title: 'Select',
+                width: 80,
+                align: 'center',
+                render: (h, params) => {
+                  return h('Checkbox', {
+                    props: {
+                      value: params.row.checked
+                    },
+                    on: {
+                      'on-change': (value) => {
+                        if (value == true) {
+                          this.check = value
+                          // console.log("this.selectSchema",this.selectSchema);
+                          // this.frmSettings.push(this.selectSchema);
+                        } else {
+                          this.check = value
+                        }
+
+                        // this.enableDbInstance(this.tabPane, params.index, value)
+                      }
+                    }
+                  })
+                }
+              })
+              _.forEach(dbInst.dbinstance[0], (v, k) => {
+                this.tabsData[db + 'Cols'].push({
+                  title: k,
+                  key: k
+                })
+              })
+            }
+            this.tabsData[db + 'Dt'] = _.map(this.allSetting[db].dbinstance, m => {
+              return {
+                checked: true,
+                _expanded: false,
+                dbname: m.dbname,
+                host: m.host,
+                id: m.id,
+                isdefault: m.isdefault,
+                isenable: m.isenable,
+                notes: m.notes,
+                port: m.port,
+                rdoCrt: m.rdoCrt,
+                upldIcn: m.upldIcn
               }
-            // }
-            // console.log(obj)
-            this.CascaderData.push(obj)
-          }
+            })
+          })
         })
         .catch(error => {
           console.log(error);
@@ -1652,9 +1576,9 @@ export default {
               })
               // console.log('flag = ', flag, c_name)
               if (!flag){
-                api.request('post', '/settings?checkconn=' + data.selectedDb, data)
+                api.request('post', '/settings?check=' + data.selectedDb, data)
                   .then(response => {
-                    console.log('CheckConnection', response.data)
+                    // console.log('CheckConnection', response.data)
                     if(response.data.result){
                         self.conn_icon = 'checkmark'
                         self.currentStep = step;
@@ -1714,37 +1638,8 @@ export default {
         }
     },
     handleModalOk() {
-      let methodName  = this.transformData.split('.')
-        this.dataMethod = methodName[1]
-        console.log('dataMethod', this.dataMethod)
-        console.log('transformData', this.transformData)
-        if(this.dataMethod){
-          this.csvData[this.modelIndex].transform = this.transformData
-          this.csvData[this.modelIndex].transformMethod = this.dataMethod
-        }
-        else {
-          this.csvData[this.modelIndex].transform = this.transformData
-          this.csvData[this.modelIndex].transformMethod = ''
-        }
-        console.log('uploadCSV1', this.frmSettings.upldCSV)
-        var self = this
-        console.log('uploadCSV2', self.uploadedCSVData)
-        
-        self.frmSettings.upldCSV = _.map(self.uploadedCSVData, function(row, rinx) {
-          return  _.reduce(row, function(result, value, key){
-            console.log('self.csvData', self.csvData)
-            console.log('key', key)
-            let inx = _.find(self.csvData, (f) => { return (f.id == key) })
-            console.log('index', inx)
-            if(inx.transform != ''){
-              result[key] = new Function("row", inx.transform).call(this, row)
-            } else {
-              result[key] = value
-            }
-             console.log('Result', result)
-            return result
-          }, {})
-      })
+      console.log('OK');
+
     },
     enable(value) {
       this.tabsData = {
@@ -1781,23 +1676,16 @@ export default {
         return result.mongo
       }
     },
-    getPostObj(mObj) {
-      // console.log('Calling.........................', mObj)
-      var obj = {}
-      _.forEach(mObj, (v, k) => {
-        if (k === 'isenable' || k === 'connection_name' || k === 'host' || k === 'port' || k === 'dbname' || k === 'username' || k === 'password' || k === 'upldIcn' || k === 'notes' || k === 'isdefault' || k === 'selectedDb') {
-          obj[k] = v
-        }
-      })
-      return obj
-    },
+
     handleSubmit(name) {
       this.$refs[name].validate((valid) => {
         if (valid) {
           let guid = (this.S4() + this.S4() + "-" + this.S4() + "-4" + this.S4().substr(0, 3) + "-" + this.S4() + "-" + this.S4() + this.S4() + this.S4()).toLowerCase();
-          let obj = this.getPostObj(this.frmSettings);
+          let obj = this.frmSettings;
+          delete obj.optCrt
+          delete obj.rdoCrt
+          delete obj.Database
           obj.id = guid;
-          console.log('obj', obj)
           api.request('post', '/settings', obj)
             .then(response => {
               // this.$Message.success('Success');
@@ -1814,7 +1702,6 @@ export default {
                   title: 'Success!!',
                   desc: 'Connection Created...'
                 })
-                this.$store.dispatch('getSchema')
                 this.$router.push('/db');
 
               }
@@ -1873,139 +1760,78 @@ export default {
   },
   mounted() {
     console.log(this.$route.params.id)
+    if(errors == 0){
+          self.loadingData = false
+          self.saveButton = false
+          self.currentStep = step
+    }
     if(this.$route.params.id == undefined){
-      this.frmSettings.selectedDb = this.$route.params.db;
-      this.$on('schemaData', this.acceptData)
-      this.$on('expandTrue', this.expands)
+    this.frmSettings.selectedDb = this.$route.params.db;
+    this.$on('schemaData', this.acceptData)
+    this.$on('expandTrue', this.expands)
 
-      var self = this;
-      $(document).ready(function() {
-        $('#upldIcn').change(function() {
-          let bucket = new AWS.S3({
-            params: {
-              Bucket: 'airflowbucket1/obexpense/expenses'
-            }
-          });
-          let fileChooser = document.getElementById('upldIcn');
-          let file = fileChooser.files[0];
+    var self = this;
 
-          if (file) {
-            self.loading = true;
-            var params = {
-              Key: file.name,
-              ContentType: file.type,
-              Body: file
-            };
-            bucket.upload(params).on('httpUploadProgress', function(evt) {
-              console.log("Uploaded :: " + parseInt((evt.loaded * 100) / evt.total) + '%');
-            }).send(function(err, data) {
-              if (err) {
-                alert(err);
-              }
-              self.frmSettings.upldIcn = data.Location;
-              self.loading = false;
-            })
+    $(document).ready(function() {
+      $('#upldIcn').change(function() {
+        let bucket = new AWS.S3({
+          params: {
+            Bucket: 'airflowbucket1/obexpense/expenses'
           }
         });
+        let fileChooser = document.getElementById('upldIcn');
+        let file = fileChooser.files[0];
+
+        if (file) {
+          self.loading = true;
+          var params = {
+            Key: file.name,
+            ContentType: file.type,
+            Body: file
+          };
+          bucket.upload(params).on('httpUploadProgress', function(evt) {
+            console.log("Uploaded :: " + parseInt((evt.loaded * 100) / evt.total) + '%');
+          }).send(function(err, data) {
+            if (err) {
+              alert(err);
+            }
+            self.frmSettings.upldIcn = data.Location;
+            self.loading = false;
+          })
+        }
       });
+    });
+  }
+  else {
+
+    socket.emit('import-tracker::find',{id:this.$route.params.id} ,(error, data) => {
+    console.log('dataaaaa......', data);
+    if (data.length != 0){
+    var step = 2
+    this.currentStep = step
+    if(data[0].status == "import_staging_completed"){
+      console.log("**********************")
+      this.completed = true
+      this.importButton = false
+      this.disableImport = true
     }
-    else {
-      var step = 2
-      this.currentStep = step
-      socket.emit('import-tracker::find',{id:this.$route.params.id} ,(error, data) => {
-        console.log('dataaaaa......', data);
-        if(data[0].status == "import_staging_completed") {
-          console.log("**********************")
-          this.completed = true
-          this.importButton = false
-          this.disableImport = true
-        }
-        else if(data[0].status == "import_staging_running") {
-          console.log("&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
-          this.importButton = false
-          this.completed = false
-          this.disableImport = true
-        }
-      })
+    else if(data[0].status == "import_staging_running"){
+      console.log("&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
+      // this.importData()
+      // this.importButton = false
+      // this.completed = false
+      // this.disableImport = true
     }
-  },
+  }
+  })
+  }
+},
   created() {
     this.$on('on-schema-change', this.handleSchemaChange);
     // this.$on('data',this.getData)
 
   }
 }
-
-String.prototype.capitalize = function() {
-  return this.charAt(0).toUpperCase() + this.slice(1);
-}
-
-String.prototype.stripHTMLTags = function() {
-    return this.replace(/<[^>]*>/g, '');
-}
-
-String.prototype.stripSpecialCharacter = function() {
-    return this.replace(/[\/\\#,+()$~%'":*<>{}]/g, '');
-}
-
-String.prototype.toDecimal = function(precision) {
-    return parseFloat(this).toFixed(precision);
-}
-
-String.prototype.toInteger = function() {
-    return parseInt(this);
-}
-
-String.prototype.concate = function(str) {
-    return this.concat(str);
-}
-
-String.prototype.formatDate = function (format) {
-  var date = new Date(this),
-      day = date.getDate(),
-      month = date.getMonth() + 1,
-      year = date.getFullYear(),
-      hours = date.getHours(),
-      minutes = date.getMinutes(),
-      seconds = date.getSeconds();
-
-  if (!format) {
-      format = "MM/dd/yyyy";
-  }
-  format = format.replace("MM", month.toString().replace(/^(\d)$/, '0$1'));
-  if (format.indexOf("yyyy") > -1) {
-      format = format.replace("yyyy", year.toString());
-  } else if (format.indexOf("yy") > -1) {
-      format = format.replace("yy", year.toString().substr(2, 2));
-  }
-  format = format.replace("dd", day.toString().replace(/^(\d)$/, '0$1'));
-  if (format.indexOf("t") > -1) {
-      if (hours > 11) {
-          format = format.replace("t", "pm");
-      } else {
-          format = format.replace("t", "am");
-      }
-  }
-  if (format.indexOf("HH") > -1) {
-      format = format.replace("HH", hours.toString().replace(/^(\d)$/, '0$1'));
-  }
-  if (format.indexOf("hh") > -1) {
-      if (hours > 12) {
-          hours -= 12;
-      }
-      if (hours === 0) {
-          hours = 12;
-      }
-      format = format.replace("hh", hours.toString().replace(/^(\d)$/, '0$1'));
-  }
-  if (format.indexOf("mm") > -1) {
-      format = format.replace("mm", minutes.toString().replace(/^(\d)$/, '0$1'));
-  }
-  if (format.indexOf("ss") > -1) {
-      format = format.replace("ss", seconds.toString().replace(/^(\d)$/, '0$1'));
-  }
-  return format;
-};
 </script>
 
 <style>
@@ -2153,32 +1979,5 @@ border-color: white;
 .msg{
   font-size:18px;
   margin-left:3%;
-}
-.transform-method {
-  border: 1px solid #ddd;
-  display: inline-block;
-  overflow: auto;
-  min-height: 300px;
-  width: 100%;
-  margin-left: 10px; 
-  padding: 10px;
-}
-.transform-function {
-  float: right;
-}
-.ivu-table-cell, .ivu-input-wrapper {
-  padding: 0px 9px 0px 9px;
-  text-align: center
-}
-.mapping-table > .ivu-table-cell {
-  display: inline-block;
-}
-.property > .ivu-poptip {
-  display: block;
-  text-align: center;
-}
-.transform-block > .ivu-table-cell {
-  display: inline-block;
-  vertical-align: middle;
 }
 </style>
