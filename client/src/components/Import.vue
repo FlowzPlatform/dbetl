@@ -8,42 +8,42 @@
                     <Row>
                         <Col span="12">
                             <FormItem label="Select DB" prop="selectedDb">
-                                <Select v-model="source.selectedDb" style="width:200px">
+                                <Select v-model="source.selectedDb" style="width:200px" :disabled="sourceDisable">
                                     <Option v-for="item in dbList" :value="item.value" :key="item.value">{{ item.label }}</Option>
                                 </Select>
                             </FormItem>
                         </Col>
                         <Col span="12">
                             <FormItem label="Database" prop="dbname">
-                                <Input v-model="source.dbname"></Input>
+                                <Input v-model="source.dbname" :readonly="sourceDisable"></Input>
                             </FormItem>
                         </Col>
                     </Row>
                     <Row>
                         <Col span="12">
                             <FormItem label="Host" prop="host">
-                                <Input v-model="source.host"></Input>
+                                <Input v-model="source.host" :readonly="sourceDisable"></Input>
                             </FormItem>
                         </Col>
                         <Col span="12">
                             <FormItem label="Port" prop="port">
-                                <Input v-model="source.port"></Input>
+                                <Input v-model="source.port" :readonly="sourceDisable"></Input>
                             </FormItem>
                         </Col>
                     </Row>
                     <Row>
                         <Col span="12">
                             <FormItem label="Username">
-                                <Input placeholder="Username" v-model="source.username"></Input>
+                                <Input placeholder="Username" v-model="source.username" :readonly="sourceDisable"></Input>
                             </FormItem>
                         </Col>
                         <Col span="12">
                             <FormItem label="Password">
-                                <Input type="password" placeholder="Password" v-model="source.password"></Input>
+                                <Input type="password" placeholder="Password" v-model="source.password" :readonly="sourceDisable"></Input>
                             </FormItem>
                         </Col>
                     </Row>
-                    <Button type="primary" @click="handleConnect('frmSourceDbForm')" style="margin-left: 80px">Connect
+                    <Button type="primary" @click="handleConnect('frmSourceDbForm')"  :disabled="sourceDisable" style="margin-left: 80px">Connect
                         <span>
                       <Icon  v-if="check_conn" :type="conn_icon" style="padding-left:5px;font-size:12px;"/>
                   </span>
@@ -51,7 +51,19 @@
                 </Form>
             </Card>
         </Col>
-        <Col span="9" offset="1" style="border:1px solid #eee;">
+        <Col span="1">
+          <Row>&nbsp;</Row>
+          <Row>&nbsp;</Row>
+          <Row>&nbsp;</Row>
+          <Row>&nbsp;</Row>
+          <Row>&nbsp;</Row>
+          <Row>&nbsp;</Row>
+          <Row>&nbsp;</Row>
+          <Row type="flex" justify="center" align="middle">
+              <Icon type="arrow-right-c" style="font-size:35px;float:center"></Icon>
+          </Row>
+        </Col>
+        <Col span="9" style="border:1px solid #eee;">
             <Card shadow style="padding:10px">
                 <p slot="title">TARGET</p>
                 <div class="schema-form ivu-table-wrapper">
@@ -244,13 +256,14 @@
         </div>
         <div style="padding-top:5px">
             <Button type="primary" @click="handleImport('')" style="margin-left: 8px">Import</Button>
+            <!-- <Button type="primary" @click="clearImport('')" style="margin-left: 8px">Clear</Button> -->
         </div>
     </div>
     <!-- <hr><hr><hr><hr> -->
     <!-- {{s_collection}} -->
-    <hr><hr><hr><hr>
-    {{tableData}}
-    <hr><hr><hr><hr>
+    <!-- <hr><hr><hr><hr> -->
+    <!-- {{tableData}} -->
+    <!-- <hr><hr><hr><hr> -->
     <!-- {{disableCheck}} -->
     <!-- {{importedData}} -->
 </div>
@@ -265,6 +278,7 @@ export default {
     return {
       openTrasformEditorIndex: -1,
       check_conn: false,
+      sourceDisable: false,
       conn_icon: 'load-a',
       // showtable: false,
       // schemaTitle: [],
@@ -354,7 +368,7 @@ export default {
     clearField (index) {
       this.openTrasformEditorIndex = -1
       this.tableData[index].target = ''
-      this.tableData[index].colsData = []
+      // this.tableData[index].colsData = []
       this.disableCheck[index].check = false
     },
     init () {
@@ -367,21 +381,29 @@ export default {
       })
     },
     fillColsData (tSelect, index) {
-      console.log('this.tableData', this.tableData[index].target)
+      // console.log('this.tableData', this.tableData[index].target)
       // alert(tSelect)
       // var s = tSelect
       // this.tableData[index].target = s
-      console.log(tSelect, index, this.tableData[index].target)
+      // console.log(tSelect, index, this.tableData[index].target)
       var _inx = _.findIndex(this.t_collection, { 'name': tSelect })
       if (_inx !== -1) {
         // this.tableData[index].tCol = this.t_collection[_inx].columns
-        console.log('this.t_collection', this.t_collection[_inx], _inx)
+        // console.log('this.t_collection', this.t_collection[_inx], _inx)
       }
       // console.log('t_collection', this.t_collection[index])
-      this.tableData[index].colsData = []
+      // this.tableData[index].colsData = []
       // var s = this.s_collection[index].columns
-      for (let i = 0; i < this.s_collection[index].columns.length; i++) {
-        this.tableData[index].colsData.push({isField: true, name: this.s_collection[index].columns[i].name, input: this.s_collection[index].columns[i].name, transform: ''})
+      if (this.tableData[index].colsData.length === 0) {
+        console.log('this.s_collection[index].columns', this.s_collection[index].columns)
+        for (let i = 0; i < this.s_collection[index].columns.length; i++) {
+          this.tableData[index].colsData.push({isField: true, name: this.s_collection[index].columns[i].name, input: this.s_collection[index].columns[i].name, transform: ''})
+        }
+      } else {
+        _.forEach(this.tableData[index].colsData, (obj, i) => {
+          // console.log(obj, i)
+          obj.input = obj.name
+        })
       }
     },
     openTrasformEditor (index) {
@@ -402,6 +424,7 @@ export default {
           this.conn_icon = 'load-a'
           this.s_collection = await modelSettings.checkConnection(this.source).then(response => {
             if (response.result) {
+              this.sourceDisable = true
               return response.data
             } else {
               this.conn_icon = 'close'
@@ -416,7 +439,7 @@ export default {
             return []
           })
           for (let i = 0; i < this.s_collection.length; i++) {
-            this.tableData.push({isSelect: true, source: this.s_collection[i].name, target: '', colsData: []})
+            this.tableData.push({isSelect: true, source: this.s_collection[i].name, target: this.s_collection[i].name, colsData: []})
             this.disableCheck.push({check: false})
           }
           // console.log('this.s_collection', this.s_collection.length)
@@ -451,6 +474,10 @@ export default {
         console.log('Error..', err)
         this.$Notice.error({title: 'Connection Not Establish...!', desc: 'Please Check Your Database..'})
       })
+    },
+    clearImport () {
+      // alert(this.$route.params.id)
+      this.$router.push('/Dbsetting/import/' + this.$route.params.id)
     }
   },
   watch: {
