@@ -12,6 +12,7 @@ var MongoClient = require('mongodb').MongoClient;
 var fs = require('fs');
 var path = require('path');
 // var aurl = 'http://' + job.configData.host + ':' + job.configData.port;
+var endecrypt = require('../service/src/services/encryption/security')			
 var mysql = require('mysql');
 var _ = require('lodash')
 
@@ -52,6 +53,9 @@ var createConn = async (function(data, mapdata) {
       // console.log(client)
     	return {conn: client, db: data.selectedDb}
 	} else if(data.selectedDb == 'mysql') {
+		console.log(data,'-----------');
+		// var pass = endecrypt.decrypt(data.password)
+
 		var connection = mysql.createConnection({
 			host     : data.host,
 			port     : data.port,
@@ -59,7 +63,7 @@ var createConn = async (function(data, mapdata) {
 			password : data.password,
 			database : data.dbname
 		});
-	
+		connection.connect();
 		return {conn: connection, db: data.selectedDb}
 
 	}
@@ -72,6 +76,108 @@ var getSchemaidByName = async (function(url, name) {
 			return obj._id
 		}
 	}
+})
+
+var updateSchema = async( function(data,table_name,databse_name,conn) {
+	var tableFields='';
+	var tableValues='';
+	k=0;
+	console.log('data',data)
+	console.log('table_name',table_name)
+	
+	_.forEach(data, function (d,key) {
+        // if(key != 'Schemaid' && key != 'id' && key != '_id')
+		if(key != 'id' && key != '_id')
+        {
+          if(k==0)
+          {
+            let res = await (UUID())
+            let uuid = res;
+
+            tableFields += key;
+            
+
+            if(typeof d == 'object')
+              {
+                tableValues += "'"+JSON.stringify(d)+"'";
+              }
+              else{
+                tableValues += "'"+d+"'";
+              }
+              
+          }
+          else
+          {
+            if(typeof d == 'object')
+            {
+              tableFields += ','+key;
+              tableValues += ",'"+JSON.stringify(d)+"'";              
+            }
+            else{
+              tableFields += ','+key;
+              tableValues += ",'"+d+"'";              
+            }
+          }
+          k++; 
+        }
+	  })
+	  
+	  var columns = tableFields.split(",");
+	  
+	  var updateSchemaData = async(function () {
+        var promises = []        
+        new_fields=[]
+    
+        _.forEach(columns, function (entity,index) {
+  
+          if(entity != 'id' && entity != '_id')
+          {
+            var checkColumn = await(getQuery('mysql','select','checkColumn'));
+            checkColumn = checkColumn.replace('{{ table_name }}','information_schema.COLUMNS');
+            checkColumn = checkColumn.replace('{{ tableName }}',table_name);
+            checkColumn = checkColumn.replace('{{ fields }}','*');
+            checkColumn = checkColumn.replace('{{ database_name }}',databse_name);
+            checkColumn = checkColumn.replace('{{ column_name }}',entity.replace(' ', '_'));
+			
+            var process = new Promise((resolve, reject) => {
+				conn.conn.query(checkColumn, function (error, result, fields) {
+                error? reject(error) : result.length == 0 ? resolve(entity.replace(' ', '_')) : resolve('')
+              })
+            })    
+          }
+  
+          promises.push(process); 
+        });
+      
+        return Promise.all(promises).then(content => {
+          return _.union(content)
+        });
+      })
+  
+	  var updateSchemaDataResponse = await (updateSchemaData())
+	  
+	  _.forEach(updateSchemaDataResponse, function (field,index) {
+			if(field != "")
+			{
+			var alterTableAndAddField = await(getQuery('mysql','alter','alterTableAndAddField'));
+			alterTableAndAddField = alterTableAndAddField.replace('{{ table_name }}',table_name);
+			alterTableAndAddField = alterTableAndAddField.replace('{{ field }}',field);
+			alterTableAndAddField = alterTableAndAddField.replace('{{ type }}','TEXT NULL DEFAULT NULL');
+			alterTableAndAddField = alterTableAndAddField.replace('{{ after }}','');
+
+			conn.conn.query(alterTableAndAddField);
+			}
+		})
+		
+		console.log('tableFields',tableFields)
+		console.log('tableValues',tableValues)
+		var commonInsert = await(getQuery('mysql','insert','commonInsert'));
+		commonInsert = commonInsert.replace('{{ table_name }}',table_name);
+		commonInsert = commonInsert.replace('{{ fields }}',tableFields);
+		commonInsert = commonInsert.replace('{{ values }}',tableValues);
+		conn.conn.query(commonInsert);
+
+    return "success";
 })
 
 var getQuery = async(function (dbName,type,queryFor) {
@@ -193,7 +299,7 @@ q.process(async(job, next) => {
 						  })     
 						};
 						var resTableList = await (tableList())
-						
+						console.log('resTableList',resTableList)
 						for (let [i, sObj] of resTableList.entries()) {
 							instanceVal = {};         
 							
@@ -205,7 +311,8 @@ q.process(async(job, next) => {
 						}
 							
 					}
-
+					console.log('sData',sData);
+					console.log('job.data.target.selectedDb',job.data.target.selectedDb);
 					// inserting source data into target table
 					if(job.data.target.selectedDb == 'mongo') {
 						var _res = []
@@ -283,6 +390,29 @@ q.process(async(job, next) => {
 							_res.push(s)
 						}
 					} else if(job.data.target.selectedDb == 'mysql') {
+						var _res = []
+						
+						// if(sObj.hasOwnProperty('_id')) {
+						// 	sObj.id = (sObj._id).toString()
+						// 	sObj._id = sObj.id
+						// }
+						
+						// var sId = await (getSchemaidByName(aurl, obj.target))
+						
+						for (let [i, sObj] of sData.entries()) {
+						console.log('sObj before',sObj)	
+						
+							if (obj.colsData.length !== 0) {
+								sObj = await (filterObj(sObj, obj.colsData))
+							}
+							
+						console.log('sObj',sObj)	
+						
+							// console.log('sObj',sObj,obj.target,job.data.target.dbname)
+							// return false;
+							// sObj.Schemaid = sId
+							var response = await (updateSchema(sObj, obj.target,job.data.target.dbname,tConn))
+						}
 					}
 			}
 

@@ -80,8 +80,10 @@ module.exports = {
           obj['t_name'] = val.name
           var data = await (db_i.conn.collection(val.name).find().toArray())
           obj['t_data'] = data
+          console.log("obj['t_data']",obj['t_data']);
           arr.push(obj)
         }
+        
         return arr
       }
     }

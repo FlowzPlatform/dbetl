@@ -133,11 +133,13 @@ var check_Connection = async(function (db, data) {
       //   }
       // });
   } else if (db == 'mysql') {
+    data.password = endecrypt.encrypt(data.password);
+    console.log('conn',data)
     var connection = mysql.createConnection({
       host     : data.host,
       port     : data.port,
       user     : data.username,
-      password : data.password,
+      password : '123456',
       database : data.dbname
     });
     connection.connect(); 
@@ -163,6 +165,8 @@ var getConnectionData = async(function (db, data) {
       // console.log('collections', collections)
 
     var result = await (conn.listCollections().toArray())
+    console.log('result........................',result)
+    
     for (let [inx, obj] of result.entries()) {
       for (let k in obj) {
         if (k !== 'name') {
@@ -176,9 +180,10 @@ var getConnectionData = async(function (db, data) {
           }
         }
       }
+      console.log('Data........................', cols)
       result[inx].columns = cols;
     }
-    // console.log('Data........................', result)
+    console.log('Data11111111........................', result)
     return result
   } else if (db == 'rethink') {
     // console.log('match found rethink')
@@ -202,7 +207,7 @@ var getConnectionData = async(function (db, data) {
       }
       result[inx] = { name: val, columns: cols}
     }
-    // console.log('result............', result)
+    console.log('result............', result)
     return result
   } else if (db == 'elastic') {
     // console.log('match found rethink')
@@ -263,16 +268,18 @@ var getConnectionData = async(function (db, data) {
     // console.log(data1)
     return data1;
   } else if (db == 'mysql') {
-
+    data.password = endecrypt.encrypt(data.password);
+      console.log('data',data);
      var connection = mysql.createConnection({
       host     : data.host,
       port     : data.port,
       user     : data.username,
-      password : data.password,
+      password : '123456',
       database : data.dbname
     });
-
-    //get tables
+    connection.connect();
+///////////////////////////////////
+// //get tables
     var getDatabaseTables = await(getQuery('mysql','select','getDatabaseTables'));
     getDatabaseTables = getDatabaseTables.replace('{{ table_name }}','information_schema.tables');
     getDatabaseTables = getDatabaseTables.replace('{{ database_name }}',data.dbname);
@@ -292,18 +299,90 @@ var getConnectionData = async(function (db, data) {
       })     
     };
     var resTableList = await (tableList())
-    let res = resTableList.split(",");
-    
-    result = [];
 
-    _.forEach(res, function (results) {
-      instanceVal = {};         
-      
-      instanceVal['name'] = results.toString();
-      result.push(instanceVal);
-    })
+    console.log('----------resTableList----------',resTableList);
+    //foreach table get columns
+    var entitydata = async(function () {
+      var promises = []
+      var rs = []
+
+      var tableName = resTableList.split(",");
+
+      _.forEach(tableName, function (t,key) {
+        //if(t != 'tbl_schema' && t != 'tbl_entity' && t != 'tbl_property')
+        {
+          var getTableColumns = await(getQuery('mysql','select','getTableColumns'));
+          getTableColumns = getTableColumns.replace('{{ table_name }}','information_schema.columns');
+          getTableColumns = getTableColumns.replace('{{ fields }}','group_concat(column_name order by ordinal_position) as columns');
+          getTableColumns = getTableColumns.replace('{{ database_name }}',data.dbname);
+          getTableColumns = getTableColumns.replace('{{ tableName }}',t);
+          
+          
+          var process = new Promise((resolve, reject) => {
+            connection.query(getTableColumns, function (error, result, fields) {
+              // console.log('result???????????????',result)
+              _.forEach(result, function (column,key) {
+                // var columnName = result[0];
+                var columnName = column.columns.split(",");
+                cols = []
+                _.forEach(columnName, function (c,k) {
+                  cols.push({name: c})
+                })
+              })
+              // console.log('cols???????????????',cols) 
+              
+              rs[key] = { name: t, columns: cols}
+              // console.log('rs[key]???????????????',rs[key]) 
+              
+              error? reject(error) : resolve(rs[key])
+            })
+          })
+          promises.push(process); 
+        }
+      });
     
-    return result
+      return Promise.all(promises).then(content => {
+        return _.union(content)
+      });
+    })  
+    var columnsResponse = await (entitydata())
+    console.log('----------columnsResponse----------',columnsResponse);
+///////////////////////////////////
+
+
+    
+    //get tables
+    // var getDatabaseTables = await(getQuery('mysql','select','getDatabaseTables'));
+    // getDatabaseTables = getDatabaseTables.replace('{{ table_name }}','information_schema.tables');
+    // getDatabaseTables = getDatabaseTables.replace('{{ database_name }}',data.dbname);
+    // getDatabaseTables = getDatabaseTables.replace('{{ fields }}','group_concat(table_name) as table_name');
+    
+    // var tableList = function () {
+    //   var result = []
+      
+    //   return new Promise((resolve, reject) => {
+    //     connection.query(getDatabaseTables, function (error, result, fields) {
+    //       error? reject(error) : resolve(result[0].table_name)
+    //     })
+    //   }).then(content => {
+    //     return content;
+    //   }).catch(err=> {
+    //     return err;
+    //   })     
+    // };
+    // var resTableList = await (tableList())
+    // let res = resTableList.split(",");
+    
+    // result = [];
+
+    // _.forEach(res, function (results) {
+    //   instanceVal = {};         
+      
+    //   instanceVal['name'] = results.toString();
+    //   result.push(instanceVal);
+    // })
+    
+    return columnsResponse
   } else {
     return 'not_found_db'
   }
@@ -432,7 +511,7 @@ class Service {
       } else {
         //encryption
         data.password = endecrypt.encrypt(data.password);
-        // console.log(data)
+        console.log('--------------',data)
         let result = new Promise((resolve, reject) => {
           fs.readFile(path.join(__dirname, '../DBConnection/db.json'), function (err, data) {
             if (err) return console.log(err);

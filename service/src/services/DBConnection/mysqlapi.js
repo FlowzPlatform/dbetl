@@ -599,6 +599,92 @@ module.exports = {
       });
       return 'success';
   }),
+  getConnsAllData: async (function(ins_id) {
+    for(let [i, db_i] of db.entries()) {
+      if(db_i.id == ins_id) {
+        // console.log('ins_id+++++++++++++++++++++++',ins_id)
+         var arr = []
+        //  console.log('db[i]',db[i])
+         var dbName = await(getDatabaseName(ins_id));
+          // //get tables
+          var getDatabaseTables = await(getQuery('mysql','select','getDatabaseTables'));
+          getDatabaseTables = getDatabaseTables.replace('{{ table_name }}','information_schema.tables');
+          getDatabaseTables = getDatabaseTables.replace('{{ database_name }}',dbName.dbname);
+          getDatabaseTables = getDatabaseTables.replace('{{ fields }}','group_concat(table_name) as table_name');
+          
+          var tableList = function () {
+            var result = []
+            
+            return new Promise((resolve, reject) => {
+              db[i].conn.query(getDatabaseTables, function (error, result, fields) {
+                error? reject(error) : resolve(result[0].table_name)
+              })
+            }).then(content => {
+              return content;
+            }).catch(err=> {
+              return err;
+            })     
+          };
+          var resTableList = await (tableList())
+
+          // console.log('----------resTableList----------',resTableList);
+          var tableName = resTableList.split(",");
+          for (let [inx, val] of tableName.entries()) {
+            var obj = {}
+            obj['t_name'] = val
+
+            var getDatabaseTables = await(getQuery('mysql','select','commonSelect'));
+						getDatabaseTables = getDatabaseTables.replace('{{ table_name }}',val);
+            getDatabaseTables = getDatabaseTables.replace('{{ fields }}','*');
+            
+            var tableData = function () {
+						  var result = []
+						  
+						  return new Promise((resolve, reject) => {
+                db[i].conn.query(getDatabaseTables, function (error, result, fields) {
+							  error? reject(error) : resolve(result)
+							})
+						  }).then(content => {
+							return content;
+						  }).catch(err=> {
+							return err;
+						  })     
+						};
+            var resTableData = await (tableData())
+            sData = [];
+            for (let [i, sObj] of resTableData.entries()) {
+							instanceVal = {};
+							_.forEach(sObj, function (rs1,key) {
+                // console.log('i',i)
+                // console.log('key',key)
+                // console.log('rs1',rs1)
+                instanceVal[key] = rs1;   
+              })
+              
+							sData.push(instanceVal)
+            }
+            // console.log("sData",sData);                     
+            
+          // console.log('----------resTableData----------',resTableData);
+            
+            // var data = await (r[i].conn.table(val).run())
+            obj['t_data'] = sData
+            arr.push(obj)
+          }
+
+        // var result = await (r[i].conn.tableList())
+        // // console.log(result)
+        // for (let [inx, val] of result.entries()) {
+        //   var obj = {}
+        //   obj['t_name'] = val
+        //   var data = await (r[i].conn.table(val).run())
+        //   obj['t_data'] = data
+        //   arr.push(obj)
+        // }
+        return arr
+      }
+    }
+  }),
   choose: async(function () {
     console.log('===================mysql=================');
   }),

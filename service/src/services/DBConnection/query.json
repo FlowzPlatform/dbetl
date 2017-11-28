@@ -60,6 +60,12 @@
             },
             {
                 "dropField": "ALTER TABLE {{ table_name }} DROP {{ field }}"
+            },
+            {
+                "changeFieldType": "ALTER TABLE {{ table_name }} CHANGE {{ field }} {{ field1 }} {{ fieldType }};"
+            },
+            {
+                "addPrimaryKey": "ALTER TABLE {{ table_name }} ADD PRIMARY KEY({{ field }});"
             }
         ],
         "rename": [
