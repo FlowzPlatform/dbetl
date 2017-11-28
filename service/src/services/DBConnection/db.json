@@ -1,17 +1,59 @@
 {
     "mongo": {
-        "dbinstance": []
+        "dbinstance": [
+            {
+                "isenable": true,
+                "connection_name": "mongodb",
+                "host": "localhost",
+                "port": "3001",
+                "dbname": "mongodefault",
+                "username": "",
+                "password": "",
+                "upldIcn": "",
+                "notes": "",
+                "isdefault": false,
+                "id": "9ba59612-52d5-4570-1133-4a83d25b9be8"
+            }
+        ]
     },
     "rethink": {
-        "dbinstance": []
+        "dbinstance": [
+            {
+                "isenable": true,
+                "connection_name": "rethinkdb",
+                "host": "localhost",
+                "port": "28015",
+                "dbname": "rethinkdefault",
+                "username": "",
+                "password": "",
+                "upldIcn": "",
+                "notes": "",
+                "isdefault": true,
+                "id": "d4fc4a43-9538-4919-4a4b-b79d5f11e4b9"
+            }
+        ]
     },
     "elastic": {
-       "dbinstance": []
+        "dbinstance": []
     },
     "nedb": {
         "dbinstance": []
     },
     "mysql": {
-        "dbinstance": []
+        "dbinstance": [
+            {
+                "isenable": true,
+                "connection_name": "zdffsdf",
+                "host": "localhost",
+                "port": 3306,
+                "dbname": "schema_builder",
+                "username": "root",
+                "password":"123456",
+                "upldIcn": "",
+                "notes": "",
+                "isdefault": false,
+                "id": "e6c73f6d-65fe-44f7-a5f9-6e8d1ae07ba0"
+            }
+        ]
     }
 }
