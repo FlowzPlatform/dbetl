@@ -15,6 +15,7 @@ import Login from '@/components/Login'
 import Register from '@/components/Register'
 import JobList from '@/components/JobList'
 import schemaList from '@/components/schemaList'
+import recordList from '@/components/recordList'
 
 // import FlowzList from '@/components/FlowList'
 // import Instance from '@/components/instance'
@@ -116,6 +117,14 @@ const routes = [{
     path: 'Dbsetting/import/:id',
     name: 'import',
     component: Import
+  }, {
+    path: 'recordList/:id/:tname',
+    name: 'recordList',
+    component: recordList,
+    props: {
+      id: Text,
+      required: false
+    }
   }]
 }, {
   path: '/Login',

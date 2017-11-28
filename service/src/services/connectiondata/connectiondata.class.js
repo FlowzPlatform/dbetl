@@ -49,11 +49,13 @@ var getallSettings = async (function () {
 })
 
 var findFunction = async (function () {
-  var res = {}
+  var __res = []
   var settings = await (getallSettings())
   // console.log(settings)
   for (let db in settings) {
-    res[db] = []
+    var mObj = {}
+    mObj['db'] = db
+    var a = []
     for (let [i, inst] of settings[db].dbinstance.entries()) {
       if (inst.isenable) {
         var obj = {}
@@ -63,11 +65,13 @@ var findFunction = async (function () {
         obj['inst_data'] = _res   
         // _res.id = inst.id
         // _res.selectedDb = db
-        res[db].push(obj)
+        a.push(obj)
       }
     }
+    mObj['db_data'] = a
+    __res.push(mObj)
   }
-  return res
+  return __res
 })
 
 var getFunction = async (function (id) {
