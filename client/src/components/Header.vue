@@ -16,6 +16,12 @@
         <i-col :span="18">
             <Row type="flex" justify="end">
                 <div class="layout-nav">
+                    <Menu-item name="1">
+                        <router-link to="/schemaList">
+                            <Icon type="navicon-round" :size="14"></Icon>
+                            Schema
+                        </router-link>
+                    </Menu-item>
                     <Menu-item name="2">
                         <router-link to="/db">
                             <Icon type="gear-b" :size="14"></Icon>
