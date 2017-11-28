@@ -14,6 +14,7 @@ import Db from '@/components/Db'
 import Login from '@/components/Login'
 import Register from '@/components/Register'
 import JobList from '@/components/JobList'
+import schemaList from '@/components/schemaList'
 
 // import FlowzList from '@/components/FlowList'
 // import Instance from '@/components/instance'
@@ -103,6 +104,10 @@ const routes = [{
       id: Text,
       required: false
     }
+  }, {
+    path: 'schemaList',
+    name: 'schemaList',
+    component: schemaList
   }, {
     path: 'jobs/list',
     name: 'joblist',
