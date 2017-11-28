@@ -165,7 +165,6 @@ var getConnectionData = async(function (db, data) {
       // console.log('collections', collections)
 
     var result = await (conn.listCollections().toArray())
-    console.log('result........................',result)
     
     for (let [inx, obj] of result.entries()) {
       for (let k in obj) {
@@ -180,10 +179,8 @@ var getConnectionData = async(function (db, data) {
           }
         }
       }
-      console.log('Data........................', cols)
       result[inx].columns = cols;
     }
-    console.log('Data11111111........................', result)
     return result
   } else if (db == 'rethink') {
     // console.log('match found rethink')
@@ -207,7 +204,6 @@ var getConnectionData = async(function (db, data) {
       }
       result[inx] = { name: val, columns: cols}
     }
-    console.log('result............', result)
     return result
   } else if (db == 'elastic') {
     // console.log('match found rethink')
@@ -269,7 +265,8 @@ var getConnectionData = async(function (db, data) {
     return data1;
   } else if (db == 'mysql') {
     data.password = endecrypt.encrypt(data.password);
-      console.log('data',data);
+    console.log('conn11',data)
+    
      var connection = mysql.createConnection({
       host     : data.host,
       port     : data.port,
@@ -300,7 +297,6 @@ var getConnectionData = async(function (db, data) {
     };
     var resTableList = await (tableList())
 
-    console.log('----------resTableList----------',resTableList);
     //foreach table get columns
     var entitydata = async(function () {
       var promises = []
@@ -346,7 +342,6 @@ var getConnectionData = async(function (db, data) {
       });
     })  
     var columnsResponse = await (entitydata())
-    console.log('----------columnsResponse----------',columnsResponse);
 ///////////////////////////////////
 
 
@@ -511,7 +506,7 @@ class Service {
       } else {
         //encryption
         data.password = endecrypt.encrypt(data.password);
-        console.log('--------------',data)
+        // console.log('--------------',data)
         let result = new Promise((resolve, reject) => {
           fs.readFile(path.join(__dirname, '../DBConnection/db.json'), function (err, data) {
             if (err) return console.log(err);

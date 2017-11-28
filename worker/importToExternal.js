@@ -53,17 +53,72 @@ var createConn = async (function(data, mapdata) {
       // console.log(client)
     	return {conn: client, db: data.selectedDb}
 	} else if(data.selectedDb == 'mysql') {
-		console.log(data,'-----------');
+		// console.log(data,'-----------');
 		// var pass = endecrypt.decrypt(data.password)
 
 		var connection = mysql.createConnection({
 			host     : data.host,
 			port     : data.port,
 			user     : data.username,
-			password : data.password,
+			password : '123456',
 			database : data.dbname
 		});
 		connection.connect();
+		
+		if (mapdata != undefined) {
+	    	for (let [i, mObj] of mapdata.entries() ) {
+				var tableData = function () {
+					var result = []
+					
+					return new Promise((resolve, reject) => {
+						connection.query("SHOW TABLES LIKE '"+mObj.target+"'", function (error, result, fields) {
+						error? reject(error) : resolve(result.length)
+					  })
+					}).then(content => {
+					  return content;
+					}).catch(err=> {
+					  return err;
+					})     
+				};
+	  			var resTableData = await (tableData())
+				  var getDatabaseTables = await(getQuery('mysql','select','commonSelect'));
+				getDatabaseTables = getDatabaseTables.replace('{{ table_name }}',mObj.target+ ' LIMIT 1');
+				getDatabaseTables = getDatabaseTables.replace('{{ fields }}','1');
+
+				if(resTableData == 0)
+				{
+					var checkColumn = await(getQuery('mysql','create','createTable'));
+					checkColumn = checkColumn.replace('{{ table_name }}',mObj.target);
+					checkColumn = checkColumn.replace('{{ fields }}','id text NOT NULL');
+	
+					connection.query(checkColumn);
+	
+					var checkColumn = await(getQuery('mysql','alter','changeFieldType'));
+					checkColumn = checkColumn.replace('{{ table_name }}',mObj.target);
+					checkColumn = checkColumn.replace('{{ field }}','id');
+					checkColumn = checkColumn.replace('{{ field1 }}','id');
+					checkColumn = checkColumn.replace('{{ fieldType }}','INT(11) NOT NULL');
+					
+					connection.query(checkColumn);
+					
+					var checkColumn = await(getQuery('mysql','alter','addPrimaryKey'));
+					checkColumn = checkColumn.replace('{{ table_name }}',mObj.target);
+					checkColumn = checkColumn.replace('{{ field }}','id');
+					
+					connection.query(checkColumn);
+					
+					var checkColumn = await(getQuery('mysql','alter','changeFieldType'));
+					checkColumn = checkColumn.replace('{{ table_name }}',mObj.target);
+					checkColumn = checkColumn.replace('{{ field }}','id');
+					checkColumn = checkColumn.replace('{{ field1 }}','id');
+					checkColumn = checkColumn.replace('{{ fieldType }}','INT(11) NOT NULL AUTO_INCREMENT');
+					
+					connection.query(checkColumn);
+							
+				}
+				
+			}
+		}
 		return {conn: connection, db: data.selectedDb}
 
 	}
@@ -82,8 +137,6 @@ var updateSchema = async( function(data,table_name,databse_name,conn) {
 	var tableFields='';
 	var tableValues='';
 	k=0;
-	console.log('data',data)
-	console.log('table_name',table_name)
 	
 	_.forEach(data, function (d,key) {
         // if(key != 'Schemaid' && key != 'id' && key != '_id')
@@ -169,8 +222,6 @@ var updateSchema = async( function(data,table_name,databse_name,conn) {
 			}
 		})
 		
-		console.log('tableFields',tableFields)
-		console.log('tableValues',tableValues)
 		var commonInsert = await(getQuery('mysql','insert','commonInsert'));
 		commonInsert = commonInsert.replace('{{ table_name }}',table_name);
 		commonInsert = commonInsert.replace('{{ fields }}',tableFields);
@@ -311,8 +362,8 @@ q.process(async(job, next) => {
 						}
 							
 					}
-					console.log('sData',sData);
-					console.log('job.data.target.selectedDb',job.data.target.selectedDb);
+					// console.log('sData',sData);
+					// console.log('job.data.target.selectedDb',job.data.target.selectedDb);
 					// inserting source data into target table
 					if(job.data.target.selectedDb == 'mongo') {
 						var _res = []
@@ -368,7 +419,7 @@ q.process(async(job, next) => {
 						// 	var s = await (tConn.conn.table(obj.target).insert(sObj).run())
 						// 	_res.push(s)
 						// }
-						console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>', _res)
+						// console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>', _res)
 
 					} else if(job.data.target.selectedDb == 'elastic') {
 						var _res = []
@@ -400,14 +451,10 @@ q.process(async(job, next) => {
 						// var sId = await (getSchemaidByName(aurl, obj.target))
 						
 						for (let [i, sObj] of sData.entries()) {
-						console.log('sObj before',sObj)	
-						
 							if (obj.colsData.length !== 0) {
 								sObj = await (filterObj(sObj, obj.colsData))
 							}
 							
-						console.log('sObj',sObj)	
-						
 							// console.log('sObj',sObj,obj.target,job.data.target.dbname)
 							// return false;
 							// sObj.Schemaid = sId
