@@ -68,6 +68,25 @@ module.exports = {
     return 'success'
   }),
 
+  getConnsAllData: async (function(ins_id) {
+    for(let [i, db_i] of db.entries()) {
+      if(db_i.id == ins_id) {
+        var arr = []
+        // console.log('db[i].conn', db[i].conn)
+        var result = await (db_i.conn.db.listCollections().toArray())
+        // console.log(result)
+        for (let [inx, val] of result.entries()) {
+          var obj = {}
+          obj['t_name'] = val.name
+          var data = await (db_i.conn.collection(val.name).find().toArray())
+          obj['t_data'] = data
+          arr.push(obj)
+        }
+        return arr
+      }
+    }
+  }),
+
   choose: async(function () {
     console.log('===================MONGODB=================');
   }),
@@ -328,7 +347,7 @@ module.exports = {
       // console.log('connid', db[i].id)
       if(db[i].id == dbid) {
         selectedDB = db[i]
-      } 
+      }
     }
     // console.log('selectedDB', selectedDB)
     var schema = await (selectedDB.conn.collection(collName).insert(data));
@@ -398,7 +417,7 @@ module.exports = {
     if (id.length != 24) {
         // console.log('mongo DeleteSchema _blank');
         return [];
-    } 
+    }
     else {
         // console.log('111111')
         var id = new mongoose.Types.ObjectId(id);

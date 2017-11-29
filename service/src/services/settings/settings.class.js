@@ -250,7 +250,7 @@ var getConnectionData = async(function (db, data) {
         var item =  hit._source;
         item._id = hit._id;
         data.push(item);
-    })
+      })
       var cols =[]
       if(data[0] != undefined) {
         for(let k in data[0]) {
