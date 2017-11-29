@@ -32,15 +32,27 @@
                 </td>
                 <td class="">
                   <div class="ivu-table-cell">
-                    <a @click="show(index)"><Icon type="edit" style="font-size: 20px;"></Icon></a>
-                    <a @click="remove(index)" style= 'color:red'><Icon type="android-delete" style="font-size: 20px;"></Icon></a>
+                    <!-- <Tooltip placement="top" content="Update">
+                      <a v-if = '!editshow' :id="index"></a>
+                    </Tooltip> -->
+                    <!-- <a v-if = '!editshow' style= 'color:red' :id="index"></a> -->
+                    <!-- <Icon type="android-cancel" style= 'color:red; font-size: 20px;'></Icon> -->
+                    <span v-if="openTrasformEditorIndex != -1 && index == openTrasformEditorIndex">
+                      <Tooltip placement="top" content="Update">
+                        <a @click="show(index)"><Icon  type="checkmark" style="font-size: 20px;"></Icon></a>
+                      </Tooltip>
+                      <a @click="remove(index)" style= 'color:red'><Icon type="android-cancel" style="font-size: 20px;"></Icon></a>
+                    </span>
+                    <span v-else>
+                      <a @click="show(index)"><Icon  type="edit" style="font-size: 20px;"></Icon></a>
+                      <a @click="remove(index)" style= 'color:red'><Icon type="android-delete" style="font-size: 20px;"></Icon></a>
+                    </span>
                   </div>
                 </td>
               </tr>
               <tr v-if="openTrasformEditorIndex === index">
                 <td colspan="2" class="json-viewer">
-                  <vue-json-editor v-model="row" :showBtns="false" @json-change="onJsonChange"></vue-json-editor>
-                  <!-- <codemirror :options="editorOptions" v-model="code1" @change = 'onEditorCodeChange(code1)'></codemirror> -->
+                  <vue-json-editor v-model="row" :showBtns="false" @json-change="onJsonChange(row, index)"></vue-json-editor>
                 </td>
               </tr>
             </template>
@@ -55,13 +67,12 @@
 import api from '../api'
 import Tab from './Tab'
 import vueJsonEditor from 'vue-json-editor'
-// import test from './test.vue'
 import _ from 'lodash'
+
 export default {
   name: 'instancelist',
   components: {
     'f-Tab': Tab,
-    // 'test': test,
     'vueJsonEditor': vueJsonEditor
   },
   computed: {
@@ -71,82 +82,49 @@ export default {
   },
   data () {
     return {
-      code1: '',
-      // json: {
-      //   msg: 'demo of jsoneditor'
-      // },
+      editshow: true,
+      updatedvalue: '',
       row: {},
       openTrasformEditorIndex: -1,
-      // editorOptions: {
-      //   tabSize: 4,
-      //   mode: 'application/json',
-      //   theme: 'base16-light',
-      //   lineNumbers: true,
-      //   line: true,
-      //   extraKeys: { 'Ctrl': 'autocomplete' },
-      //   foldGutter: true,
-      //   gutters: ['CodeMirror-linenumbers', 'CodeMirror-foldgutter'],
-      //   styleSelectedText: true,
-      //   highlightSelectionMatches: { showToken: /\w/, annotateScrollbar: true }
-      // },
       data5: []
     }
   },
   methods: {
-    onJsonChange (value) {
+    onJsonChange (value, index) {
+      // console.log($('#indexdataii'))
+      // $('#' + index + '')[0].innerHTML = ''
+      // $('#' + index + '')[0].innerHTML = '<i class="ivu-icon ivu-icon-android-archive" id="0" style="font-size: 20px;"></i>'
+      // '<i class="ivu-icon ivu-icon-android-archive" id="0" style="font-size: 25px;"></i>'
+      // console.log('1111111111', this.data5[index]._id)
+      // $('#edit' + index).innerHTML = ''
+      // $('#edit' + index).innerHTML = '<i class="ivu-icon ivu-icon-android-cancel" style="color: red; font-size: 20px;"></i>'
+      value['_id'] = this.data5[index]._id
       console.log('value:', value)
     },
-    // onEditorCodeChange (newCode) {
-    //   this.code1 = newCode
-    //   console.log('this is new code', this.code1)
-    // },
-    // looping (data) {
-    //   var self = this
-    //   var value1 = ''
-    //   _.forEach(data, function (value) {
-    //     for (var entry in value) {
-    //       value1 += entry + ':' + value[entry] + ','
-    //       if (typeof (value[entry]) === 'object') {
-    //         value1 = self.looping(value[entry])
-    //         data += entry + ': {' + value1 + '}'
-    //       } else {
-    //         data = value1
-    //       }
-    //     }
-    //   })
-    //   return data
+    // updatedvalue () {
+    //   console.log('updatedvalue')
     // },
     fetch (id) {
       var self = this
-      // alert(id)
       api.request('get', '/instance')
       .then(response => {
-        // this.schema = response.data
-        // this.schema.splice(index, 1)
         self.data5 = _.filter(response.data, (f) => { return f.Schemaid === id })
-        console.log('self.data5', self.data5)
       })
       .catch(error => {
         console.log(error)
       })
     },
     show (index) {
-      // this.$router.push('/schema-instance/edit/'+this.data5[index]._id)
+      // var self = this
       api.request('get', '/schema/' + this.$route.params.id)
       .then(response => {
         if (response.data.database[0] === 'mysql') {
           this.$router.push('/schema-instance/schemaid/' + this.data5[index].Schemaid + '/edit/' + this.data5[index]._id)
         } else {
-          this.row = this.data5[index]
-          // var output = ''
-          // for (var entry in this.row) {
-          //   if (typeof (this.row[entry]) === 'object') {
-          //     var result = this.looping(this.row[entry])
-          //     this.row[entry] = '{' + result + '}'
-          //   }
-          //   output += entry + ':' + this.row[entry] + '\n'
-          //   this.code1 = '{' + output + '}'
-          // }
+          let rowid = _.cloneDeep(this.data5[index])
+          delete rowid._id
+          this.row = rowid
+          console.log('this.row', this.row)
           if (this.openTrasformEditorIndex === index) {
             this.openTrasformEditorIndex = -1
             return false
@@ -156,28 +134,27 @@ export default {
       })
     },
     remove (index) {
-      api.request('delete', '/instance/' + this.data5[index]._id + '?schemaid=' + this.$route.params.id)
-        .then(response => {
-          this.data5.splice(index, 1)
-          this.$Notice.success({
-            title: 'Success',
-            desc: 'SchemaInstance Deleted.....',
-            duration: 2
-          })
-        })
-        .catch(error => {
-          console.log(error)
-          this.$Notice.error({
-            title: 'Error',
-            desc: 'SchemaInstance Not Deleted.....',
-            duration: 2
-          })
-        })
+      // api.request('delete', '/instance/' + this.data5[index]._id + '?schemaid=' + this.$route.params.id)
+      //   .then(response => {
+      //     this.data5.splice(index, 1)
+      //     this.$Notice.success({
+      //       title: 'Success',
+      //       desc: 'SchemaInstance Deleted.....',
+      //       duration: 2
+      //     })
+      //   })
+      //   .catch(error => {
+      //     console.log(error)
+      //     this.$Notice.error({
+      //       title: 'Error',
+      //       desc: 'SchemaInstance Not Deleted.....',
+      //       duration: 2
+      //     })
+      //   })
     }
   },
   watch: {
     '$route.params.id' (newId, oldId) {
-      // fetch data
       this.fetch(newId)
     }
   }
