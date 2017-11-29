@@ -2,16 +2,13 @@
     "mongo": {
         "dbinstance": []
     },
-    "rethink": {
-        "dbinstance": []
-    },
     "elastic": {
         "dbinstance": []
     },
     "nedb": {
         "dbinstance": []
     },
-   "mysql": {
+    "mysql": {
         "dbinstance": []
     }
 }
