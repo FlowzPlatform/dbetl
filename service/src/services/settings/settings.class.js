@@ -133,7 +133,7 @@ var check_Connection = async(function (db, data) {
       //   }
       // });
   } else if (db == 'mysql') {
-    data.password = endecrypt.encrypt(data.password);
+    var pass = endecrypt.encrypt(data.password);
     console.log('conn',data)
     var connection = mysql.createConnection({
       host     : data.host,
@@ -264,7 +264,7 @@ var getConnectionData = async(function (db, data) {
     // console.log(data1)
     return data1;
   } else if (db == 'mysql') {
-    data.password = endecrypt.encrypt(data.password);
+    var pass = endecrypt.encrypt(data.password);
     console.log('conn11',data)
     
      var connection = mysql.createConnection({

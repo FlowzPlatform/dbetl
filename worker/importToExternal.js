@@ -53,14 +53,14 @@ var createConn = async (function(data, mapdata) {
       // console.log(client)
     	return {conn: client, db: data.selectedDb}
 	} else if(data.selectedDb == 'mysql') {
-		// console.log(data,'-----------');
-		// var pass = endecrypt.decrypt(data.password)
+		// console.log('-----------import ------------',data);
+		var pass = endecrypt.decrypt(data.password)
 
 		var connection = mysql.createConnection({
 			host     : data.host,
 			port     : data.port,
 			user     : data.username,
-			password : '123456',
+			password : pass,
 			database : data.dbname
 		});
 		connection.connect();
