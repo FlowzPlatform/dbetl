@@ -32,14 +32,9 @@
                 </td>
                 <td class="">
                   <div class="ivu-table-cell">
-                    <!-- <Tooltip placement="top" content="Update">
-                      <a v-if = '!editshow' :id="index"></a>
-                    </Tooltip> -->
-                    <!-- <a v-if = '!editshow' style= 'color:red' :id="index"></a> -->
-                    <!-- <Icon type="android-cancel" style= 'color:red; font-size: 20px;'></Icon> -->
                     <span v-if="openTrasformEditorIndex != -1 && index == openTrasformEditorIndex">
                       <Tooltip placement="top" content="Update">
-                        <a @click="show(index)"><Icon  type="checkmark" style="font-size: 20px;"></Icon></a>
+                        <a  @click="updatedvalue(index)"><Icon  type="checkmark" style="font-size: 20px;"></Icon></a>
                       </Tooltip>
                       <a @click="remove(index)" style= 'color:red'><Icon type="android-cancel" style="font-size: 20px;"></Icon></a>
                     </span>
@@ -52,7 +47,7 @@
               </tr>
               <tr v-if="openTrasformEditorIndex === index">
                 <td colspan="2" class="json-viewer">
-                  <vue-json-editor v-model="row" :showBtns="false" @json-change="onJsonChange(row, index)"></vue-json-editor>
+                  <vue-json-editor v-model="jsoneditordata" :showBtns="false" @json-change="onJsonChange"></vue-json-editor>
                 </td>
               </tr>
             </template>
@@ -82,28 +77,13 @@ export default {
   },
   data () {
     return {
-      editshow: true,
-      updatedvalue: '',
-      row: {},
+      finalvalue: {},
+      jsoneditordata: {},
       openTrasformEditorIndex: -1,
       data5: []
     }
   },
   methods: {
-    onJsonChange (value, index) {
-      // console.log($('#indexdataii'))
-      // $('#' + index + '')[0].innerHTML = ''
-      // $('#' + index + '')[0].innerHTML = '<i class="ivu-icon ivu-icon-android-archive" id="0" style="font-size: 20px;"></i>'
-      // '<i class="ivu-icon ivu-icon-android-archive" id="0" style="font-size: 25px;"></i>'
-      // console.log('1111111111', this.data5[index]._id)
-      // $('#edit' + index).innerHTML = ''
-      // $('#edit' + index).innerHTML = '<i class="ivu-icon ivu-icon-android-cancel" style="color: red; font-size: 20px;"></i>'
-      value['_id'] = this.data5[index]._id
-      console.log('value:', value)
-    },
-    // updatedvalue () {
-    //   console.log('updatedvalue')
-    // },
     fetch (id) {
       var self = this
       api.request('get', '/instance')
@@ -115,7 +95,6 @@ export default {
       })
     },
     show (index) {
-      // var self = this
       api.request('get', '/schema/' + this.$route.params.id)
       .then(response => {
         if (response.data.database[0] === 'mysql') {
@@ -123,8 +102,7 @@ export default {
         } else {
           let rowid = _.cloneDeep(this.data5[index])
           delete rowid._id
-          this.row = rowid
-          console.log('this.row', this.row)
+          this.jsoneditordata = rowid
           if (this.openTrasformEditorIndex === index) {
             this.openTrasformEditorIndex = -1
             return false
@@ -134,23 +112,37 @@ export default {
       })
     },
     remove (index) {
-      // api.request('delete', '/instance/' + this.data5[index]._id + '?schemaid=' + this.$route.params.id)
-      //   .then(response => {
-      //     this.data5.splice(index, 1)
-      //     this.$Notice.success({
-      //       title: 'Success',
-      //       desc: 'SchemaInstance Deleted.....',
-      //       duration: 2
-      //     })
-      //   })
-      //   .catch(error => {
-      //     console.log(error)
-      //     this.$Notice.error({
-      //       title: 'Error',
-      //       desc: 'SchemaInstance Not Deleted.....',
-      //       duration: 2
-      //     })
-      //   })
+      api.request('delete', '/instance/' + this.data5[index]._id + '?schemaid=' + this.$route.params.id)
+        .then(response => {
+          this.data5.splice(index, 1)
+          this.$Notice.success({
+            title: 'Success',
+            desc: 'SchemaInstance Deleted.....',
+            duration: 2
+          })
+        })
+        .catch(error => {
+          console.log(error)
+          this.$Notice.error({
+            title: 'Error',
+            desc: 'SchemaInstance Not Deleted.....',
+            duration: 2
+          })
+        })
+    },
+    onJsonChange (value) {
+      if (this.data5[this.openTrasformEditorIndex].hasOwnProperty('_id') === true) {
+        value['_id'] = this.data5[this.openTrasformEditorIndex]._id
+      }
+      if (this.data5[this.openTrasformEditorIndex].hasOwnProperty('id') === true) {
+        value['id'] = this.data5[this.openTrasformEditorIndex].id
+      }
+      console.log('value:', value)
+      this.finalvalue = value
+    },
+    updatedvalue (index) {
+      console.log('final value', this.finalvalue)
+      this.openTrasformEditorIndex = -1
     }
   },
   watch: {
