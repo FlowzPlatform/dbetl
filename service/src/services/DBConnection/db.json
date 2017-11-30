@@ -1,6 +1,47 @@
 {
     "mongo": {
-        "dbinstance": []
+        "dbinstance": [
+            {
+                "isenable": true,
+                "connection_name": "connection_1512019820",
+                "host": "localhost",
+                "port": "3001",
+                "dbname": "defaultdb",
+                "username": "",
+                "password": "",
+                "upldIcn": "",
+                "upldCSV": [],
+                "rdodb": "",
+                "rdosync": "",
+                "keep_sync": "",
+                "notes": "",
+                "schemaData": [],
+                "isdefault": false,
+                "id": "4ce218e0-06f5-4e22-09ef-6ca64879326a"
+            }
+        ]
+    },
+    "rethink": {
+        "dbinstance": [
+            {
+                "isenable": true,
+                "connection_name": "connection_1512019689",
+                "host": "localhost",
+                "port": "28015",
+                "dbname": "rethinkdefault",
+                "username": "",
+                "password": "",
+                "upldIcn": "",
+                "upldCSV": [],
+                "rdodb": "",
+                "rdosync": "",
+                "keep_sync": "",
+                "notes": "",
+                "schemaData": [],
+                "isdefault": true,
+                "id": "5108cf18-f92d-462c-ffd8-e8a600466fa3"
+            }
+        ]
     },
     "elastic": {
         "dbinstance": []

@@ -162,30 +162,31 @@ var findAllInstance = async(function() {
       fExtract.push(idObj)
     }
   }
-  // console.log('Extract', fExtract)
 
   for (let [inxx, mObj] of fExtract.entries() ) {
     fExtract[inxx] = await (getIdbySchemaId(mObj._id, mObj.Schemaid))
   }
+  // console.log('Extract', fExtract)
   return fExtract
 })
 
 // ---------------------------- GET ID API Functions --------------------------
 var getIdbySchemaId = async(function(id, schemaid) {
-  // console.log(id, schemaid)
+  console.log(id, schemaid)
   var res = await (getSchemaData(schemaid))
-  // console.log(res)
+  console.log('.....................', res)
   for(let [i, db] of dbapi.entries()) {
     if (db.db == res.database[0]) {
       var _res = await (db.api.getThisflowsInstance(id, res.title, res.database[1]))
-      // console.log('_res', _res)
-      var status = false 
+      console.log('_res', _res)
+      var status = false
       for(let k in _res) {
         if(Array.isArray(_res[k])) {
           status = true
         }
       }
       if(!status) {
+        console.log(',,,,,,,,,,,,,,', _res)
         return _res
       } else {
         for(let k in _res) {
@@ -339,7 +340,7 @@ var checkDataObj = async(function(data, id, res) {
               // obj.schemaid = schemaid
           }
         } else {
-          // console.log('..::::::::::::::::::..', dObj[sKey], sKey, dObj) 
+          // console.log('..::::::::::::::::::..', dObj[sKey], sKey, dObj)
           var entityType = await (FindEntitytype(sKey, res))
             // console.log('........', entityType)
           var _res = await (getSchemaData(entityType))
@@ -386,8 +387,8 @@ var checkUpdateData = async(function(id, data) {
   var res = await (getSchemaData(sid))
   var old_data = await (getActualInstance(id, res))
   // console.log('old_data', data)
-  // var new_data = 
-  var _res = await ( compareData(id, old_data, data[0], res) ) 
+  // var new_data =
+  var _res = await ( compareData(id, old_data, data[0], res) )
   return _res
 })
 
@@ -544,10 +545,10 @@ var FindEntitytype = async(function(fieldname, data) {
 
 // gives response of id from /schema api
 var getSchemaData = async(function(id) {
-  // console.log('setSchemaData calling >>>>>>>>>>>')
+  console.log('setSchemaData calling >>>>>>>>>>>')
   var res = await (axios.get('http://' + config.get('host') + ':' + config.get('port') + '/schema/' + id))
-    // console.log('res', res)
-    // postSchemaData = res.data 
+    console.log('res >>>>>>>>>>>>>>>', res.data)
+    // postSchemaData = res.data
   return res.data
 })
 

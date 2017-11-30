@@ -1,17 +1,69 @@
 <template>
   <div class="recordList">
-  <f-Tab></f-Tab>
-    <div style="padding:10px">
-    <Row style="padding-bottom:10px">
-      <Breadcrumb>
-        <BreadcrumbItem>{{crumbData.db}}</BreadcrumbItem>
-        <BreadcrumbItem>{{crumbData.cname}}</BreadcrumbItem>
-        <BreadcrumbItem>{{crumbData.tname}}</BreadcrumbItem>
-      </Breadcrumb>
-    </Row>
-      <Table  stripe :columns="columnsData" :data="tableData"></Table>
+    <f-Tab></f-Tab>
+    <div>
+      <Row style="padding-bottom:10px">
+        <Breadcrumb>
+          <BreadcrumbItem>{{crumbData.db}}</BreadcrumbItem>
+          <BreadcrumbItem>{{crumbData.cname}}</BreadcrumbItem>
+          <BreadcrumbItem>{{crumbData.tname}}</BreadcrumbItem>
+        </Breadcrumb>
+      </Row>
+      <div class="ivu-table ivu-table-border">
+        <div class="ivu-table-body">
+          <table cellspacing="0" cellpadding="0" border="0" style="width: 100%;">
+            <colgroup>
+              <col width="35">
+              <col width="35">
+            </colgroup>
+            <thead>
+              <tr>
+                <th class="">
+                  <div class="ivu-table-cell">
+                    <span>Instance ID</span>
+                  </div>
+                </th>
+                <th class="">
+                    <div class="ivu-table-cell">
+                        <span>Action</span>
+                    </div>
+                </th>
+              </tr>
+            </thead>
+            <tbody class="ivu-table-tbody">            
+              <template v-for="(value, index) in tableData">
+                <tr class="ivu-table-row" >
+                  <td class="">
+                    <div class="ivu-table-cell">
+                      <span style="float:left">{{ value._id }}</span>
+                    </div>
+                  </td>
+                  <td class="">
+                    <div class="ivu-table-cell">
+                      <span v-if="openTrasformEditorIndex != -1 && index == openTrasformEditorIndex">
+                        <Tooltip placement="top" content="Update">
+                          <a @click="updatedvalue(index)"><Icon  type="checkmark" style="font-size: 20px;"></Icon></a>
+                        </Tooltip>
+                        <a style= 'color:red'><Icon type="android-cancel" style="font-size: 20px;"></Icon></a>
+                      </span>
+                      <span v-else>
+                        <a @click="show(index)"><Icon  type="edit" style="font-size: 20px;"></Icon></a>
+                        <a style= 'color:red'><Icon type="android-delete" style="font-size: 20px;"></Icon></a>
+                      </span>
+                    </div>
+                  </td>
+                </tr>
+                <tr v-if="openTrasformEditorIndex === index">
+                  <td colspan="2" class="json-viewer">
+                    <vue-json-editor v-model="jsoneditordata" :showBtns="false" @json-change="onJsonChange"></vue-json-editor>
+                  </td>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
-    <!-- {{tableData}} -->
   </div>
 </template>
 
@@ -19,99 +71,44 @@
 import ConnectionData from '../api/connectiondata'
 import settings from '../api/settings'
 import Tab from './Tab'
+import vueJsonEditor from 'vue-json-editor'
+
 const _ = require('lodash')
 export default {
   name: 'recordList',
   components: {
-    'f-Tab': Tab
+    'f-Tab': Tab,
+    'vueJsonEditor': vueJsonEditor
   },
   data () {
     return {
-      columnsData: [
-        {
-          title: 'ID',
-          key: '_id',
-          sortable: true
-        },
-        // {
-        //   title: '',
-        //   key: 'age',
-        //   sortable: true
-        // },
-        {
-          title: 'Action',
-          key: 'action',
-          width: 300,
-          align: 'center',
-          render: (h, params) => {
-            return h('div', [
-              // h('Button', {
-              //   props: {
-              //     type: 'text',
-              //     size: 'large',
-              //     icon: 'ios-eye'
-              //   },
-              //   style: {
-              //     marginRight: '3px',
-              //     color: '#2d8cf0',
-              //     padding: '0px',
-              //     fontSize: '25px'
-              //   },
-              //   on: {
-              //     click: () => {
-              //       // console.log('AAAA', params.index)
-              //       this.show(params.index)
-              //     }
-              //   }
-              // }, ''),
-              h('Button', {
-                props: {
-                  type: 'text',
-                  size: 'large',
-                  icon: 'edit'
-                },
-                style: {
-                  marginRight: '3px',
-                  padding: '0px',
-                  fontSize: '20px',
-                  color: '#00C851'
-                },
-                on: {
-                  click: () => {
-                    alert(params.index)
-                    // this.$router.push('/')
-                    // this.show(params.index)
-                  }
-                }
-              }, ''),
-              h('Button', {
-                props: {
-                  type: 'text',
-                  size: 'large',
-                  icon: 'trash-b'
-                },
-                style: {
-                  color: '#CC0000',
-                  marginRight: '3px',
-                  padding: '0px',
-                  fontSize: '20px'
-                },
-                on: {
-                  click: () => {
-                    alert(params.index)
-                    // this.show(params.index)
-                  }
-                }
-              }, '')
-            ])
-          }
-        }
-      ],
+      jsoneditordata: {},
       tableData: [],
+      openTrasformEditorIndex: -1,
+      finalvalue: {},
       crumbData: {}
     }
   },
   methods: {
+    show (index) {
+      if (this.crumbData.db === 'mysql') {
+
+      } else {
+        let rowid = _.cloneDeep(this.tableData[index])
+        if (rowid.hasOwnProperty('_id') === true) {
+          delete rowid._id
+        }
+        if (rowid.hasOwnProperty('id') === true) {
+          delete rowid.id
+        }
+        this.jsoneditordata = rowid
+        if (this.openTrasformEditorIndex === index) {
+          this.openTrasformEditorIndex = -1
+          return false
+        }
+        this.openTrasformEditorIndex = index
+      }
+    },
     init () {
       // alert(this.$route.params.id + '/' + this.$route.params.tname)
       let self = this
@@ -144,6 +141,24 @@ export default {
           duration: 0
         })
       })
+    },
+    onJsonChange (value) {
+      if (this.tableData[this.openTrasformEditorIndex].hasOwnProperty('_id') === true) {
+        value['_id'] = this.tableData[this.openTrasformEditorIndex]._id
+      }
+      if (this.tableData[this.openTrasformEditorIndex].hasOwnProperty('id') === true) {
+        value['id'] = this.tableData[this.openTrasformEditorIndex].id
+      }
+      console.log('value:', value)
+      this.finalvalue = value
+    },
+    updatedvalue (index) {
+      var obj = {}
+      obj.inst_id = this.$route.params.id
+      obj.tname = this.$route.params.tname
+      obj.data = this.finalvalue
+      console.log('final value', obj)
+      this.openTrasformEditorIndex = -1
     }
   },
   mounted () {
@@ -163,3 +178,31 @@ export default {
   }
 }
 </script>
+<style>
+  .f-layout-content{
+    min-height: 171px !important
+  }
+	.ivu-table th {
+    height: 44px;
+    white-space: nowrap;
+    overflow: hidden;
+    background-color: #394263;
+    color: #fff;
+}
+div.jsoneditor tr, div.jsoneditor th, div.jsoneditor td {
+  height: -webkit-fill-available !important;
+}
+.jsoneditor-tree {
+  border-color: white !important;
+}
+.jsoneditor-separator {
+  border-right-color: white !important;
+  border-bottom: white !important;
+}
+.jsoneditor-vue div.jsoneditor-tree {
+  min-height: 0px !important;
+}
+div.jsoneditor-tree {
+  overflow: hidden !important;
+}
+</style>
