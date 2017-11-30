@@ -26,17 +26,7 @@
 
       <Row style="padding: 10px;" :gutter="16">
         <Col span="8">
-          <!-- <Dropdown trigger="click" @on-click='handleCommand' style="margin-left: 20px;">
-            <a href="javascript:void(0)" class="list">Sort By
-                <Icon type="arrow-down-b"></Icon>
-            </a>
-            <DropdownMenu slot="list">
-                <DropdownItem name="asc">A-Za-z</DropdownItem>
-                <DropdownItem name="desc">z-aZ-A</DropdownItem>
-            </DropdownMenu>
-          </Dropdown> -->
           <Select @on-change="handleCommand" placeholder="Sort By" size="small" style="width:135px;">
-            <!-- <Option v-for="item in cityList" :value="item.value" :key="item.value">{{ item.label }}</Option> -->
             <Option value="asc"><span>A-Za-z</span>
               <span style="float:right;">Ascending</span>
             </Option>
@@ -47,29 +37,21 @@
         </Col>
         <Col span="16">
           <Row type="flex" justify="end">
-            <Col col="8">
+            <!-- <Col col="8">
               <Checkbox v-model="groupby" label="groupby" size="small" style="color:#fff;margin-top:5px;">Group By</Checkbox>
             </Col>
-            <Col span="8">
+            <Col span="8"> -->
               <router-link to="/schema/new">
                 <Button type="default" size="small" icon="plus-round">Add</Button>
               </router-link>
-            </Col>
+            <!-- </Col> -->
           </Row>
         </Col>
       </Row>
 
-      <!-- <Row style="padding: 8px;" :gutter="16">
-        <Col span="8">
-          <router-link to="/jobs/list">
-            <Button type="default" size="default">List Of Jobs</Button>
-          </router-link>
-        </Col>
-      </Row> -->
-
       <!-- =============== iview Side NAV ================= -->
       <Menu theme="dark" style="max-height:800px; overflow-y: auto" width="auto">
-          <Submenu :name="'dbinx'" v-for="(dbObj, dbinx) in allConnData" :key="dbinx">
+          <Submenu v-if="dbObj.db_data.length != 0" :name="'dbinx'" v-for="(dbObj, dbinx) in allConnData" :key="dbinx">
               <template slot="title">
                   <Icon type="cube"></Icon>
                   {{dbObj.db}}
@@ -169,6 +151,22 @@
       },
       pinNvaigationContent () {
         return !this.$store.state.sidenavpin ? 'Pin nvaigation' : 'Unpin nvaigation'
+      }
+    },
+    feathers: {
+      'settings': {
+        updated (data) {
+          // console.log('connectiondata updated..', data)
+          this.init()
+        },
+        created (data) {
+          // console.log('connectiondata created..', data)
+          this.init()
+        },
+        removed (data) {
+          // console.log('connectiondata removed..', data)
+          this.init()
+        }
       }
     },
     methods: {

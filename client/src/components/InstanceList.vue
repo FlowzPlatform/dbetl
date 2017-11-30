@@ -5,8 +5,8 @@
       <div class="ivu-table-body">
         <table cellspacing="0" cellpadding="0" border="0" style="width: 100%;">
           <colgroup>
-            <col width="35">
-            <col width="35">
+            <col width="70">
+            <col width="30">
           </colgroup>
           <thead>
             <tr>

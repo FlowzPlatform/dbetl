@@ -16,6 +16,7 @@ import Register from '@/components/Register'
 import JobList from '@/components/JobList'
 import schemaList from '@/components/schemaList'
 import recordList from '@/components/recordList'
+import instancejoblist from '@/components/instancejoblist'
 
 // import FlowzList from '@/components/FlowList'
 // import Instance from '@/components/instance'
@@ -121,6 +122,14 @@ const routes = [{
     path: 'recordList/:id/:tname',
     name: 'recordList',
     component: recordList,
+    props: {
+      id: Text,
+      required: false
+    }
+  }, {
+    path: 'instancejoblist/:id',
+    name: 'instancejoblist',
+    component: instancejoblist,
     props: {
       id: Text,
       required: false

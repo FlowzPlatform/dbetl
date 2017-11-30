@@ -43,6 +43,9 @@
             }
         ]
     },
+    "rethink": {
+        "dbinstance": []
+    },
     "elastic": {
         "dbinstance": []
     },

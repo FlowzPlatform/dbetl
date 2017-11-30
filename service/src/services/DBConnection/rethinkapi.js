@@ -68,7 +68,7 @@ module.exports = {
     var ins_id = data.database[1]
     for(let [i, db_i] of r.entries()) {
       if(db_i.id == ins_id) {
-        console.log(r[i].conn)
+        // console.log(r[i].conn)
         var res = await (r[i].conn.tableCreate(title))
         // console.log('res......generateInstanceTable........', res)
         return res

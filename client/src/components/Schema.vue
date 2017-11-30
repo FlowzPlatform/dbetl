@@ -926,12 +926,12 @@ export default {
     'formSchema.title' : function(v) {
        this.formSchema.title = v.toLowerCase().trim();
     },
-    '$route.params.id' (newId, oldId) {
+    '$route.params.id': function(newId, oldId) {
       this.setTypes(newId)
       // fetch data
       this.fetch(newId)
     },
-    '$store.getters.allSchema' () {
+    '$store.getters.allSchema': function() {
       this.$store.getters.allSchema.forEach((schema) => {
         if (this.$route.params.id !== schema._id) {
           this.types.push({
