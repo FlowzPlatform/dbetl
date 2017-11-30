@@ -62,6 +62,10 @@ db.rethink.dbinstance.forEach(function (instance, inx) {
   })
 
 module.exports = {
+  choose: async(function () {
+    console.log('===================RETHINKDB=================');
+  }),
+
   generateInstanceTable: async(function (data){
     // console.log('Rethink generate instance collection..........', ins_id, title);
     var title = data.title
@@ -94,9 +98,16 @@ module.exports = {
     }
   }),
 
-  choose: async(function () {
-    console.log('===================RETHINKDB=================');
+  putTableRecord: async(function(id, data) {
+    for (let [i, inst] of r.entries()) {
+      if ( inst.id == data.inst_id ) {
+        var res = await (inst.conn.table(data.tname).get(id).replace(data.data).run())
+        // console.log('rethink >>>>>>>>>>>>>>', res)
+        return res
+      }
+    }
   }),
+
   getSchemaName: async(function (name) {
     console.log('rethink get SchemaName');
     var schemadata = await (r.table('schema').filter({ 'title': name })
