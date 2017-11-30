@@ -55,6 +55,11 @@ db1.mongo.dbinstance.forEach(function (instance, inx) {
 // console.log('Success!!!!!!!!!!!!! Mongo');
 
 module.exports = {
+
+  choose: async(function () {
+    console.log('===================MONGODB=================');
+  }),
+
   generateInstanceTable: async(function (ins_id, title){
     console.log('Mongo generate instance collection..........', ins_id, title);
     // for(let [i, db_i] of db.entries()) {
@@ -89,9 +94,19 @@ module.exports = {
     }
   }),
 
-  choose: async(function () {
-    console.log('===================MONGODB=================');
+  putTableRecord: async(function(id, data) {
+    for (let [i, inst] of db.entries()) {
+      if ( inst.id == data.inst_id ) {
+        var id = new mongoose.Types.ObjectId(id);
+        delete data.data._id
+        delete data.data.id
+        var res = await (inst.conn.collection(data.tname).updateOne({ _id: id }, { $set: data.data }))
+        // console.log('mongo >>>>>>>>>>>>>>', res)
+        return res
+      }
+    }
   }),
+
   //get methods
   getSchemaName: async(function (name) {
     console.log('mongo get SchemaName.............................');

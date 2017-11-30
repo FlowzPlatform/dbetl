@@ -30,7 +30,9 @@ class Service {
   }
 
   update (id, data, params) {
-    return Promise.resolve(data);
+    // console.log(id, data)
+    var conndata = updateFunction(id, data)
+    return Promise.resolve(conndata);
   }
 
   patch (id, data, params) {
@@ -47,6 +49,11 @@ var getallSettings = async (function () {
   var res = await (axios.get(url + '/settings'))
   return res.data
 })
+
+var getThisSetting = async( function(id) {
+  var res = await (axios.get(url + '/settings/' + id))
+  return res.data
+}) 
 
 var findFunction = async (function () {
   var __res = []
@@ -91,6 +98,15 @@ var getFunction = async (function (id) {
     }
   }
   return res
+})
+
+var updateFunction= async (function (id, data) {
+  var inst_id = data.inst_id
+  var setting_res = await (getThisSetting(inst_id))
+  var db = setting_res.selectedDb
+  var conn = require('../DBConnection/' + db + 'api')
+  var _res = await (conn.putTableRecord(id, data))
+  return _res
 })
 
 
