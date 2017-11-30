@@ -2,6 +2,9 @@
     "mongo": {
         "dbinstance": []
     },
+    "rethink": {
+        "dbinstance": []
+    },
     "elastic": {
         "dbinstance": []
     },
