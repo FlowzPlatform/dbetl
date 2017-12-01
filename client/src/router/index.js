@@ -24,12 +24,13 @@ const routes = [{
   path: '/',
   name: 'Layout',
   component: Layout,
+  meta: { description: 'Overview of environment', requiresAuth: true },
   children: [{
     path: 'dashboard',
     alias: '',
     component: Dashboard,
     name: 'Dashboard',
-    meta: { description: 'Overview of environment' }
+    meta: { description: 'Overview of environment', requiresAuth: true }
   }, {
     path: 'schema/edit/:id',
     component: Schema,
