@@ -146,10 +146,30 @@ export default {
                     {
                       title: 'Action',
                       key: 'action',
-                      width: 100,
+                      width: 150,
                       align: 'center',
                       render: (h, params) => {
                         return h('div', [
+                          // h('Button', {
+                          //   props: {
+                          //     type: 'success',
+                          //     size: 'small',
+                          //     icon: ''
+                          //   },
+                          //   style: {
+                          //     // color: '#CC0000',
+                          //     marginRight: '10px',
+                          //     // padding: '0px',
+                          //     fontSize: '12px'
+                          //   },
+                          //   on: {
+                          //     click: () => {
+                          //       this.testConnection(this.tabPane, params.index)
+                          //       // alert(this.tabPane)
+                          //       // this.instanceRemove(this.tabPane, params.index)
+                          //     }
+                          //   }
+                          // }, 'Test'),
                           h('Button', {
                             props: {
                               type: 'text',
@@ -778,46 +798,57 @@ export default {
         },
         defaultDBInstance (db, index, value) {
           this.$Modal.confirm({
-                    title: 'Confirm',
-                    content: '<p>Are you sure you want to change default Connection?</p>',
-                    onOk: () => {
-                        // alert(this[db+'Dt'][index].id)
-                        var id = this[db+'Dt'][index].id
-                        console.log(db, index, value, id)
-                        api.request('patch', '/settings/'+id+'?db='+db, {isdefault: value})
-                            .then(response => {
-                              var result = response.data
-                              this[db+'Dt'][index].isdefault = value
-                              
-                              this.$Notice.success({duration:3, title:'Success!!', desc:'Connection set Default Successfully..'})
-                              this.$store.dispatch('getSchema')
-                              this.getSettings()
-                              console.log('result patch ',result)
-                            })
-                            .catch(error => {
-                              console.log(error)
-                              this.$Notice.error({duration:3, title:'Error!!', desc:'Connection not set Default...'})
-                            })
-                      },
-                    onCancel: () => {
-                      this.getSettings()
-                      // this[db+'Dt'][index].isenable = !value
-                    }
-                })
-            },
-            getSettings() {
-              let self = this
-              api.request('get', '/settings')
-              .then(response => {
-                  _.forEach(response.data, function(instances, db){
-                      self[db+'Dt'] = response.data[db].dbinstance
-                  })
+              title: 'Confirm',
+              content: '<p>Are you sure you want to change default Connection?</p>',
+              onOk: () => {
+                  // alert(this[db+'Dt'][index].id)
+                  var id = this[db+'Dt'][index].id
+                  console.log(db, index, value, id)
+                  api.request('patch', '/settings/'+id+'?db='+db, {isdefault: value})
+                      .then(response => {
+                        var result = response.data
+                        this[db+'Dt'][index].isdefault = value
+                        
+                        this.$Notice.success({duration:3, title:'Success!!', desc:'Connection set Default Successfully..'})
+                        this.$store.dispatch('getSchema')
+                        this.getSettings()
+                        console.log('result patch ',result)
+                      })
+                      .catch(error => {
+                        console.log(error)
+                        this.$Notice.error({duration:3, title:'Error!!', desc:'Connection not set Default...'})
+                      })
+                },
+              onCancel: () => {
+                this.getSettings()
+                // this[db+'Dt'][index].isenable = !value
+              }
+          })
+        },
+        getSettings() {
+          let self = this
+          api.request('get', '/settings')
+          .then(response => {
+              _.forEach(response.data, function(instances, db){
+                  self[db+'Dt'] = response.data[db].dbinstance
               })
-              .catch(error => {
-                  this.$Notice.error({title:'Network Error!!'})
-                  console.log(error)
-              })
-            }
+          })
+          .catch(error => {
+              this.$Notice.error({title:'Network Error!!'})
+              console.log(error)
+          })
+        },
+        testConnection (db, index) {db
+          var data = this[db+'Dt'][index]
+          console.log('testConnection',data)
+          api.request('post', '/settings?check=' + db, data)
+            .then(res => {
+              console.log('testConnection response', res.data)
+            })
+            .catch(err => {
+              console.log('err', err)
+            })
+        }
     },
     mounted () {
         let self = this

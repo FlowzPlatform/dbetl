@@ -30,13 +30,13 @@
                           <FormItem label="Icon" v-if="frmSettings.selectedDb" style="margin-bottom:0px">
                               <div class="demo-upload-list">
                                   <template>
-                                      <img v-if="frmSettings.upldIcn" :src="frmSettings.upldIcn">
+                                      <img v-if="frmSettings.upldIcn" :src="frmSettings.upldIcn" >
                                       <div v-else>
                                           <img v-if="frmSettings.selectedDb === 'mongo'" :src="mongo">
                                           <img v-if="frmSettings.selectedDb === 'rethink'" :src="rethink">
                                           <img v-if="frmSettings.selectedDb === 'elastic'" :src="elastic">
                                           <img v-if="frmSettings.selectedDb === 'nedb'" :src="nedb">
-                                          <img v-if="frmSettings.selectedDb === 'mysql'" :src="mysql">
+                                          <img style="background-color:#283646" v-if="frmSettings.selectedDb === 'mysql'" :src="mysql">
                                       </div>
                                   </template>
                               </div>
@@ -100,7 +100,7 @@
           </Card>
       </template>
       <template v-if="currentStep == 1">
-          <Card :bordered="true" style="padding: 10px 10px;">
+          <Card :bordered="true" style="padding: 0px 10px;">
               <Row>
                 <Col span="12">
                 <FormItem prop="rdoCrt">
@@ -112,25 +112,25 @@
                 <FormItem>
                   <Row>
                 <Col span="6">
-                  <FormItem prop="rdosync">
+                  <!-- <FormItem prop="rdosync">
                     <RadioGroup v-model="frmSettings.rdosync" v-if="frmSettings.rdoCrt == 'rbtDB'">
                       <Radio label="rbtsync"><span>Keep Sync</span></Radio>
                     </RadioGroup>
-                  </FormItem>
+                  </FormItem> -->
                   </Col>
                   <Col span="6">
-                  <FormItem prop="keep_sync" v-if="frmSettings.rdosync == 'rbtsync' && frmSettings.rdoCrt == 'rbtDB'">
+                  <!-- <FormItem prop="keep_sync" v-if="frmSettings.rdosync == 'rbtsync' && frmSettings.rdoCrt == 'rbtDB'">
                     <Input placeholder="Everyday/Everyhour" v-model.trim="frmSettings.keep_sync"></Input>
-                  </FormItem>
+                  </FormItem> -->
                   </Col>
                 </Row>  
                 </FormItem>
-                <FormItem prop="rdodb">
+                <!-- <FormItem prop="rdodb">
                   <RadioGroup v-model="frmSettings.rdodb" v-if="frmSettings.rdoCrt == 'rbtDB'" @on-change="getTableAll()">
                     <Radio label="rbtCrnt"><span>Current Database</span></Radio>
                     <Radio label="rbtExstng"><span>Existing Database</span></Radio>
                   </RadioGroup>
-                </FormItem>
+                </FormItem> -->
                 <FormItem label="Create with" v-if="frmSettings.rdoCrt == 'rbtDB' && frmSettings.rdodb == 'rbtExstng'">
                   <Select v-model="frmSettings.optCrt" @on-change="getsettingsAll(frmSettings.optCrt)">
                       <Option value="schema" key="schema">Only Schema</Option>
@@ -622,6 +622,7 @@ export default {
       rethink,
       elastic,
       nedb,
+      mysql,
       model: false,
       csvData: [],
       errmsg: [],
@@ -1622,7 +1623,7 @@ export default {
         } else if (value === 'nedb') {
           this.frmSettings.port = '8080'
         } else if (value === 'mysql') {
-          this.frmSettings.port = '27017'
+          this.frmSettings.port = '3306'
         }
     },
     handleModalOk() {
@@ -1664,15 +1665,21 @@ export default {
         return result.mongo
       }
     },
-
+    getPostObj(mObj) {
+      // console.log('Calling.........................', mObj)
+      var obj = {}
+      _.forEach(mObj, (v, k) => {
+        if (k === 'isenable' || k === 'connection_name' || k === 'host' || k === 'port' || k === 'dbname' || k === 'username' || k === 'password' || k === 'upldIcn' || k === 'notes' || k === 'isdefault' || k === 'selectedDb') {
+          obj[k] = v
+        }
+      })
+      return obj
+    },
     handleSubmit(name) {
       this.$refs[name].validate((valid) => {
         if (valid) {
           let guid = (this.S4() + this.S4() + "-" + this.S4() + "-4" + this.S4().substr(0, 3) + "-" + this.S4() + "-" + this.S4() + this.S4() + this.S4()).toLowerCase();
-          let obj = this.frmSettings;
-          delete obj.optCrt
-          delete obj.rdoCrt
-          delete obj.Database
+          let obj = this.getPostObj(this.frmSettings);
           obj.id = guid;
           api.request('post', '/settings', obj)
             .then(response => {

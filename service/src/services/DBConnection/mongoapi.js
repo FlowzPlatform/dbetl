@@ -107,6 +107,17 @@ module.exports = {
     }
   }),
 
+  deleteThisTableRecord: async(function (id, inst_id, tname) {
+    var id = new mongoose.Types.ObjectId(id);
+    for (let [i, inst] of db.entries()) {
+      if ( inst.id == inst_id ) {
+        var res = await (inst.conn.collection(tname).deleteOne({ _id: id }))
+        // console.log('mongo >>>>>>>>>>>>>>', res)
+        return res
+      }
+    }
+  }),
+
   //get methods
   getSchemaName: async(function (name) {
     console.log('mongo get SchemaName.............................');

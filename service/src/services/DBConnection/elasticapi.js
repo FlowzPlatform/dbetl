@@ -157,6 +157,20 @@ module.exports = {
     }
   }),
 
+  deleteThisTableRecord: async(function (id, inst_id, tname) {
+    for (let [i, inst] of client.entries()) {
+      if ( inst.id == inst_id ) {
+        var res = await (inst.conn.delete({
+          index: inst.dbname,
+          type: tname,
+          id: id,
+        }))
+        // console.log('mongo >>>>>>>>>>>>>>', res)
+        return res
+      }
+    }
+  }),
+
   //***********************get cuustom methods******************
   getSchemaName: async(function (name) {
     console.log('elastic get SchemaName');

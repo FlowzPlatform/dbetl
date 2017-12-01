@@ -108,6 +108,16 @@ module.exports = {
     }
   }),
 
+  deleteThisTableRecord: async(function (id, inst_id, tname) {
+    for (let [i, inst] of r.entries()) {
+      if ( inst.id == inst_id ) {
+        var res = await (inst.conn.table(tname).get(id).delete().run())
+        // console.log('rethink >>>>>>>>>>>>>>', res)
+        return res
+      }
+    }
+  }),
+
   getSchemaName: async(function (name) {
     console.log('rethink get SchemaName');
     var schemadata = await (r.table('schema').filter({ 'title': name })
