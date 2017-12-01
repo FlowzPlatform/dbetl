@@ -15,7 +15,7 @@ db1.mysql.dbinstance.forEach(function (instance, inx) {
     host     : instance.host,
     port     : instance.port,
     user     : instance.username,
-    password : instance.password
+    password : pass
   });
   conn1.connect();
 

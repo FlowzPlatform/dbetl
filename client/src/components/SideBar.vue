@@ -199,7 +199,7 @@
           this.$Notice.error({
             title: error,
             desc: 'connection to the server timed out',
-            duration: 0
+            duration: 3
           })
         })
       },
