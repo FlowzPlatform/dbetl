@@ -150,26 +150,26 @@ export default {
                       align: 'center',
                       render: (h, params) => {
                         return h('div', [
-                          // h('Button', {
-                          //   props: {
-                          //     type: 'success',
-                          //     size: 'small',
-                          //     icon: ''
-                          //   },
-                          //   style: {
-                          //     // color: '#CC0000',
-                          //     marginRight: '10px',
-                          //     // padding: '0px',
-                          //     fontSize: '12px'
-                          //   },
-                          //   on: {
-                          //     click: () => {
-                          //       this.testConnection(this.tabPane, params.index)
-                          //       // alert(this.tabPane)
-                          //       // this.instanceRemove(this.tabPane, params.index)
-                          //     }
-                          //   }
-                          // }, 'Test'),
+                          h('Button', {
+                            props: {
+                              type: 'success',
+                              size: 'small',
+                              icon: ''
+                            },
+                            style: {
+                              // color: '#CC0000',
+                              marginRight: '10px',
+                              // padding: '0px',
+                              fontSize: '12px'
+                            },
+                            on: {
+                              click: () => {
+                                this.testConnection(this.tabPane, params.index)
+                                // alert(this.tabPane)
+                                // this.instanceRemove(this.tabPane, params.index)
+                              }
+                            }
+                          }, 'Test'),
                           h('Button', {
                             props: {
                               type: 'text',
@@ -301,10 +301,30 @@ export default {
                 {
                   title: 'Action',
                   key: 'action',
-                  width: 100,
+                  width: 150,
                   align: 'center',
                   render: (h, params) => {
                     return h('div', [
+                        h('Button', {
+                          props: {
+                            type: 'success',
+                            size: 'small',
+                            icon: ''
+                          },
+                          style: {
+                            // color: '#CC0000',
+                            marginRight: '10px',
+                            // padding: '0px',
+                            fontSize: '12px'
+                          },
+                          on: {
+                            click: () => {
+                              this.testConnection(this.tabPane, params.index)
+                              // alert(this.tabPane)
+                              // this.instanceRemove(this.tabPane, params.index)
+                            }
+                          }
+                        }, 'Test'),
                       h('Button', {
                         props: {
                           type: 'text',
@@ -436,10 +456,30 @@ export default {
                 {
                   title: 'Action',
                   key: 'action',
-                  width: 100,
+                  width: 150,
                   align: 'center',
                   render: (h, params) => {
                     return h('div', [
+                        h('Button', {
+                          props: {
+                            type: 'success',
+                            size: 'small',
+                            icon: ''
+                          },
+                          style: {
+                            // color: '#CC0000',
+                            marginRight: '10px',
+                            // padding: '0px',
+                            fontSize: '12px'
+                          },
+                          on: {
+                            click: () => {
+                              this.testConnection(this.tabPane, params.index)
+                              // alert(this.tabPane)
+                              // this.instanceRemove(this.tabPane, params.index)
+                            }
+                          }
+                        }, 'Test'),
                       h('Button', {
                         props: {
                           type: 'text',
@@ -570,10 +610,30 @@ export default {
                 {
                   title: 'Action',
                   key: 'action',
-                  width: 100,
+                  width: 150,
                   align: 'center',
                   render: (h, params) => {
                     return h('div', [
+                        h('Button', {
+                          props: {
+                            type: 'success',
+                            size: 'small',
+                            icon: ''
+                          },
+                          style: {
+                            // color: '#CC0000',
+                            marginRight: '10px',
+                            // padding: '0px',
+                            fontSize: '12px'
+                          },
+                          on: {
+                            click: () => {
+                              this.testConnection(this.tabPane, params.index)
+                              // alert(this.tabPane)
+                              // this.instanceRemove(this.tabPane, params.index)
+                            }
+                          }
+                        }, 'Test'),
                       h('Button', {
                         props: {
                           type: 'text',
@@ -704,10 +764,30 @@ export default {
                 {
                   title: 'Action',
                   key: 'action',
-                  width: 100,
+                  width: 150,
                   align: 'center',
                   render: (h, params) => {
                     return h('div', [
+                        h('Button', {
+                          props: {
+                            type: 'success',
+                            size: 'small',
+                            icon: ''
+                          },
+                          style: {
+                            // color: '#CC0000',
+                            marginRight: '10px',
+                            // padding: '0px',
+                            fontSize: '12px'
+                          },
+                          on: {
+                            click: () => {
+                              this.testConnection(this.tabPane, params.index)
+                              // alert(this.tabPane)
+                              // this.instanceRemove(this.tabPane, params.index)
+                            }
+                          }
+                        }, 'Test'),
                       h('Button', {
                         props: {
                           type: 'text',
@@ -838,15 +918,45 @@ export default {
               console.log(error)
           })
         },
-        testConnection (db, index) {db
-          var data = this[db+'Dt'][index]
-          console.log('testConnection',data)
-          api.request('post', '/settings?check=' + db, data)
+        testConnection (db, index) {
+          var tdata = this[db+'Dt'][index]
+          // console.log('testConnection',data)
+          api.request('post', '/settings?checkconn=' + db, tdata)
             .then(res => {
-              console.log('testConnection response', res.data)
+              // console.log('testConnection response', res.data)
+              if (res.data.hasOwnProperty('result')) {
+                var title = ''
+                var content = '<p>Content of dialog</p><p>Content of dialog</p>'
+                var mtype = ''
+                if (res.data.result) {
+                  title = 'Sucess!!'
+                  mtype = 'success'
+                  content = '<b>Successfully Connected to Database</b>'
+                } else {
+                  title = 'Error!!'
+                  mtype = 'error'
+                  if (db === 'mongo') {
+                    content = res.data.error.message
+                  } else if (db === 'rethink') {
+                    content = res.data.error.msg
+                  } else if (db === 'elastic') {
+                    content = res.data.error.message
+                  } else {
+                    content = JSON.stringify(res.data.error)
+                  }
+                }
+                this.$Modal[mtype]({
+                    title: title,
+                    content: content,
+                    width: 500
+                });
+              } else {
+                this.$Notice.error({duration: 3, title:'Something Error!!', desc:''})
+              }
             })
             .catch(err => {
               console.log('err', err)
+              this.$Notice.error({duration: 3, title:'Error!!', desc:'Connection Time Out.'})
             })
         }
     },
