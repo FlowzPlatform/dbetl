@@ -40,7 +40,8 @@ class Service {
   }
 
   remove (id, params) {
-    return Promise.resolve({ id });
+    var conndata = removeFunction(id, params)
+    return Promise.resolve(conndata);
   }
 }
 
@@ -100,7 +101,7 @@ var getFunction = async (function (id) {
   return res
 })
 
-var updateFunction= async (function (id, data) {
+var updateFunction = async (function (id, data) {
   var inst_id = data.inst_id
   var setting_res = await (getThisSetting(inst_id))
   var db = setting_res.selectedDb
@@ -109,6 +110,15 @@ var updateFunction= async (function (id, data) {
   return _res
 })
 
+var removeFunction = async (function (id, params) {
+  var inst_id = params.query.instid
+  var tname = params.query.tname
+  var setting_res = await (getThisSetting(inst_id))
+  var db = setting_res.selectedDb
+  var conn = require('../DBConnection/' + db + 'api')
+  var _res = await (conn.deleteThisTableRecord(id, inst_id, tname))
+  return _res
+})
 
 module.exports = function (options) {
   return new Service(options);

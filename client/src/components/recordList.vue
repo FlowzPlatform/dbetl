@@ -51,7 +51,7 @@
                             </span>
                             <span v-else>
                               <a @click="show(index)"><Icon  type="edit" style="font-size: 20px;"></Icon></a>
-                              <a style= 'color:red'><Icon type="android-delete" style="font-size: 20px;"></Icon></a>
+                              <a style= 'color:red' @click="deleteHandle(index)"><Icon type="android-delete" style="font-size: 20px;"></Icon></a>
                             </span>
                           </div>
                         </td>
@@ -164,10 +164,10 @@ export default {
     },
     updatedvalue (index) {
       var obj = {}
-      if (this.tableData[this.openTrasformEditorIndex].hasOwnProperty('_id') === true) {
+      if (this.tableData[this.openTrasformEditorIndex].hasOwnProperty('_id')) {
         this.jsoneditordata['_id'] = this.tableData[this.openTrasformEditorIndex]._id
       }
-      if (this.tableData[this.openTrasformEditorIndex].hasOwnProperty('id') === true) {
+      if (this.tableData[this.openTrasformEditorIndex].hasOwnProperty('id')) {
         this.jsoneditordata['id'] = this.tableData[this.openTrasformEditorIndex].id
       }
       obj.inst_id = this.$route.params.id
@@ -197,6 +197,45 @@ export default {
     },
     cancelHandle (index) {
       this.openTrasformEditorIndex = -1
+    },
+    deleteHandle (index) {
+      var id
+      var instId = this.$route.params.id
+      var tname = this.$route.params.tname
+
+      if (this.tableData[index].hasOwnProperty('_id')) {
+        id = this.tableData[index]._id
+      }
+      if (this.tableData[index].hasOwnProperty('id')) {
+        id = this.tableData[index].id
+      }
+      if (id !== undefined) {
+        this.$Modal.confirm({
+          title: 'Confirm',
+          content: '<p>Are you sure you want to delete?</p>',
+          onOk: () => {
+            ConnectionData.deleteThis(id, instId, tname)
+              .then(response => {
+                this.tableData.splice(index, 1)
+                this.$Notice.success({
+                  title: 'Success',
+                  desc: 'SchemaInstance Deleted.....',
+                  duration: 2
+                })
+              })
+              .catch(error => {
+                console.log(error)
+                this.$Notice.error({
+                  title: 'Error',
+                  desc: 'SchemaInstance Not Deleted.....',
+                  duration: 2
+                })
+              })
+          },
+          onCancel: () => {
+          }
+        })
+      }
     }
   },
   mounted () {
@@ -217,16 +256,16 @@ export default {
   feathers: {
     'connectiondata': {
       updated (data) {
-        console.log('connectiondata updated..', data)
+        // console.log('connectiondata updated..', data)
         this.init()
       },
       created (data) {
-        console.log('connectiondata created..', data)
+        // console.log('connectiondata created..', data)
         this.init()
       },
       removed (data) {
         console.log('connectiondata removed..', data)
-        this.init()
+        // this.init()
       }
     }
   }

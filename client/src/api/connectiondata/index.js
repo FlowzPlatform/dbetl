@@ -21,5 +21,8 @@ export default {
   },
   put: (id, data) => {
     return api.request('put', '/' + model + '/' + id, data)
+  },
+  deleteThis: (id, instid, tname) => {
+    return api.request('delete', '/' + model + '/' + id + '?instid=' + instid + '&&tname=' + tname)
   }
 }
