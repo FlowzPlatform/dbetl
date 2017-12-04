@@ -12,6 +12,7 @@ var MongoClient = require('mongodb').MongoClient;
 var fs = require('fs');
 var path = require('path');
 // var aurl = 'http://' + job.configData.host + ':' + job.configData.port;
+var endecrypt = require('../service/src/services/encryption/security')			
 var mysql = require('mysql');
 var _ = require('lodash')
 
@@ -52,14 +53,72 @@ var createConn = async (function(data, mapdata) {
       // console.log(client)
     	return {conn: client, db: data.selectedDb}
 	} else if(data.selectedDb == 'mysql') {
+		// console.log('-----------import ------------',data);
+		var pass = endecrypt.decrypt(data.password)
+
 		var connection = mysql.createConnection({
 			host     : data.host,
 			port     : data.port,
 			user     : data.username,
-			password : data.password,
+			password : pass,
 			database : data.dbname
 		});
+		connection.connect();
+		
+		if (mapdata != undefined) {
+	    	for (let [i, mObj] of mapdata.entries() ) {
+				var tableData = function () {
+					var result = []
+					
+					return new Promise((resolve, reject) => {
+						connection.query("SHOW TABLES LIKE '"+mObj.target+"'", function (error, result, fields) {
+						error? reject(error) : resolve(result.length)
+					  })
+					}).then(content => {
+					  return content;
+					}).catch(err=> {
+					  return err;
+					})     
+				};
+	  			var resTableData = await (tableData())
+				  var getDatabaseTables = await(getQuery('mysql','select','commonSelect'));
+				getDatabaseTables = getDatabaseTables.replace('{{ table_name }}',mObj.target+ ' LIMIT 1');
+				getDatabaseTables = getDatabaseTables.replace('{{ fields }}','1');
+
+				if(resTableData == 0)
+				{
+					var checkColumn = await(getQuery('mysql','create','createTable'));
+					checkColumn = checkColumn.replace('{{ table_name }}',mObj.target);
+					checkColumn = checkColumn.replace('{{ fields }}','id text NOT NULL');
 	
+					connection.query(checkColumn);
+	
+					var checkColumn = await(getQuery('mysql','alter','changeFieldType'));
+					checkColumn = checkColumn.replace('{{ table_name }}',mObj.target);
+					checkColumn = checkColumn.replace('{{ field }}','id');
+					checkColumn = checkColumn.replace('{{ field1 }}','id');
+					checkColumn = checkColumn.replace('{{ fieldType }}','INT(11) NOT NULL');
+					
+					connection.query(checkColumn);
+					
+					var checkColumn = await(getQuery('mysql','alter','addPrimaryKey'));
+					checkColumn = checkColumn.replace('{{ table_name }}',mObj.target);
+					checkColumn = checkColumn.replace('{{ field }}','id');
+					
+					connection.query(checkColumn);
+					
+					var checkColumn = await(getQuery('mysql','alter','changeFieldType'));
+					checkColumn = checkColumn.replace('{{ table_name }}',mObj.target);
+					checkColumn = checkColumn.replace('{{ field }}','id');
+					checkColumn = checkColumn.replace('{{ field1 }}','id');
+					checkColumn = checkColumn.replace('{{ fieldType }}','INT(11) NOT NULL AUTO_INCREMENT');
+					
+					connection.query(checkColumn);
+							
+				}
+				
+			}
+		}
 		return {conn: connection, db: data.selectedDb}
 
 	}
@@ -72,6 +131,104 @@ var getSchemaidByName = async (function(url, name) {
 			return obj._id
 		}
 	}
+})
+
+var updateSchema = async( function(data,table_name,databse_name,conn) {
+	var tableFields='';
+	var tableValues='';
+	k=0;
+	
+	_.forEach(data, function (d,key) {
+        // if(key != 'Schemaid' && key != 'id' && key != '_id')
+		if(key != 'id' && key != '_id')
+        {
+          if(k==0)
+          {
+            let res = await (UUID())
+            let uuid = res;
+
+            tableFields += key;
+            
+
+            if(typeof d == 'object')
+              {
+                tableValues += "'"+JSON.stringify(d)+"'";
+              }
+              else{
+                tableValues += "'"+d+"'";
+              }
+              
+          }
+          else
+          {
+            if(typeof d == 'object')
+            {
+              tableFields += ','+key;
+              tableValues += ",'"+JSON.stringify(d)+"'";              
+            }
+            else{
+              tableFields += ','+key;
+              tableValues += ",'"+d+"'";              
+            }
+          }
+          k++; 
+        }
+	  })
+	  
+	  var columns = tableFields.split(",");
+	  
+	  var updateSchemaData = async(function () {
+        var promises = []        
+        new_fields=[]
+    
+        _.forEach(columns, function (entity,index) {
+  
+          if(entity != 'id' && entity != '_id')
+          {
+            var checkColumn = await(getQuery('mysql','select','checkColumn'));
+            checkColumn = checkColumn.replace('{{ table_name }}','information_schema.COLUMNS');
+            checkColumn = checkColumn.replace('{{ tableName }}',table_name);
+            checkColumn = checkColumn.replace('{{ fields }}','*');
+            checkColumn = checkColumn.replace('{{ database_name }}',databse_name);
+            checkColumn = checkColumn.replace('{{ column_name }}',entity.replace(' ', '_'));
+			
+            var process = new Promise((resolve, reject) => {
+				conn.conn.query(checkColumn, function (error, result, fields) {
+                error? reject(error) : result.length == 0 ? resolve(entity.replace(' ', '_')) : resolve('')
+              })
+            })    
+          }
+  
+          promises.push(process); 
+        });
+      
+        return Promise.all(promises).then(content => {
+          return _.union(content)
+        });
+      })
+  
+	  var updateSchemaDataResponse = await (updateSchemaData())
+	  
+	  _.forEach(updateSchemaDataResponse, function (field,index) {
+			if(field != "")
+			{
+			var alterTableAndAddField = await(getQuery('mysql','alter','alterTableAndAddField'));
+			alterTableAndAddField = alterTableAndAddField.replace('{{ table_name }}',table_name);
+			alterTableAndAddField = alterTableAndAddField.replace('{{ field }}',field);
+			alterTableAndAddField = alterTableAndAddField.replace('{{ type }}','TEXT NULL DEFAULT NULL');
+			alterTableAndAddField = alterTableAndAddField.replace('{{ after }}','');
+
+			conn.conn.query(alterTableAndAddField);
+			}
+		})
+		
+		var commonInsert = await(getQuery('mysql','insert','commonInsert'));
+		commonInsert = commonInsert.replace('{{ table_name }}',table_name);
+		commonInsert = commonInsert.replace('{{ fields }}',tableFields);
+		commonInsert = commonInsert.replace('{{ values }}',tableValues);
+		conn.conn.query(commonInsert);
+
+    return "success";
 })
 
 var getQuery = async(function (dbName,type,queryFor) {
@@ -193,7 +350,7 @@ q.process(async(job, next) => {
 						  })     
 						};
 						var resTableList = await (tableList())
-						
+						console.log('resTableList',resTableList)
 						for (let [i, sObj] of resTableList.entries()) {
 							instanceVal = {};         
 							
@@ -205,7 +362,8 @@ q.process(async(job, next) => {
 						}
 							
 					}
-
+					// console.log('sData',sData);
+					// console.log('job.data.target.selectedDb',job.data.target.selectedDb);
 					// inserting source data into target table
 					if(job.data.target.selectedDb == 'mongo') {
 						var _res = []
@@ -261,7 +419,7 @@ q.process(async(job, next) => {
 						// 	var s = await (tConn.conn.table(obj.target).insert(sObj).run())
 						// 	_res.push(s)
 						// }
-						console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>', _res)
+						// console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>', _res)
 
 					} else if(job.data.target.selectedDb == 'elastic') {
 						var _res = []
@@ -283,6 +441,25 @@ q.process(async(job, next) => {
 							_res.push(s)
 						}
 					} else if(job.data.target.selectedDb == 'mysql') {
+						var _res = []
+						
+						// if(sObj.hasOwnProperty('_id')) {
+						// 	sObj.id = (sObj._id).toString()
+						// 	sObj._id = sObj.id
+						// }
+						
+						// var sId = await (getSchemaidByName(aurl, obj.target))
+						
+						for (let [i, sObj] of sData.entries()) {
+							if (obj.colsData.length !== 0) {
+								sObj = await (filterObj(sObj, obj.colsData))
+							}
+							
+							// console.log('sObj',sObj,obj.target,job.data.target.dbname)
+							// return false;
+							// sObj.Schemaid = sId
+							var response = await (updateSchema(sObj, obj.target,job.data.target.dbname,tConn))
+						}
 					}
 			}
 
