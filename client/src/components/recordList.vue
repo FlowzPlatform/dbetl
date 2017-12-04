@@ -38,7 +38,8 @@
                       <tr class="ivu-table-row" >
                         <td class="">
                           <div class="ivu-table-cell">
-                            <span style="float:left">{{ value._id }}</span>
+                            <span v-if="value._id != undefined" style="float:left">{{ value._id }}</span>
+                            <span v-else style="float:left">{{ value.id }}</span>
                           </div>
                         </td>
                         <td class="">
@@ -98,23 +99,19 @@ export default {
   },
   methods: {
     show (index) {
-      if (this.crumbData.db === 'mysql') {
-
-      } else {
-        let rowid = _.cloneDeep(this.tableData[index])
-        if (rowid.hasOwnProperty('_id') === true) {
-          delete rowid._id
-        }
-        if (rowid.hasOwnProperty('id') === true) {
-          delete rowid.id
-        }
-        this.jsoneditordata = rowid
-        if (this.openTrasformEditorIndex === index) {
-          this.openTrasformEditorIndex = -1
-          return false
-        }
-        this.openTrasformEditorIndex = index
+      let rowid = _.cloneDeep(this.tableData[index])
+      if (rowid.hasOwnProperty('_id') === true) {
+        delete rowid._id
       }
+      if (rowid.hasOwnProperty('id') === true) {
+        delete rowid.id
+      }
+      this.jsoneditordata = rowid
+      if (this.openTrasformEditorIndex === index) {
+        this.openTrasformEditorIndex = -1
+        return false
+      }
+      this.openTrasformEditorIndex = index
     },
     init () {
       // alert(this.$route.params.id + '/' + this.$route.params.tname)

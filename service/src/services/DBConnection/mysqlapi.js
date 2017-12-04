@@ -451,6 +451,39 @@ var UUID = async(function generateUUID() {
   return uuid;
 });
 
+var getUpdatedFields = async(function (data) {
+  var tableFields='';
+  k=0;
+
+  _.forEach(data.data, function (d,key) {
+    if(key != 'Schemaid' && key != '_id' && key != 'id' && key != 'database')
+    {
+      if(k==0)
+      {
+        if(typeof d == 'object')
+        {
+          tableFields += key+"='"+JSON.stringify(d)+"'";
+        }
+        else {
+          tableFields += key+"='"+d+"'";
+        }
+      }
+      else
+      {
+        if(typeof d == 'object')
+          {
+            tableFields += ","+key+"='"+JSON.stringify(d)+"'";
+          }
+          else {
+            tableFields += ","+key+"='"+d+"'";
+          }
+      }
+      k++;
+    }
+  })
+  return tableFields;
+})
+
 module.exports = {
   generateInstanceTable: async(function (data){
     console.log('mysql generate instance collection..........');
@@ -599,6 +632,48 @@ module.exports = {
       });
       return 'success';
   }),
+  putTableRecord: async(function(id, data) {
+    console.log("dfssdd");
+
+
+    var schemadata = function () {
+      var result = []
+      tableFields = await(getUpdatedFields(data));
+
+      for (let [i, inst] of db.entries()) {
+        if ( inst.id == data.inst_id ) {
+          return new Promise((resolve, reject) => {
+            var commonUpdate = await(getQuery('mysql','update','commonUpdate'));
+            commonUpdate = commonUpdate.replace('{{ table_name }}',data.tname);
+            commonUpdate = commonUpdate.replace('{{ fields }}',tableFields);
+            commonUpdate = commonUpdate.replace('{{ where }}','id='+id);
+
+            inst.conn.query(commonUpdate, function (error, result, fields) {
+              error? reject(error) : resolve(id)
+            })
+          }).then(content => {
+            return content;
+          }).catch(err=> {
+            return err;
+          })
+        }
+      }
+    };
+    var res = await (schemadata())
+    return res;
+  }),
+  deleteThisTableRecord: async(function (id, inst_id, tname) {
+    for (let [i, inst] of db.entries()) {
+      if ( inst.id == inst_id ) {
+        var commonDelete = await(getQuery('mysql','delete','commonDelete'));
+        commonDelete = commonDelete.replace('{{ table_name }}',tname);
+        commonDelete = commonDelete.replace('{{ where }}','id='+id);
+    
+        inst.conn.query(commonDelete);
+        return id; 
+      }
+    }
+  }),
   getConnsAllData: async (function(ins_id) {
     for(let [i, db_i] of db.entries()) {
       if(db_i.id == ins_id) {
@@ -628,50 +703,52 @@ module.exports = {
           var resTableList = await (tableList())
 
           // console.log('----------resTableList----------',resTableList);
-          var tableName = resTableList.split(",");
-          for (let [inx, val] of tableName.entries()) {
-            var obj = {}
-            obj['t_name'] = val
+          if(resTableList != null)
+          {
+            var tableName = resTableList.split(",");
+            for (let [inx, val] of tableName.entries()) {
+              var obj = {}
+              obj['t_name'] = val
 
-            var getDatabaseTables = await(getQuery('mysql','select','commonSelect'));
-						getDatabaseTables = getDatabaseTables.replace('{{ table_name }}',val);
-            getDatabaseTables = getDatabaseTables.replace('{{ fields }}','*');
-            
-            var tableData = function () {
-						  var result = []
-						  
-						  return new Promise((resolve, reject) => {
-                db[i].conn.query(getDatabaseTables, function (error, result, fields) {
-							  error? reject(error) : resolve(result)
-							})
-						  }).then(content => {
-							return content;
-						  }).catch(err=> {
-							return err;
-						  })     
-						};
-            var resTableData = await (tableData())
-            sData = [];
-            for (let [i, sObj] of resTableData.entries()) {
-							instanceVal = {};
-							_.forEach(sObj, function (rs1,key) {
-                // console.log('i',i)
-                // console.log('key',key)
-                // console.log('rs1',rs1)
-                instanceVal[key] = rs1;   
-              })
+              var getDatabaseTables = await(getQuery('mysql','select','commonSelect'));
+              getDatabaseTables = getDatabaseTables.replace('{{ table_name }}',val);
+              getDatabaseTables = getDatabaseTables.replace('{{ fields }}','*');
               
-							sData.push(instanceVal)
+              var tableData = function () {
+                var result = []
+                
+                return new Promise((resolve, reject) => {
+                  db[i].conn.query(getDatabaseTables, function (error, result, fields) {
+                  error? reject(error) : resolve(result)
+                })
+                }).then(content => {
+                return content;
+                }).catch(err=> {
+                return err;
+                })     
+              };
+              var resTableData = await (tableData())
+              sData = [];
+              for (let [i, sObj] of resTableData.entries()) {
+                instanceVal = {};
+                _.forEach(sObj, function (rs1,key) {
+                  // console.log('i',i)
+                  // console.log('key',key)
+                  // console.log('rs1',rs1)
+                  instanceVal[key] = rs1;   
+                })
+                
+                sData.push(instanceVal)
+              }
+              // console.log("sData",sData);                     
+              
+            // console.log('----------resTableData----------',resTableData);
+              
+              // var data = await (r[i].conn.table(val).run())
+              obj['t_data'] = sData
+              arr.push(obj)
             }
-            // console.log("sData",sData);                     
-            
-          // console.log('----------resTableData----------',resTableData);
-            
-            // var data = await (r[i].conn.table(val).run())
-            obj['t_data'] = sData
-            arr.push(obj)
           }
-
         // var result = await (r[i].conn.tableList())
         // // console.log(result)
         // for (let [inx, val] of result.entries()) {
