@@ -140,6 +140,21 @@ module.exports = {
     }
   }),
 
+  postTableRecord: async(function(data) {
+    for (let [i, inst] of client.entries()) {
+      if ( inst.id == data.inst_id ) {
+        var res = await (
+          inst.conn.index({
+          index: inst.dbname,
+          type: data.tname,
+          body: data.data
+        }))
+        // console.log('rethink >>>>>>>>>>>>>>', res)
+        return res._id;
+      }
+    }
+  }),
+
   putTableRecord: async(function(id, data) {
     for (let [i, inst] of client.entries()) {
       if ( inst.id == data.inst_id ) {

@@ -67,6 +67,7 @@
                         <img v-else :src="insObj.imgurl" class="schema-icon">
                       </span>
                       {{insObj.cname}}
+                      
                   </template>
                   <MenuItem :name="'dbinx'-'insinx'-'tinx'" v-for="(tObj, tinx) in insObj.inst_data" :key="tinx">
                     <!-- <router-link :to="{ name: 'recordList', params: { id: insObj.inst_id , tname: tObj.t_name}}"> -->
@@ -76,6 +77,13 @@
                       {{tObj.t_name}}
                     </span>
                     </a>
+                    <span class="menu-action-icon">
+                      <Tooltip content="Add record" placement="top">
+                          <a @click="AddRecord(dbObj.db, insObj.inst_id, tObj.t_name)">
+                              <Icon type="play" class="ficon play"></Icon>
+                          </a>
+                      </Tooltip>
+                    </span>
                     <!-- </router-link> -->
                   </MenuItem>
               </Submenu>
@@ -170,7 +178,11 @@
       }
     },
     methods: {
-       handleOpen(key, keyPath) {
+      AddRecord (db, inst_id, tname) {
+        // console.log(db, inst_id, tname)
+        this.$router.push('/' + inst_id + '/' + tname + '/new')
+      },
+      handleOpen(key, keyPath) {
         console.log(key, keyPath)
       },
       handleClose(key, keyPath) {

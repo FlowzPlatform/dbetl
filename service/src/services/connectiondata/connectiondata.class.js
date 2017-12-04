@@ -22,11 +22,8 @@ class Service {
   }
 
   create (data, params) {
-    if (Array.isArray(data)) {
-      return Promise.all(data.map(current => this.create(current)));
-    }
-
-    return Promise.resolve(data);
+    var conndata = createFunction(data)
+    return Promise.resolve(conndata);
   }
 
   update (id, data, params) {
@@ -99,6 +96,15 @@ var getFunction = async (function (id) {
     }
   }
   return res
+})
+
+var createFunction = async (function (data) {
+  var inst_id = data.inst_id
+  var setting_res = await (getThisSetting(inst_id))
+  var db = setting_res.selectedDb
+  var conn = require('../DBConnection/' + db + 'api')
+  var _res = await (conn.postTableRecord(data))
+  return _res 
 })
 
 var updateFunction = async (function (id, data) {

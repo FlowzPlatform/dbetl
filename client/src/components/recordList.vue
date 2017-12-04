@@ -3,14 +3,18 @@
     <f-Tab></f-Tab>
     <div>
       <Row style="padding-bottom:10px">
-        <Breadcrumb>
+        <Breadcrumb separator="<b class='demo-breadcrumb-separator'>/</b>">
           <BreadcrumbItem>{{crumbData.db}}</BreadcrumbItem>
           <BreadcrumbItem>{{crumbData.cname}}</BreadcrumbItem>
           <BreadcrumbItem>{{crumbData.tname}}</BreadcrumbItem>
         </Breadcrumb>
       </Row>
       <Row>
-        <div class="ivu-tabs-tabpane">
+        <div v-if="!setData" class="demo-spin-container">
+            <Spin fix size="large"></Spin>
+        </div>
+        <!-- <Spin v-if="!setData" size="large"></Spin> -->
+        <div v-else class="ivu-tabs-tabpane">
           <div class="ivu-table-wrapper">
             <div class="ivu-table ivu-table-border">
               <div class="ivu-table-body">
@@ -38,7 +42,8 @@
                       <tr class="ivu-table-row" >
                         <td class="">
                           <div class="ivu-table-cell">
-                            <span style="float:left">{{ value._id }}</span>
+                            <span v-if="value._id != undefined" style="float:left">{{ value._id }}</span>
+                            <span v-else style="float:left">{{ value.id }}</span>
                           </div>
                         </td>
                         <td class="">
@@ -93,7 +98,12 @@ export default {
       tableData: [],
       openTrasformEditorIndex: -1,
       // finalvalue: {},
-      crumbData: {}
+      crumbData: {
+        db: '',
+        cname: '',
+        tname: ''
+      },
+      setData: false
     }
   },
   methods: {
@@ -135,6 +145,7 @@ export default {
                   _.forEach(insd.inst_data, (tabled, tinx) => {
                     if (tabled.t_name === self.$route.params.tname) {
                       self.tableData = tabled.t_data
+                      self.setData = true
                     }
                   })
                 }
@@ -245,11 +256,14 @@ export default {
     '$route.params.id' (newId, oldId) {
       // fetch data
       // console.log(newId)
+      this.setData = false
       this.init()
     },
     '$route.params.tname' (newId, oldId) {
       // fetch data
       // console.log(newId)
+      this.setData = false
+
       this.init()
     }
   },
@@ -257,14 +271,17 @@ export default {
     'connectiondata': {
       updated (data) {
         // console.log('connectiondata updated..', data)
+        this.setData = false
         this.init()
       },
       created (data) {
         // console.log('connectiondata created..', data)
+        this.setData = false
         this.init()
       },
       removed (data) {
         console.log('connectiondata removed..', data)
+        this.setData = false
         // this.init()
       }
     }
@@ -297,5 +314,16 @@ div.jsoneditor tr, div.jsoneditor th, div.jsoneditor td {
 }
 div.jsoneditor-tree {
   overflow: hidden !important;
+}
+.demo-breadcrumb-separator{
+    color: #2d8cf0;
+    padding: 0 5px;
+}
+.demo-spin-container{
+    /*display: inline-block;*/
+    width: 1400px;
+    height: 300px;
+    position: relative;
+    /*border: 1px solid #eee;*/
 }
 </style>
