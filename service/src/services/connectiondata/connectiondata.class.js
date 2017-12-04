@@ -30,7 +30,9 @@ class Service {
   }
 
   update (id, data, params) {
-    return Promise.resolve(data);
+    // console.log(id, data)
+    var conndata = updateFunction(id, data)
+    return Promise.resolve(conndata);
   }
 
   patch (id, data, params) {
@@ -38,7 +40,8 @@ class Service {
   }
 
   remove (id, params) {
-    return Promise.resolve({ id });
+    var conndata = removeFunction(id, params)
+    return Promise.resolve(conndata);
   }
 }
 
@@ -48,12 +51,19 @@ var getallSettings = async (function () {
   return res.data
 })
 
+var getThisSetting = async( function(id) {
+  var res = await (axios.get(url + '/settings/' + id))
+  return res.data
+}) 
+
 var findFunction = async (function () {
-  var res = {}
+  var __res = []
   var settings = await (getallSettings())
   // console.log(settings)
   for (let db in settings) {
-    res[db] = []
+    var mObj = {}
+    mObj['db'] = db
+    var a = []
     for (let [i, inst] of settings[db].dbinstance.entries()) {
       if (inst.isenable) {
         var obj = {}
@@ -63,11 +73,13 @@ var findFunction = async (function () {
         obj['inst_data'] = _res   
         // _res.id = inst.id
         // _res.selectedDb = db
-        res[db].push(obj)
+        a.push(obj)
       }
     }
+    mObj['db_data'] = a
+    __res.push(mObj)
   }
-  return res
+  return __res
 })
 
 var getFunction = async (function (id) {
@@ -89,6 +101,24 @@ var getFunction = async (function (id) {
   return res
 })
 
+var updateFunction = async (function (id, data) {
+  var inst_id = data.inst_id
+  var setting_res = await (getThisSetting(inst_id))
+  var db = setting_res.selectedDb
+  var conn = require('../DBConnection/' + db + 'api')
+  var _res = await (conn.putTableRecord(id, data))
+  return _res
+})
+
+var removeFunction = async (function (id, params) {
+  var inst_id = params.query.instid
+  var tname = params.query.tname
+  var setting_res = await (getThisSetting(inst_id))
+  var db = setting_res.selectedDb
+  var conn = require('../DBConnection/' + db + 'api')
+  var _res = await (conn.deleteThisTableRecord(id, inst_id, tname))
+  return _res
+})
 
 module.exports = function (options) {
   return new Service(options);

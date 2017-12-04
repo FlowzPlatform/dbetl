@@ -55,6 +55,11 @@ db1.mongo.dbinstance.forEach(function (instance, inx) {
 // console.log('Success!!!!!!!!!!!!! Mongo');
 
 module.exports = {
+
+  choose: async(function () {
+    console.log('===================MONGODB=================');
+  }),
+
   generateInstanceTable: async(function (ins_id, title){
     console.log('Mongo generate instance collection..........', ins_id, title);
     // for(let [i, db_i] of db.entries()) {
@@ -76,22 +81,43 @@ module.exports = {
         var result = await (db_i.conn.db.listCollections().toArray())
         // console.log(result)
         for (let [inx, val] of result.entries()) {
-          var obj = {}
-          obj['t_name'] = val.name
-          var data = await (db_i.conn.collection(val.name).find().toArray())
-          obj['t_data'] = data
-          console.log("obj['t_data']",obj['t_data']);
-          arr.push(obj)
+          if(val.name != "system.indexes") {
+            var obj = {}
+            obj['t_name'] = val.name
+            var data = await (db_i.conn.collection(val.name).find().toArray())
+            obj['t_data'] = data
+            arr.push(obj)
+          }
         }
-        
         return arr
       }
     }
   }),
 
-  choose: async(function () {
-    console.log('===================MONGODB=================');
+  putTableRecord: async(function(id, data) {
+    for (let [i, inst] of db.entries()) {
+      if ( inst.id == data.inst_id ) {
+        var id = new mongoose.Types.ObjectId(id);
+        delete data.data._id
+        delete data.data.id
+        var res = await (inst.conn.collection(data.tname).updateOne({ _id: id }, { $set: data.data }))
+        // console.log('mongo >>>>>>>>>>>>>>', res)
+        return res
+      }
+    }
   }),
+
+  deleteThisTableRecord: async(function (id, inst_id, tname) {
+    var id = new mongoose.Types.ObjectId(id);
+    for (let [i, inst] of db.entries()) {
+      if ( inst.id == inst_id ) {
+        var res = await (inst.conn.collection(tname).deleteOne({ _id: id }))
+        // console.log('mongo >>>>>>>>>>>>>>', res)
+        return res
+      }
+    }
+  }),
+
   //get methods
   getSchemaName: async(function (name) {
     console.log('mongo get SchemaName.............................');

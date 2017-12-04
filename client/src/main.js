@@ -48,6 +48,10 @@ Vue.use(iView, { locale })
 
 /* jquery-ui */
 
+/* Animated css */
+
+import 'animate.css/animate.css'
+
 /* IView */
 // import 'bootstrap/dist/css/bootstrap.css'
 // import 'bootstrap-vue/dist/bootstrap-vue.css'
@@ -56,6 +60,9 @@ import AsyncComputed from 'vue-async-computed'
 Vue.use(AsyncComputed)
 
 Vue.config.productionTip = false
+
+import VueCookie from 'vue-cookie'
+Vue.use(VueCookie)
 
 /* eslint-disable no-new */
 
@@ -74,16 +81,38 @@ var router = new VueRouter({
 router.beforeEach((to, from, next) => {
   iView.LoadingBar.config({ color: '#0e406d' })
     // window.console.log('Transition', transition)
-    // console.log(to)
-  if (to.auth && (to.router.app.$store.state.token === 'null')) {
+    // router.app.$store.state.token
+  const token = router.app.$cookie.get('auth_token')
+  if (to.matched.some(record => record.meta.requiresAuth) && (!token || token === 'null')) {
     window.console.log('Not authenticated')
     next({
       path: '/login',
       query: { redirect: to.fullPath }
     })
   } else {
-    // window.console.log('authenticated')
-    next()
+    if (to.matched.some(record => record.meta.requiresAuth)) {
+      store.dispatch('authenticate', token).then(response => {
+        store.commit('SET_USER', response)
+        next()
+      }).catch(error => {
+        console.log(error.message)
+        // window.console.log('Not authenticated')
+        next({
+          path: '/login',
+          query: { redirect: to.fullPath }
+        })
+      })
+    } else {
+      next()
+    }
+      // if (store.state.user == null) {
+      //   // store.dispatch('')
+      // }
+      // router.app.$store.commit('SET_TOKEN', token)
+      // const authUser = JSON.parse(window.localStorage.getItem('authUser'))
+      // router.app.$store.commit('SET_USER', authUser)
+      // window.console.log('authenticated')
+      // next()
   }
 })
 

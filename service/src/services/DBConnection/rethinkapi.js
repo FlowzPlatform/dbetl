@@ -62,13 +62,17 @@ db.rethink.dbinstance.forEach(function (instance, inx) {
   })
 
 module.exports = {
+  choose: async(function () {
+    console.log('===================RETHINKDB=================');
+  }),
+
   generateInstanceTable: async(function (data){
     // console.log('Rethink generate instance collection..........', ins_id, title);
     var title = data.title
     var ins_id = data.database[1]
     for(let [i, db_i] of r.entries()) {
       if(db_i.id == ins_id) {
-        console.log(r[i].conn)
+        // console.log(r[i].conn)
         var res = await (r[i].conn.tableCreate(title))
         // console.log('res......generateInstanceTable........', res)
         return res
@@ -94,9 +98,26 @@ module.exports = {
     }
   }),
 
-  choose: async(function () {
-    console.log('===================RETHINKDB=================');
+  putTableRecord: async(function(id, data) {
+    for (let [i, inst] of r.entries()) {
+      if ( inst.id == data.inst_id ) {
+        var res = await (inst.conn.table(data.tname).get(id).replace(data.data).run())
+        // console.log('rethink >>>>>>>>>>>>>>', res)
+        return res
+      }
+    }
   }),
+
+  deleteThisTableRecord: async(function (id, inst_id, tname) {
+    for (let [i, inst] of r.entries()) {
+      if ( inst.id == inst_id ) {
+        var res = await (inst.conn.table(tname).get(id).delete().run())
+        // console.log('rethink >>>>>>>>>>>>>>', res)
+        return res
+      }
+    }
+  }),
+
   getSchemaName: async(function (name) {
     console.log('rethink get SchemaName');
     var schemadata = await (r.table('schema').filter({ 'title': name })

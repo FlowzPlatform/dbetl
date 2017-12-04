@@ -14,6 +14,9 @@ import Db from '@/components/Db'
 import Login from '@/components/Login'
 import Register from '@/components/Register'
 import JobList from '@/components/JobList'
+import schemaList from '@/components/schemaList'
+import recordList from '@/components/recordList'
+import instancejoblist from '@/components/instancejoblist'
 
 // import FlowzList from '@/components/FlowList'
 // import Instance from '@/components/instance'
@@ -22,12 +25,13 @@ const routes = [{
   path: '/',
   name: 'Layout',
   component: Layout,
+  meta: { description: 'Overview of environment', requiresAuth: true },
   children: [{
     path: 'dashboard',
     alias: '',
     component: Dashboard,
     name: 'Dashboard',
-    meta: { description: 'Overview of environment' }
+    meta: { description: 'Overview of environment', requiresAuth: true }
   }, {
     path: 'schema/edit/:id',
     component: Schema,
@@ -104,6 +108,10 @@ const routes = [{
       required: false
     }
   }, {
+    path: 'schemaList',
+    name: 'schemaList',
+    component: schemaList
+  }, {
     path: 'jobs/list',
     name: 'joblist',
     component: JobList
@@ -111,6 +119,22 @@ const routes = [{
     path: 'Dbsetting/import/:id',
     name: 'import',
     component: Import
+  }, {
+    path: 'recordList/:id/:tname',
+    name: 'recordList',
+    component: recordList,
+    props: {
+      id: Text,
+      required: false
+    }
+  }, {
+    path: 'instancejoblist/:id',
+    name: 'instancejoblist',
+    component: instancejoblist,
+    props: {
+      id: Text,
+      required: false
+    }
   }]
 }, {
   path: '/Login',

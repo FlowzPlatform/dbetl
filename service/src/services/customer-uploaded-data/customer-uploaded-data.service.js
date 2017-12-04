@@ -16,7 +16,7 @@ module.exports = function () {
 
         app.configure(socketio(function(io) {
         io.on('connection', function(socket) {
-          console.log("connected successfully.....")
+          // console.log("connected successfully.....")
           // socket.emit('customer_uploaded_data',data);
           socket.on('stream',function( data){
               console.log('Found all messages', data);

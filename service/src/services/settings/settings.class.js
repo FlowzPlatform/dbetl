@@ -64,7 +64,6 @@ var getFunction = function(id) {
     return _data
 }
 
-
 var check_Connection = async(function (db, data) {
   // console.log('data..', data, 'db', db)
   if (data.hasOwnProperty('id')) {
@@ -72,7 +71,6 @@ var check_Connection = async(function (db, data) {
     data.username = _res.username
     data.password = endecrypt.decrypt(_res.password)
   }
-
   if (db == 'mongo') {
     console.log("MongoDB..............");
     var _res;
@@ -179,6 +177,11 @@ var check_Connection = async(function (db, data) {
 })
 
 var getConnectionData = async(function (db, data) {
+  if (data.hasOwnProperty('id')) {
+    var _res = await (getFunction(data.id))
+    data.username = _res.username
+    data.password = endecrypt.decrypt(_res.password)
+  }
   // console.log('getConnectionData..............')
   if (data.hasOwnProperty('id')) {
     var _res = await (getFunction(data.id))
@@ -515,7 +518,7 @@ class Service {
           return { result: true }
         }).catch(function (err) {
           // console.log('Error..............', err)
-          return { result: false }
+          return { result: false, error: err }
         })
       } else {
         //encryption
@@ -643,6 +646,29 @@ class Service {
     return _data;
     // return Promise.resolve({ id });
   }
+}
+
+
+var getFunction = function(id) {
+  let result = new Promise((resolve, reject) => {
+      fs.readFile(path.join(__dirname, '../DBConnection/db.json'), function (err, data) {
+        if (err) return console.log(err);
+        resolve(JSON.parse(data));
+      });
+    });
+    var _data = Promise.resolve(result).then(function (dbdata) {
+      // console.log(dbdata)
+      var instance;
+      _.forEach(dbdata, function (instances, db) {
+        var obj = _.find(instances.dbinstance, { id: id })
+        if (obj != undefined) {
+          instance = obj
+          instance.selectedDb = db
+        }
+      })
+      return instance
+    });
+    return _data
 }
 
 module.exports = function (options) {

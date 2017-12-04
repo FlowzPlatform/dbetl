@@ -1,5 +1,7 @@
 import api from '../api'
 import _ from 'lodash'
+import axios from 'axios'
+import config from '@/config'
 export default {
   getSchema ({ commit }) {
     commit('SET_SCHEMA', [])
@@ -30,5 +32,24 @@ export default {
   },
   delTabIndex ({commit}, text) {
     commit('DEL_TABINDEX', text)
+  },
+  setUser ({ commit }, authToken) {
+    commit('SET_USER', authToken)
+  },
+  authenticate ({ commit }, authToken) {
+    return axios({
+      method: 'get',
+      url: config.microURI + '/userdetails',
+      headers: {
+        'authorization': authToken
+      }
+    })
+    .then(response => {
+      if (response) {
+        return response.data.data
+      } else {
+        return
+      }
+    })
   }
 }

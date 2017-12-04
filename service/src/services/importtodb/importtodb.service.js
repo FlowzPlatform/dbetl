@@ -20,7 +20,7 @@ module.exports = function () {
   app.configure(socketio(function(io) {
     // console.log("io....",io)
   io.on('connection', function(socket) {
-    console.log("connected successfully to importdb.....")
+    // console.log("connected successfully to importdb.....")
     // socket.emit('customer_uploaded_data',data);
     socket.on('import',async function( data){
         console.log('Found all imported data', data);

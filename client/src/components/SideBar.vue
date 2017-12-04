@@ -26,17 +26,7 @@
 
       <Row style="padding: 10px;" :gutter="16">
         <Col span="8">
-          <!-- <Dropdown trigger="click" @on-click='handleCommand' style="margin-left: 20px;">
-            <a href="javascript:void(0)" class="list">Sort By
-                <Icon type="arrow-down-b"></Icon>
-            </a>
-            <DropdownMenu slot="list">
-                <DropdownItem name="asc">A-Za-z</DropdownItem>
-                <DropdownItem name="desc">z-aZ-A</DropdownItem>
-            </DropdownMenu>
-          </Dropdown> -->
           <Select @on-change="handleCommand" placeholder="Sort By" size="small" style="width:135px;">
-            <!-- <Option v-for="item in cityList" :value="item.value" :key="item.value">{{ item.label }}</Option> -->
             <Option value="asc"><span>A-Za-z</span>
               <span style="float:right;">Ascending</span>
             </Option>
@@ -47,124 +37,82 @@
         </Col>
         <Col span="16">
           <Row type="flex" justify="end">
-            <Col col="8">
+            <!-- <Col col="8">
               <Checkbox v-model="groupby" label="groupby" size="small" style="color:#fff;margin-top:5px;">Group By</Checkbox>
             </Col>
-            <Col span="8">
+            <Col span="8"> -->
               <router-link to="/schema/new">
                 <Button type="default" size="small" icon="plus-round">Add</Button>
               </router-link>
-            </Col>
+            <!-- </Col> -->
           </Row>
         </Col>
       </Row>
 
-      <Row style="padding: 8px;" :gutter="16">
-        <Col span="8">
-          <router-link to="/jobs/list">
-            <Button type="default" size="default">List Of Jobs</Button>
-          </router-link>
-        </Col>
-      </Row>
-
-      <Menu theme="dark" style="max-height:615px; overflow-y: auto" width="auto">
-        <Submenu v-show="groupby" :name="index" v-for="(item, index) in schema" :key="index">
-          <template slot="title">
-            {{item[0]}}
-          </template>
-          <Submenu :name="ind-ind" v-for="(el, ind) in item[1]" :key="ind-ind">
-            <template slot="title">
-              &nbsp;&nbsp;&nbsp;&nbsp;{{el[0]}}
-            </template>
-            <MenuItem :name="indx-indx" v-for="(itm, indx) in el[1]" :key="indx-indx">
-              <img v-if="itm.iconpath === 'mongo'" :src="mongo" class="schema-icon">
-              <img v-else-if="itm.iconpath === 'rethink'" :src="rethink" class="schema-icon">
-              <img v-else-if="itm.iconpath === 'elastic'" :src="elastic" class="schema-icon">
-              <img v-else-if="itm.iconpath === 'nedb'" :src="nedb" class="schema-icon">
-              <img v-else-if="itm.iconpath === 'mysql'" :src="mysql" class="schema-icon">
-              <img v-else :src="itm.iconpath" class="schema-icon">
-              <span>
-                {{itm.title}}
-              </span>
-              <div class="menu-action-icon">
-                <Tooltip content="Create instance" placement="top">
-                    <router-link :to="{ name: 'schema-instance', params: { schemaid: itm._id }}">
-                      <Icon type="play" class="ficon play"></Icon>
-                    </router-link>
-                </Tooltip>
-                <Tooltip content="List" placement="top">
-                  <a @click="setData(itm.title, '/instancelist/'+itm._id, itm._id, 'list')">
-                    <Icon type="navicon-round" class="ficon list"></Icon>
-                  </a>
-                </Tooltip>
-                <Tooltip content="Edit" placement="top">
-                  <a @click="setData(itm.title, '/schema/edit/'+itm._id, itm._id, 'edit')">
-                      <Icon type="ios-compose-outline" class="ficon edit"></Icon>
-                  </a>
-                  <router-link :to="{name: 'schema/edit', params: {id: itm._id}}" exact>
-                  </router-link>
-                </Tooltip>
-                 <!--  <Tooltip content="Mapping" placement="top">
-                  <router-link :to="{name: 'schemamappinglist', params: {id: itm._id}}">
-                    <Icon type="arrow-swap" class="ficon transform"></Icon>
-                  </router-link>
-                </Tooltip> -->
-                <Tooltip content="Delete" placement="top">
-                  <a @click="handleRemove(indx)">
-                    <Icon type="android-delete" class="ficon delete"></Icon>
-                  </a>
-                </Tooltip>
-              </div>
-            </MenuItem>
+      <!-- =============== iview Side NAV ================= -->
+      <Menu theme="dark" style="max-height:800px; overflow-y: auto" width="auto">
+          <Submenu v-if="dbObj.db_data.length != 0" :name="'dbinx'" v-for="(dbObj, dbinx) in allConnData" :key="dbinx">
+              <template slot="title">
+                  <Icon type="cube"></Icon>
+                  {{dbObj.db}}
+              </template>
+              <Submenu :name="'dbinx'-'insinx'" v-for="(insObj, insinx) in dbObj.db_data" :key="insinx">
+                  <template slot="title">
+                      <span style="padding-left:10px">
+                        <img v-if="insObj.imgurl === 'mongo'" :src="mongo" class="schema-icon">
+                        <img v-else-if="insObj.imgurl === 'rethink'" :src="rethink" class="schema-icon">
+                        <img v-else-if="insObj.imgurl === 'elastic'" :src="elastic" class="schema-icon">
+                        <img v-else-if="insObj.imgurl === 'nedb'" :src="nedb" class="schema-icon">
+                        <img v-else-if="insObj.imgurl === 'mysql'" :src="mysql" class="schema-icon">
+                        <img v-else :src="insObj.imgurl" class="schema-icon">
+                      </span>
+                      {{insObj.cname}}
+                  </template>
+                  <MenuItem :name="'dbinx'-'insinx'-'tinx'" v-for="(tObj, tinx) in insObj.inst_data" :key="tinx">
+                    <!-- <router-link :to="{ name: 'recordList', params: { id: insObj.inst_id , tname: tObj.t_name}}"> -->
+                    <a @click="setData(tObj.t_name, '/recordList/'+insObj.inst_id+'/'+tObj.t_name, dbObj.db, insObj.inst_id, tObj.t_name, 'list')">
+                    <span style="padding-left:20px">
+                      <!-- <Icon type="play" class="ficon play"></Icon> -->
+                      {{tObj.t_name}}
+                    </span>
+                    </a>
+                    <!-- </router-link> -->
+                  </MenuItem>
+              </Submenu>
           </Submenu>
-        </Submenu>
-        <Menu-item v-show="!groupby" :name="index" v-for="(item, index) in schema" :key="index">
-              <img v-if="item.iconpath === 'mongo'" :src="mongo" class="schema-icon">
-              <img v-else-if="item.iconpath === 'rethink'" :src="rethink" class="schema-icon">
-              <img v-else-if="item.iconpath === 'elastic'" :src="elastic" class="schema-icon">
-              <img v-else-if="item.iconpath === 'nedb'" :src="nedb" class="schema-icon">
-              <img v-else-if="item.iconpath === 'mysql'" :src="mysql" class="schema-icon">
-              <img v-else :src="item.iconpath" class="schema-icon">
-              <span>
-                {{item.title}}
-              </span>
-              <div class="menu-action-icon">
-                <Tooltip content="Create instance" placement="top">
-                    <router-link :to="{ name: 'schema-instance', params: { schemaid: item._id }}">
-                      <Icon type="play" class="ficon play"></Icon>
-                    </router-link>
-                </Tooltip>
-                <Tooltip content="List" placement="top">
-                  <a @click="setData(item.title, '/instancelist/'+item._id, item._id, 'list')">
-                    <Icon type="navicon-round" class="ficon list"></Icon>
-                  </a>
-                </Tooltip>
-                <Tooltip content="Edit" placement="top">
-                  <a @click="setData(item.title, '/schema/edit/'+item._id, item._id, 'edit')">
-                      <Icon type="ios-compose-outline" class="ficon edit"></Icon>
-                  </a>
-                  <!-- <router-link :to="{name: 'schema/edit', params: {id: item._id}}" exact>
-                  </router-link> -->
-                </Tooltip>
-                <!-- <Tooltip content="Mapping" placement="top">
-                  <router-link :to="{name: 'schemamappinglist', params: {id: item._id}}">
-                    <Icon type="arrow-swap" class="ficon transform"></Icon>
-                  </router-link>
-                </Tooltip> -->
-                <Tooltip content="Delete" placement="top">
-                  <a @click="handleRemove(index)">
-                    <Icon type="android-delete" class="ficon delete"></Icon>
-                  </a>
-                </Tooltip>
-              </div>
-        </Menu-item>
       </Menu>
+
+      <!-- =============== ElementUI Side NAV ================= -->
+      <!-- <el-menu default-active="1" class="el-menu-vertical-demo"  style="max-height:800px; overflow-y: auto" width="auto" @open="handleOpen" @close="handleClose" background-color="#2d2f33" text-color="#fff" active-text-color="#fff">
+          <el-submenu :index="'dbinx'" v-for="(dbObj, dbinx) in allConnData">
+            <template slot="title">
+              <Icon type="cube"></Icon>
+              {{dbObj.db}}
+            </template>
+            <el-submenu :index="dbinx-insinx" v-for="(insObj, insinx) in dbObj.db_data">
+              <template slot="title">
+                <span style="padding-left:10px">
+                    <img v-if="insObj.imgurl === 'mongo'" :src="mongo" class="schema-icon">
+                    <img v-else-if="insObj.imgurl === 'rethink'" :src="rethink" class="schema-icon">
+                    <img v-else-if="insObj.imgurl === 'elastic'" :src="elastic" class="schema-icon">
+                    <img v-else-if="insObj.imgurl === 'nedb'" :src="nedb" class="schema-icon">
+                    <img v-else-if="insObj.imgurl === 'mysql'" :src="mysql" class="schema-icon">
+                    <img v-else :src="insObj.imgurl" class="schema-icon">
+                </span>
+                  {{insObj.cname}}
+              </template>
+              <el-menu-item :index="dbinx-insinx-tinx" v-for="(tObj, tinx) in insObj.inst_data">
+                {{tObj.t_name}}
+              </el-menu-item>
+            </el-submenu>
+          </el-submenu>
+    </el-menu> -->
     </div>
   </div>
 </template>
 <script>
 /*eslint-disable*/
-  import api from '../api'
+  import ConnectionData from '../api/connectiondata'
   import settings from '../api/settings'
   import mongo from '../assets/images/mongo.png'
   import rethink from '../assets/images/rethink.png'
@@ -177,50 +125,23 @@
       return {
         orderby: 'asc',
         groupby: true,
+        sideBarList: true,
+        allConnData: [],
         mongo,
         rethink,
         elastic,
         nedb,
         mysql,
-        deleteSchemaValue: 'softdel'
+        // deleteSchemaValue: 'softdel'
       }
     },
     created () {
+      this.init()
       this.$store.dispatch('getSchema')
       this.$store.dispatch('getSettings')
     },
-    asyncComputed: {
-      async schema () {
-        // console.log('allSchema from sidebar computed', this.$store.getters.allSchema, this.$store.getters.allSettings)
-        var _data = this.$store.getters.allSchema
-        var _settings = this.$store.getters.allSettings
-        if (_data.length > 0) {
-          _.map(_data, function (obj) {
-            _.forEach(_settings[obj.database[0]], function(res, i){
-              var instance = _.find(res, {id: obj.database[1]})
-                if (instance.upldIcn === '') {
-                  obj.iconpath = obj.database[0]
-                } else {
-                  obj.iconpath = instance.upldIcn
-                }
-            })
-          })
-          if (this.groupby) {
-            var temp = await Promise.all(_.chain(_data).groupBy('database[0]').toPairs().map(async (m) => {
-              var dbinstances = await settings.get(m[0])
-              m[1] = _.chain(m[1]).groupBy(innermap => {
-                return _.find(dbinstances.data, f=> { return f.id === innermap.database[1]}).connection_name
-              }).toPairs().value()
-              return m
-            }).value())
-            return temp
-          } else {
-            return _.orderBy(_data, [checkcase => checkcase.title.toLowerCase()], [this.orderby])
-          }
-        } else {
-          return []
-        }
-      },
+    computed: {
+      // },
       stylesPin () {
         let style = {}
         if (this.$store.state.sidenavpin) {
@@ -232,90 +153,61 @@
         return !this.$store.state.sidenavpin ? 'Pin nvaigation' : 'Unpin nvaigation'
       }
     },
+    feathers: {
+      'settings': {
+        updated (data) {
+          // console.log('connectiondata updated..', data)
+          this.init()
+        },
+        created (data) {
+          // console.log('connectiondata created..', data)
+          this.init()
+        },
+        removed (data) {
+          // console.log('connectiondata removed..', data)
+          this.init()
+        }
+      }
+    },
     methods: {
-      handleRemove (index) {
-        this.$Modal.confirm({
-          title: 'Confirm, Are you sure you want to delete?',
-          // content: '<p>Are you sure you want to delete?</p>',
-          width: 500,
-          render: (h, params) => {
-              return h('RadioGroup', {
-                  props: {
-                    vertical: true,
-                    value: this.deleteSchemaValue,
-                    size: 'large'
-                  },
-                  style: {
-                    paddingTop: '20px'
-                  },
-                  on: {
-                    'on-change': (value) => {
-                      this.deleteSchemaValue = value
-                      console.log('this.deleteSchemaValue', this.deleteSchemaValue)
-                      // console.log(this.mongoDt[params.index].isenable);
-                    }
-                  }
-              }, [
-                h('Radio', {
-                  props: {
-                    size: 'large',
-                    label: 'harddel'
-                  }
-                }, 'Delete Schema Permanently?? (With all instance Data)'),
-                h('Radio', {
-                  props: {
-                    size: 'large',
-                    label: 'softdel'
-                  }
-                }, 'Delete Schema Temporary? (Without instance Data)')
-              ])
-          },
-          onOk: () => {
-            if(this.deleteSchemaValue == 'softdel') {
-              // alert(this.deleteSchemaValue)
-              api.request('delete', '/schema/' + this.schema[index]._id+'?type='+this.deleteSchemaValue)
-                .then(response => {
-                  this.$Notice.success({title: 'Success!!', desc:'Schema Deleted...'});
-                  this.$store.dispatch('getSchema')
-                  // this.schema = response.data
-                  // console.log(response.data)
-                  // this.schema.splice(index, 1)
-                })
-                .catch(error => {
-                  this.$Notice.error({title: 'Error!!', desc:'Schema Not Deleted...'});
-                  console.log(error)
-                })
-            }
-            else if(this.deleteSchemaValue == 'harddel') {
-              // alert(this.deleteSchemaValue)
-              api.request('delete', '/schema/' + this.schema[index]._id+'?type='+this.deleteSchemaValue)
-                .then(response => {
-                  // this.schema = response.data
-                  // this.schema.splice(index, 1)
-                })
-                .catch(error => {
-                  console.log(error)
-                })
-            }
-            else {
-              this.$Message.error('Error!!');
-            }
-            // api.request('delete', '/schema/' + this.schema[index]._id)
-            // .then(response => {
-            //   // this.schema = response.data
-            //   this.schema.splice(index, 1)
-            // })
-            // .catch(error => {
-            //   console.log(error)
-            // })
-            // this.formSchema.entity.splice(index, 1)
-          },
-          onCancel: () => {
-            this.deleteSchemaValue = 'softdel'
-          }
+       handleOpen(key, keyPath) {
+        console.log(key, keyPath)
+      },
+      handleClose(key, keyPath) {
+        console.log(key, keyPath)
+      },
+      init () {
+        let self = this
+        ConnectionData.get().then(response => {
+          // console.log('response', response)
+          _.forEach(response.data, (connd, cinx) => {
+             _.forEach(connd.db_data, (insd, iinx) => {
+              // console.log(insd)
+              settings.getThis(insd.inst_id).then(res => {
+                insd.cname = res.data.connection_name
+                if(res.data.upldIcn == '') {
+                  insd.imgurl = res.data.selectedDb
+                } else {
+                  insd.imgurl = res.data.upldIcn
+                }
+              })
+            }) 
+          })
+          self.allConnData = response.data
+          self.sideBarList = false
+        }).catch(error => {
+          this.$Notice.error({
+            title: error,
+            desc: 'connection to the server timed out',
+            duration: 3
+          })
         })
       },
-      setData (name, url, id, type) {
+      handleCommand (name) {
+        this.orderby = name
+      },
+      setData (name, url, db, inst_id, tname, type) {
+        var id = db + inst_id + tname
         var obj = {name: name, url: url, id: id, type: type}
         var self = this
         var flag = 0
@@ -333,9 +225,6 @@
           this.$store.state.activetab = this.$store.state.tabdata.length - 1
           this.$router.push(url)
         }
-      },
-      handleCommand (name) {
-        this.orderby = name
       }
     }
   }
