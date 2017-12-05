@@ -322,10 +322,8 @@ var schemaTableAllDataByID = async(function (id) {
 
       var query = await(getQuery('mysql','select','getThisSchema'));
       query = query.replace('{{ id }}',id);
-      // console.log('----------query-----------',query);
       dbinstance.conn.query(query, function (error, results, fields) {
         if (error) throw error;
-      // console.log('----------results-----------',results);
 
         _.forEach(results, function (instance,key) {
           var entity_result=[]
@@ -382,7 +380,6 @@ var schemaTableAllDataByID = async(function (id) {
 
           result.push(instance);
         })
-        // console.log('###########result###############',result);
         resolve(result);
       })
     })
@@ -633,8 +630,6 @@ module.exports = {
       return 'success';
   }),
   putTableRecord: async(function(id, data) {
-    console.log("dfssdd");
-
 
     var schemadata = function () {
       var result = []
@@ -677,9 +672,7 @@ module.exports = {
   getConnsAllData: async (function(ins_id) {
     for(let [i, db_i] of db.entries()) {
       if(db_i.id == ins_id) {
-        // console.log('ins_id+++++++++++++++++++++++',ins_id)
          var arr = []
-        //  console.log('db[i]',db[i])
          var dbName = await(getDatabaseName(ins_id));
           // //get tables
           var getDatabaseTables = await(getQuery('mysql','select','getDatabaseTables'));
@@ -702,7 +695,6 @@ module.exports = {
           };
           var resTableList = await (tableList())
 
-          // console.log('----------resTableList----------',resTableList);
           if(resTableList != null)
           {
             var tableName = resTableList.split(",");
@@ -732,19 +724,12 @@ module.exports = {
               for (let [i, sObj] of resTableData.entries()) {
                 instanceVal = {};
                 _.forEach(sObj, function (rs1,key) {
-                  // console.log('i',i)
-                  // console.log('key',key)
-                  // console.log('rs1',rs1)
                   instanceVal[key] = rs1;   
                 })
                 
                 sData.push(instanceVal)
               }
-              // console.log("sData",sData);                     
               
-            // console.log('----------resTableData----------',resTableData);
-              
-              // var data = await (r[i].conn.table(val).run())
               obj['t_data'] = sData
               arr.push(obj)
             }
@@ -986,11 +971,10 @@ module.exports = {
     })
 
     var res = await (flowsInstance())
-    // console.log('myssql................', res)
     return res;
   }),
   getThisflowsInstance: async(function (id, tableName, instance_id) {
-    console.log('mysql get flowsInstanceCurrent',id,tableName,instance_id);
+    console.log('mysql get flowsInstanceCurrent');
 
     var flowsInstance = async(function () {
       var result = []
@@ -1000,14 +984,12 @@ module.exports = {
         // _.forEach(db, function (dbinstance) {
           for(let[i, dbinstance] of db.entries()){
           if( dbinstance.id == instance_id ) {
-            console.log('db.id', dbinstance.id)
           ///////////////////////////////////////////////  Using Schemaid //////////////////////////////////////////////////////////
 
           // var res = await (schemadetailWithId(Schemaid,dbinstance))
           // var rs = res[0];
           // table_name = rs.title.replace(' ', '_');
 
-          // console.log(tableName);
           instanceVal1 = [];
 
           var p1 = new Promise((resolve, reject) => {
@@ -1115,7 +1097,6 @@ module.exports = {
 
     });
     var res = await (flowsInstance())
-    // console.log('.............................................', res[0])
     var _res = res[0]
     for(let k in _res) {
       if(typeof _res[k] == 'string') {
@@ -1415,8 +1396,105 @@ module.exports = {
     return responseArray;
     // end - insert data in property table
   }),
+  getTableColumns: async(function(data) {
+    var entitydata = function () {
+      var result = []
+      for (let [i, inst] of db.entries()) {
+        if ( inst.id == data.inst_id ) {
+          return new Promise((resolve, reject) => {
+            var showColumns = await(getQuery('mysql','select','showColumns'));
+            showColumns = showColumns.replace('{{ table_name }}',data.tname);
+            inst.conn.query(showColumns, function (error, result, fields) {
+              cols = []
+              
+              _.forEach(result, function (column,key) {              
+                  cols.push({name: column['Field']})
+              })
+              error? reject(error) : resolve(cols)
+            })
+          }).then(content => {
+            return content;
+          }).catch(err=> {
+            return err;
+          })
+        }
+      }
+    }
+    var columnsResponse = await (entitydata())
+    return columnsResponse;
+  }),
+  postTableRecord: async(function(data) {
+    var tableFields='';
+    var tableValues='';
+    k=0;
+
+    _.forEach(data.data, function (d,key) {
+      if(key != 'Schemaid' && key != 'database')
+      {
+        if(k==0)
+        {
+          let res = await (UUID())
+          let uuid = res;
+
+          tableFields += key;
+          if(typeof data.Schemaid !== 'undefined')
+          {
+            tableFields += ",Schemaid";
+          }
+
+          if(typeof d == 'object')
+            {
+              tableValues += "'"+JSON.stringify(d)+"'";
+            }
+            else{
+              tableValues += "'"+d+"'";
+            }
+            if(typeof data.Schemaid !== 'undefined')
+            {
+              tableValues += ",'"+data.Schemaid+"'";
+            }
+        }
+        else
+        {
+          if(typeof d == 'object')
+          {
+            tableFields += ','+key;
+            tableValues += ",'"+JSON.stringify(d)+"'";
+          }
+          else{
+            tableFields += ','+key;
+            tableValues += ",'"+d+"'";
+          }
+        }
+        k++;
+      }
+    })
+
+    var schemadata = function () {
+      var result = []
+      for (let [i, inst] of db.entries()) {
+        if ( inst.id == data.inst_id ) {
+          return new Promise((resolve, reject) => {
+            var commonInsert = await(getQuery('mysql','insert','commonInsert'));
+            commonInsert = commonInsert.replace('{{ table_name }}',data.tname);
+            commonInsert = commonInsert.replace('{{ fields }}',tableFields);
+            commonInsert = commonInsert.replace('{{ values }}',tableValues);
+            inst.conn.query(commonInsert, function (error, result, fields) {
+              error? reject(error) : resolve(result.insertId)
+            })
+          }).then(content => {
+            return content;
+          }).catch(err=> {
+            return err;
+          })
+        }
+      }
+    }
+    var res = await (schemadata())
+    return res;
+  }),
   postflowsInstance: async(function (data,dbid,_id) {
-    console.log('mysql post flowsInstance**********',data,dbid,_id);
+    console.log('mysql post flowsInstance**********');
     // var selectedDB = _.find(db, (d) => {
     //   return d.id == data.database[1]
     // })
@@ -1823,7 +1901,7 @@ module.exports = {
   }),
 
   deleteThisSchema: async(function (id,type) {
-    console.log('-----------mysql delete schema--------------'+id+'----'+type);
+    console.log('-----------mysql delete schema--------------');
 
 
     if(type == 'softdel') {
