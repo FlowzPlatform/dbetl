@@ -8,38 +8,39 @@
                     <Row>
                         <Col span="12">
                             <FormItem label="Select DB" prop="selectedDb">
-                                <Select v-model="source.selectedDb" style="width:200px" :disabled="sourceDisable">
+                                <!-- <Select v-model="source.selectedDb" style="width:200px" :disabled="sourceDisable">
                                     <Option v-for="item in dbList" :value="item.value" :key="item.value">{{ item.label }}</Option>
-                                </Select>
+                                </Select> -->
+                                <Cascader :data="CascaderData" filterable v-model='sdatabase' @on-change="setSourceData"></Cascader>
                             </FormItem>
                         </Col>
                         <Col span="12">
                             <FormItem label="Database" prop="dbname">
-                                <Input v-model="source.dbname" :readonly="sourceDisable"></Input>
+                                <Input v-model="source.dbname" :disabled="setForInternal" :readonly="sourceDisable"></Input>
                             </FormItem>
                         </Col>
                     </Row>
                     <Row>
                         <Col span="12">
                             <FormItem label="Host" prop="host">
-                                <Input v-model="source.host" :readonly="sourceDisable"></Input>
+                                <Input v-model="source.host":disabled="setForInternal"  :readonly="sourceDisable"></Input>
                             </FormItem>
                         </Col>
                         <Col span="12">
                             <FormItem label="Port" prop="port">
-                                <Input v-model="source.port" :readonly="sourceDisable"></Input>
+                                <Input v-model="source.port":disabled="setForInternal"  :readonly="sourceDisable"></Input>
                             </FormItem>
                         </Col>
                     </Row>
                     <Row>
                         <Col span="12">
                             <FormItem label="Username">
-                                <Input placeholder="Username" v-model="source.username" :readonly="sourceDisable"></Input>
+                                <Input placeholder="Username":disabled="setForInternal"  v-model="source.username" :readonly="sourceDisable"></Input>
                             </FormItem>
                         </Col>
                         <Col span="12">
                             <FormItem label="Password">
-                                <Input type="password" placeholder="Password" v-model="source.password" :readonly="sourceDisable"></Input>
+                                <Input type="password" placeholder="Password":disabled="setForInternal"  v-model="source.password" :readonly="sourceDisable"></Input>
                             </FormItem>
                         </Col>
                     </Row>
@@ -260,7 +261,7 @@
         </div>
     </div>
     <!-- <hr><hr><hr><hr> -->
-    <!-- {{s_collection}} -->
+    <!-- {{sdatabase}} -->
     <!-- <hr><hr><hr><hr> -->
     <!-- {{tableData}} -->
     <!-- <hr><hr><hr><hr> -->
@@ -276,8 +277,11 @@ import modelSettings from '@/api/settings'
 export default {
   data () {
     return {
+      CascaderData: [],
+      sdatabase: [],
       openTrasformEditorIndex: -1,
       check_conn: false,
+      setForInternal: false,
       sourceDisable: false,
       conn_icon: 'load-a',
       // showtable: false,
@@ -478,7 +482,57 @@ export default {
     clearImport () {
       // alert(this.$route.params.id)
       this.$router.push('/Dbsetting/import/' + this.$route.params.id)
+    },
+    setSourceData (value) {
+      // console.log(value)
+      if (value.length > 1) {
+        api.request('get', '/settings/' + value[1]).then(res => {
+          // console.log('response.....', res.data)
+          this.source.selectedDb = res.data.selectedDb
+          this.source.dbname = res.data.dbname
+          this.source.host = res.data.host
+          this.source.port = res.data.port
+          this.source.username = res.data.username
+          this.source.password = res.data.password
+          this.setForInternal = true
+        })
+        .catch(err => {
+          console.log('Error', err)
+        })
+      } else if (value.length === 1) {
+        this.source.selectedDb = value[0]
+        this.setForInternal = false
+      }
     }
+  },
+  mounted () {
+    _.forEach(this.dbList, (dbObj) => {
+      this.CascaderData.push({label: dbObj.label, value: dbObj.value})
+    })
+    api.request('get', '/settings')
+      .then(response => {
+        var result = response.data
+        for (var db in result) {
+          if (db !== 'nedb') {
+            var obj = {}
+            obj.value = db
+            obj.label = db
+            obj.children = []
+            result[db].dbinstance.forEach(function (instance, i) {
+              if (instance.isenable) {
+                obj.children.push({label: instance.connection_name, value: instance.id})
+              }
+            })
+            if (obj.children.length === 0 && obj.label !== 'nedb') {
+              obj.disabled = true
+            }
+            this.CascaderData.push(obj)
+          }
+        }
+      })
+      .catch(error => {
+        console.log(error)
+      })
   },
   watch: {
     'tableData' (value) {
