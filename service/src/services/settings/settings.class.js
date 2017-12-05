@@ -11,6 +11,16 @@ var jsonfile = require('jsonfile')
 var _ = require('lodash')
 var endecrypt = require('../encryption/security')
 
+var Datastore = require('nedb-promise');
+var fs = require('fs');
+var nedbpath = path.join(__dirname, '../../../nedb') 
+// console.log('__dirname >>>>>>>>>>>>>>>>>>>', fs.existsSync(nedbpath))
+if (!fs.existsSync(nedbpath)) {
+  fs.mkdir(nedbpath, function(res, err) {
+    // console.log('created...... directory')
+  })
+}
+
 // check_Connection
 var mongodb = require('mongodb');
 var elasticsearch = require('elasticsearch');
@@ -170,6 +180,13 @@ var check_Connection = async(function (db, data) {
     });
     connection.connect(); 
     return connection;
+  } else if (db == 'nedb') { 
+    if (fs.existsSync(path.join(nedbpath, '/' + data.dbname))) {
+      return 'Success'
+    } else {
+      var _res = new error()
+      return _res  
+    }
   } else {
     var _res = new error()
     return _res
@@ -294,6 +311,24 @@ var getConnectionData = async(function (db, data) {
     }
     // console.log(data1)
     return data1;
+  } else if (db == 'nedb') {
+    var result = await (fs.readdirSync(path.join(nedbpath, '/' + data.dbname)))
+    var mpath = path.join(nedbpath, '/' + data.dbname)
+    for (let [inx, val] of result.entries()) {
+      var s = val.split('.')
+      var tname = s[0]
+      // console.log('path...........', path.join(db_i.conn, '/' + tname + '.db'))
+      var tconn = new Datastore({ filename: path.join(mpath, '/' + tname + '.db'), autoload: true })
+      var data = await (tconn.cfind({}).exec())
+      var cols = []
+      if (data[0] != undefined) {
+        for(let k in data[0]) {
+          cols.push({name: k})
+        }
+      }
+      result[inx] = { name: tname, columns: cols}
+    }
+    return result
   } else if (db == 'mysql') {
      var connection = mysql.createConnection({
       host     : data.host,

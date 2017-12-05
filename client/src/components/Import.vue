@@ -278,7 +278,7 @@ export default {
   data () {
     return {
       CascaderData: [],
-      sdatabase: [],
+      sdatabase: ['rethink'],
       openTrasformEditorIndex: -1,
       check_conn: false,
       setForInternal: false,
@@ -427,6 +427,7 @@ export default {
           this.check_conn = true
           this.conn_icon = 'load-a'
           this.s_collection = await modelSettings.checkConnection(this.source).then(response => {
+            console.log('response', response.data)
             if (response.result) {
               this.sourceDisable = true
               return response.data
@@ -474,6 +475,7 @@ export default {
       console.log('this.importedData', this.importedData)
       api.request('post', '/import-to-external-db', this.importedData).then((res) => {
         this.$Notice.success({title: 'Imported!', desc: ''})
+        this.$router.push('/instancejoblist/' + this.$route.params.id)
       }).catch((err) => {
         console.log('Error..', err)
         this.$Notice.error({title: 'Connection Not Establish...!', desc: 'Please Check Your Database..'})
@@ -501,33 +503,52 @@ export default {
         })
       } else if (value.length === 1) {
         this.source.selectedDb = value[0]
+        switch (value[0]) {
+          case 'mongo':
+            this.source.port = 27017
+            break
+          case 'rethink':
+            this.source.port = 28015
+            break
+          case 'elastic':
+            this.source.port = 9200
+            break
+          case 'nedb':
+            this.source.port = 1234
+            break
+          case 'mysql':
+            this.source.port = 3306
+            break
+        }
         this.setForInternal = false
       }
     }
   },
   mounted () {
     _.forEach(this.dbList, (dbObj) => {
-      this.CascaderData.push({label: dbObj.label, value: dbObj.value})
+      if (dbObj.value !== 'nedb') {
+        this.CascaderData.push({label: dbObj.label, value: dbObj.value})
+      }
     })
     api.request('get', '/settings')
       .then(response => {
         var result = response.data
         for (var db in result) {
-          if (db !== 'nedb') {
-            var obj = {}
-            obj.value = db
-            obj.label = db
-            obj.children = []
-            result[db].dbinstance.forEach(function (instance, i) {
-              if (instance.isenable) {
-                obj.children.push({label: instance.connection_name, value: instance.id})
-              }
-            })
-            if (obj.children.length === 0 && obj.label !== 'nedb') {
-              obj.disabled = true
+          // if (db !== 'nedb') {
+          var obj = {}
+          obj.value = db
+          obj.label = db
+          obj.children = []
+          result[db].dbinstance.forEach(function (instance, i) {
+            if (instance.isenable) {
+              obj.children.push({label: instance.connection_name, value: instance.id})
             }
-            this.CascaderData.push(obj)
+          })
+          if (obj.children.length === 0) {
+            obj.disabled = true
           }
+          this.CascaderData.push(obj)
+        // }
         }
       })
       .catch(error => {

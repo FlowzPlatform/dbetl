@@ -63,7 +63,7 @@
                         <img v-else-if="insObj.imgurl === 'rethink'" :src="rethink" class="schema-icon">
                         <img v-else-if="insObj.imgurl === 'elastic'" :src="elastic" class="schema-icon">
                         <img v-else-if="insObj.imgurl === 'nedb'" :src="nedb" class="schema-icon">
-                        <img v-else-if="insObj.imgurl === 'mysql'" :src="mysql" class="schema-icon">
+                        <img v-else-if="insObj.imgurl === 'mysql'" :src="mysql" style="width:25px;height:25px" class="schema-icon">
                         <img v-else :src="insObj.imgurl" class="schema-icon">
                       </span>
                       {{insObj.cname}}

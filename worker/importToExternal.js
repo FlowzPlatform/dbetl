@@ -66,7 +66,6 @@ var createConn = async (function(data, mapdata) {
 	} else if(data.selectedDb == 'mysql') {
 		// console.log('-----------import ------------',data);
 		// var pass = endecrypt.decrypt(data.password)
-
 		var connection = mysql.createConnection({
 			host     : data.host,
 			port     : data.port,

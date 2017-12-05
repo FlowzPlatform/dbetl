@@ -3,11 +3,16 @@
     <f-Tab></f-Tab>
     <div>
       <Row style="padding-bottom:10px">
-        <Breadcrumb separator="<b class='demo-breadcrumb-separator'>/</b>">
-          <BreadcrumbItem>{{crumbData.db}}</BreadcrumbItem>
-          <BreadcrumbItem>{{crumbData.cname}}</BreadcrumbItem>
-          <BreadcrumbItem>{{crumbData.tname}}</BreadcrumbItem>
-        </Breadcrumb>
+        <Col span="21">
+          <Breadcrumb separator="<b class='demo-breadcrumb-separator'>/</b>">
+            <BreadcrumbItem>{{crumbData.db}}</BreadcrumbItem>
+            <BreadcrumbItem>{{crumbData.cname}}</BreadcrumbItem>
+            <BreadcrumbItem>{{crumbData.tname}}</BreadcrumbItem>
+          </Breadcrumb>
+        </Col>
+        <Col span="3">
+          Total: &nbsp;<b>{{tableData.length}}</b>        
+        </Col>
       </Row>
       <Row>
         <div v-if="!setData" class="demo-spin-container">
@@ -125,6 +130,7 @@ export default {
     init () {
       // alert(this.$route.params.id + '/' + this.$route.params.tname)
       let self = this
+      self.setData = false
       this.openTrasformEditorIndex = -1
       ConnectionData.get().then(response => {
         // console.log('response', response.data)
@@ -148,6 +154,7 @@ export default {
               })
             }
           })
+          self.setData = true
         })
       }).catch(error => {
         this.$Notice.error({
@@ -276,7 +283,7 @@ export default {
         this.init()
       },
       removed (data) {
-        console.log('connectiondata removed..', data)
+        // console.log('connectiondata removed..', data)
         this.setData = false
         // this.init()
       }
