@@ -12,17 +12,28 @@ var MongoClient = require('mongodb').MongoClient;
 var fs = require('fs');
 var path = require('path');
 // var aurl = 'http://' + job.configData.host + ':' + job.configData.port;
-var endecrypt = require('../service/src/services/encryption/security')			
+// var endecrypt = require('../service/src/services/encryption/security')			
 var mysql = require('mysql');
 var _ = require('lodash')
 
 console.log('importToExternal Worker Started.....')
-const qOptions = app.get('qOptions1')
+const qOptions = app.get('qOptions')
 const q = new Queue(cxnOptions, qOptions)
 
 var createConn = async (function(data, mapdata) {
+	// console.log('id................', data.id)
+	// if(data.hasOwnProperty('id')) {
+		// data.password = endecrypt.decrypt(data.password)
+		// console.log(data.password)
+	// }
 	if(data.selectedDb == 'mongo') {
-		var conn = await (MongoClient.connect('mongodb://' + data.host + ':' + data.port + '/' + data.dbname))
+		var mongoDB;
+	    if (data.username != "" && data.password != "") {
+	      mongoDB = 'mongodb://' + data.username + ':' + data.password + '@' + data.host + ':' + data.port + '/' + data.dbname;
+	    } else {
+	      mongoDB = 'mongodb://' + data.host + ':' + data.port + '/' + data.dbname;
+	    }
+		var conn = await (MongoClient.connect(mongoDB))
 		return {conn: conn, db: data.selectedDb}
 	} else if(data.selectedDb == 'rethink') {
 		console.log('rethink........................')
@@ -54,13 +65,13 @@ var createConn = async (function(data, mapdata) {
     	return {conn: client, db: data.selectedDb}
 	} else if(data.selectedDb == 'mysql') {
 		// console.log('-----------import ------------',data);
-		var pass = endecrypt.decrypt(data.password)
+		// var pass = endecrypt.decrypt(data.password)
 
 		var connection = mysql.createConnection({
 			host     : data.host,
 			port     : data.port,
 			user     : data.username,
-			password : pass,
+			password : data.password,
 			database : data.dbname
 		});
 		connection.connect();
@@ -123,6 +134,7 @@ var createConn = async (function(data, mapdata) {
 
 	}
 })
+
 var getSchemaidByName = async (function(url, name) {
 	var _resi = await (axios.get(url +'/schema'))
 	var schema = _resi.data
@@ -255,7 +267,7 @@ var getQuery = async(function (dbName,type,queryFor) {
         return instance
     });
     return _data
-});
+})
 
 var UUID = async(function generateUUID() {
 	var d = new Date().getTime();
@@ -265,7 +277,7 @@ var UUID = async(function generateUUID() {
 		return (c=='x' ? r : (r&0x3|0x8)).toString(16);
 	});
 	return uuid;
-});
+})
 
 var filterObj = async (function(mobj, fArr) {
 	var fobj = {}
@@ -288,14 +300,14 @@ var filterObj = async (function(mobj, fArr) {
 
 q.process(async(job, next) => {
 	try {
-			console.log('job.data\n ', JSON.stringify(job.data))
+			// console.log('job.data\n ', JSON.stringify(job.data))
 			var aurl = 'http://' + job.configData.host + ':' + job.configData.port;
 			var res = []
 			var instance = []
 			// var _resi = await (axios.get('http://'+job.configData.host+':'+job.configData.port+'/'))
 			var sConn = await (createConn(job.data.source));
 			var tConn = await (createConn(job.data.target, job.data.mapdata));
-			// console.log(sConn, '>>>>>>>>>>>', tConn)
+			// console.log(sConn, '/>>>>>>>>>>>', tConn)
 			// console.log('11111111111111111111111111111111111111')
 			// var _res = await (sConn.conn.table('address_line').run())
 			// var _res = await (tConn.conn.collection('asd').find().toArray())
@@ -380,6 +392,7 @@ q.process(async(job, next) => {
 							var s = await (tConn.conn.collection(obj.target).insert(sObj))
 							_res.push(s)
 						}
+						// console.log(_res)
 						// await (sConn.conn.collection(obj.source).find().toArray())
 					} else if(job.data.target.selectedDb == 'rethink') {
 						var _res = []
@@ -471,22 +484,6 @@ q.process(async(job, next) => {
 	}
 })
 q.on('terminated', (queueId, jobId) => {
-	// q.getJob(jobId).then((job) => {
-	//   func.processError(job[0].data, job[0].id)
-	//   pino().info({ 'jobId': job[0].data.id }, 'Start Type Job terminated');
-	//   pino(fs.createWriteStream('./mylog')).info({ 'fId': job[0].data.fId, 'jobId': job[0].data.id }, 'Start Type Job terminated')
-	// }).catch(err => {
-	//   pino().error(new Error(err));
-	//   pino(fs.createWriteStream('./mylog')).error({ "error": err }, 'Error in Start Type Job terminated')
-	// })
 })
 q.on('completed', (queueId, jobId, isRepeating) => {
-	// q.getJob(jobId).then((job) => {
-	//   func.processSuccess(job[0].data, job[0].id)
-	//   pino().info({ 'jobId': job[0].data.id }, 'Start Type Job completed:')
-	//   pino(fs.createWriteStream('./mylog')).info({ 'fId': job[0].data.fId, 'jobId': job[0].data.id }, 'Start Type Job completed:')
-	// }).catch(err => {
-	//   pino().error(new Error(err));
-	//   pino(fs.createWriteStream('./mylog')).error({ "error": err }, 'Error in Start Type Job compleated')
-	// })
 })

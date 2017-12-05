@@ -69,7 +69,7 @@ var check_Connection = async(function (db, data) {
   if (data.hasOwnProperty('id')) {
     var _res = await (getFunction(data.id))
     data.username = _res.username
-    data.password = endecrypt.decrypt(_res.password)
+    data.password = _res.password
   }
   if (db == 'mongo') {
     console.log("MongoDB..............");
@@ -180,13 +180,7 @@ var getConnectionData = async(function (db, data) {
   if (data.hasOwnProperty('id')) {
     var _res = await (getFunction(data.id))
     data.username = _res.username
-    data.password = endecrypt.decrypt(_res.password)
-  }
-  // console.log('getConnectionData..............')
-  if (data.hasOwnProperty('id')) {
-    var _res = await (getFunction(data.id))
-    data.username = _res.username
-    data.password = endecrypt.decrypt(_res.password)
+    data.password = _res.password
   }
 
   if (db == 'mongo') {
@@ -664,6 +658,7 @@ var getFunction = function(id) {
         if (obj != undefined) {
           instance = obj
           instance.selectedDb = db
+          instance.password = endecrypt.decrypt(instance.password)
         }
       })
       return instance
