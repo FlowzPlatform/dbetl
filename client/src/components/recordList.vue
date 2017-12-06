@@ -1,7 +1,10 @@
 <template>
   <div class="recordList">
     <f-Tab></f-Tab>
-    <div>
+    <div v-if="!setData" class="demo-spin-container">
+        <Spin fix size="large"></Spin>
+    </div>
+    <div v-else>
       <Row style="padding-bottom:10px">
         <Col span="21">
           <Breadcrumb separator="<b class='demo-breadcrumb-separator'>/</b>">
@@ -15,11 +18,11 @@
         </Col>
       </Row>
       <Row>
-        <div v-if="!setData" class="demo-spin-container">
+        <!-- <div v-if="!setData" class="demo-spin-container">
             <Spin fix size="large"></Spin>
-        </div>
+        </div> -->
         <!-- <Spin v-if="!setData" size="large"></Spin> -->
-        <div v-else class="ivu-tabs-tabpane">
+        <div class="ivu-tabs-tabpane">
           <div class="ivu-table-wrapper">
             <div class="ivu-table ivu-table-border">
               <div class="ivu-table-body">
@@ -45,30 +48,45 @@
                   <tbody class="ivu-table-tbody">            
                     <template v-for="(value, index) in tableData">
                       <tr class="ivu-table-row" >
-                        <td class="">
-                          <div class="ivu-table-cell">
-                            <span v-if="value._id != undefined" style="float:left">{{ value._id }}</span>
-                            <span v-else style="float:left">{{ value.id }}</span>
+                        <td class="" >
+                          <div v-if="value._id != undefined" class="ivu-table-cell">
+                              <Col span="8">{{ value._id }}</Col>
+                              <Col span="16">{{ getSomeValue(value) }}</Col>
+                          </div>
+                          <div class="ivu-table-cell" v-else style="float:left">
+                              <Col span="8">{{ value.id }}</Col>
+                              <Col span="16">{{ getSomeValue(value) }}</Col>
                           </div>
                         </td>
                         <td class="">
                           <div class="ivu-table-cell">
-                            <span v-if="openTrasformEditorIndex != -1 && index == openTrasformEditorIndex">
+                            <span v-if="viewData[index].isUpdate">
                               <Tooltip placement="top" content="Update">
                                 <a @click="updatedvalue(index)"><Icon  type="checkmark" style="font-size: 20px;"></Icon></a>
                               </Tooltip>
                               <a style= 'color:red' @click="cancelHandle(index)"><Icon type="android-cancel" style="font-size: 20px;"></Icon></a>
                             </span>
                             <span v-else>
-                              <a @click="show(index)"><Icon  type="edit" style="font-size: 20px;"></Icon></a>
+                              <a v-if="!viewData[index].isView" @click="ToggleFunction(index)"><Icon  type="eye" style="font-size: 20px;color:#ffa500"></Icon></a>
+                              <a v-else @click="ToggleFunction(index)"><Icon  type="eye-disabled" style="font-size: 20px;color:#ffa500"></Icon></a>
+                              <a @click="editRecord(index)"><Icon  type="edit" style="font-size: 20px;"></Icon></a>
                               <a style= 'color:red' @click="deleteHandle(index)"><Icon type="android-delete" style="font-size: 20px;"></Icon></a>
                             </span>
                           </div>
                         </td>
                       </tr>
-                      <tr v-if="openTrasformEditorIndex === index">
+                      <tr v-if="viewData[index].isView">
                         <td colspan="2" class="json-viewer">
-                          <vue-json-editor v-model="jsoneditordata" :showBtns="false" @json-change="onJsonChange"></vue-json-editor>
+                          <div style="padding:20px; background-color:#eee">
+                            <pre style="background-color:#fff">{{tableData[index]}}</pre>
+                          </div>
+                        </td>
+                      </tr>
+                      <tr v-if="viewData[index].isUpdate">
+                        <td colspan="2" class="json-viewer">
+                          <div style="padding:20px; background-color:#eee">
+                            <vue-json-editor v-model="viewData[index].data" :showBtns="false"></vue-json-editor>
+                          </div>
                         </td>
                       </tr>
                     </template>
@@ -79,7 +97,6 @@
           </div>
         </div>
       </Row>
-      
     </div>
   </div>
 </template>
@@ -101,37 +118,43 @@ export default {
     return {
       jsoneditordata: {},
       tableData: [],
-      openTrasformEditorIndex: -1,
       // finalvalue: {},
       crumbData: {
         db: '',
         cname: '',
         tname: ''
       },
-      setData: false
+      setData: false,
+      viewData: []
     }
   },
   methods: {
-    show (index) {
-      let rowid = _.cloneDeep(this.tableData[index])
-      if (rowid.hasOwnProperty('_id') === true) {
-        delete rowid._id
+    ToggleFunction (index) {
+      this.viewData[index].isView = !this.viewData[index].isView
+      this.viewData[index].isUpdate = false
+    },
+    getSomeValue (value) {
+      var sObj = _.cloneDeep(value)
+      delete sObj.id
+      delete sObj._id
+      // console.log('......', value, sObj)
+      var s = JSON.stringify(sObj)
+      // console.log(s.length)
+      if (s.length <= 75) {
+        return s
+      } else {
+        s = s.slice(0, 75)
+        return s + ' ....'
       }
-      if (rowid.hasOwnProperty('id') === true) {
-        delete rowid.id
-      }
-      this.jsoneditordata = rowid
-      if (this.openTrasformEditorIndex === index) {
-        this.openTrasformEditorIndex = -1
-        return false
-      }
-      this.openTrasformEditorIndex = index
+    },
+    editRecord (index) {
+      this.viewData[index].isUpdate = !this.viewData[index].isUpdate
+      this.viewData[index].isView = false
     },
     init () {
-      // alert(this.$route.params.id + '/' + this.$route.params.tname)
       let self = this
       self.setData = false
-      this.openTrasformEditorIndex = -1
+      self.viewData = []
       ConnectionData.get().then(response => {
         // console.log('response', response.data)
         settings.getThis(self.$route.params.id).then(res => {
@@ -147,6 +170,13 @@ export default {
                   _.forEach(insd.inst_data, (tabled, tinx) => {
                     if (tabled.t_name === self.$route.params.tname) {
                       self.tableData = tabled.t_data
+                      console.log('self.tableData', self.tableData)
+                      for (var i = 0; i < tabled.t_data.length; i++) {
+                        var obj = _.cloneDeep(tabled.t_data[i])
+                        delete obj.id
+                        delete obj._id
+                        self.viewData.push({isView: false, isUpdate: false, data: obj})
+                      }
                       self.setData = true
                     }
                   })
@@ -159,35 +189,26 @@ export default {
       }).catch(error => {
         this.$Notice.error({
           title: error,
-          desc: 'connection to the server timed out',
+          desc: 'Network Error',
           duration: 0
         })
       })
     },
-    onJsonChange (value) {
-      // console.log('value.......', value)
-      // if (this.tableData[this.openTrasformEditorIndex].hasOwnProperty('_id') === true) {
-      //   value['_id'] = this.tableData[this.openTrasformEditorIndex]._id
-      // }
-      // if (this.tableData[this.openTrasformEditorIndex].hasOwnProperty('id') === true) {
-      //   value['id'] = this.tableData[this.openTrasformEditorIndex].id
-      // }
-      // console.log('value:', value)
-      // this.finalvalue = value
-      this.jsoneditordata = value
-    },
+    // onJsonChange (value) {
+    //   this.jsoneditordata = value
+    // },
     updatedvalue (index) {
       var obj = {}
-      if (this.tableData[this.openTrasformEditorIndex].hasOwnProperty('_id')) {
-        this.jsoneditordata['_id'] = this.tableData[this.openTrasformEditorIndex]._id
+      if (this.tableData[index].hasOwnProperty('_id')) {
+        this.viewData[index].data['_id'] = this.tableData[index]._id
       }
-      if (this.tableData[this.openTrasformEditorIndex].hasOwnProperty('id')) {
-        this.jsoneditordata['id'] = this.tableData[this.openTrasformEditorIndex].id
+      if (this.tableData[index].hasOwnProperty('id')) {
+        this.viewData[index].data['id'] = this.tableData[index].id
       }
       obj.inst_id = this.$route.params.id
       obj.tname = this.$route.params.tname
-      obj.data = this.jsoneditordata
-      var isequal = _.isEqual(this.jsoneditordata, this.tableData[this.openTrasformEditorIndex])
+      obj.data = this.viewData[index].data
+      var isequal = _.isEqual(this.viewData[index].data, this.tableData[index])
       // console.log('final value', this.jsoneditordata, this.tableData[this.openTrasformEditorIndex], ss)
       if (!isequal) {
         var mid
@@ -199,7 +220,13 @@ export default {
         }
         if (mid !== undefined) {
           ConnectionData.put(mid, obj).then(response => {
-            console.log('response', response.data)
+            // console.log('response', response.data)
+            this.tableData[index] = obj.data
+            var s = _.cloneDeep(obj.data)
+            delete s._id
+            delete s.id
+            this.viewData[index].data = s
+            this.viewData[index].isView = true
             this.$Notice.success({ title: 'Suceess!', desc: 'record updated....' })
           }).catch(error => {
             console.log(error)
@@ -207,10 +234,12 @@ export default {
           })
         }
       }
-      this.openTrasformEditorIndex = -1
+      this.viewData[index].isUpdate = false
+      this.viewData[index].isView = false
     },
     cancelHandle (index) {
-      this.openTrasformEditorIndex = -1
+      this.viewData[index].isUpdate = false
+      this.viewData[index].isView = false
     },
     deleteHandle (index) {
       var id
@@ -231,6 +260,7 @@ export default {
             ConnectionData.deleteThis(id, instId, tname)
               .then(response => {
                 this.tableData.splice(index, 1)
+                this.viewData.splice(index, 1)
                 this.$Notice.success({
                   title: 'Success',
                   desc: 'SchemaInstance Deleted.....',
@@ -256,17 +286,16 @@ export default {
     this.init()
   },
   watch: {
-    '$route.params.id' (newId, oldId) {
+    '$route.params.id': function (newId, oldId) {
       // fetch data
       // console.log(newId)
       this.setData = false
       this.init()
     },
-    '$route.params.tname' (newId, oldId) {
+    '$route.params.tname': function (newId, oldId) {
       // fetch data
       // console.log(newId)
       this.setData = false
-
       this.init()
     }
   },
@@ -274,8 +303,8 @@ export default {
     'connectiondata': {
       updated (data) {
         // console.log('connectiondata updated..', data)
-        this.setData = false
-        this.init()
+        // this.setData = false
+        // this.init()
       },
       created (data) {
         // console.log('connectiondata created..', data)
@@ -284,7 +313,7 @@ export default {
       },
       removed (data) {
         // console.log('connectiondata removed..', data)
-        this.setData = false
+        // this.setData = false
         // this.init()
       }
     }

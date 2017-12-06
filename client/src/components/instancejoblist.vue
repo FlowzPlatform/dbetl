@@ -48,12 +48,17 @@ export default {
         {
           title: 'Job Id',
           key: 'id',
-          width: 400,
+          width: 300,
           sortable: true
         }, {
           title: 'Source',
           key: 'source',
-          width: 300
+          width: 250
+          // sortable: true
+        }, {
+          title: 'Target',
+          key: 'target',
+          width: 250
           // sortable: true
         }, {
           title: 'jobCreated',
@@ -129,7 +134,8 @@ export default {
             if (obj.hasOwnProperty('data')) {
               if (obj.data.target.id === self.$route.params.id) {
                 // console.log('...', obj)
-                obj.source = obj.data.source.selectedDb + '/' + obj.data.source.dbname
+                obj.source = obj.data.source.selectedDb + ' / ' + obj.data.source.dbname
+                obj.target = obj.data.target.selectedDb + ' / ' + obj.data.target.dbname
                 res.push(obj)
               }
             }

@@ -89,6 +89,82 @@
                     <tr>
                       <th class="">
                         <div class="ivu-table-cell">
+                          <span>Target Connection</span>
+                        </div>
+                      </th>
+                      <td class="">
+                        <table cellspacing="0" cellpadding="0" style="width: 100%;" border="1">
+                          <colgroup>
+                            <col width="20">
+                            <col width="20">
+                            <col width="20">
+                            <col width="20">
+                            <col width="20">
+                          </colgroup>
+                          <thead>
+                            <tr>
+                            <th class="">
+                              <div class="ivu-table-cell">
+                                <span>DB</span>
+                              </div>
+                            </th>
+                            <th class="">
+                              <div class="ivu-table-cell">
+                                <span>Connection Name</span>
+                              </div>
+                            </th>
+                            <th class="">
+                              <div class="ivu-table-cell">
+                                <span>Databasename</span>
+                              </div>
+                            </th>
+                            <th class="">
+                              <div class="ivu-table-cell">
+                                <span>Host</span>
+                              </div>
+                            </th>
+                            <th class="">
+                              <div class="ivu-table-cell">
+                                <span>Port</span>
+                              </div>
+                            </th>
+                           </tr>
+                         </thead>
+                         <tbody class="ivu-table-tbody">
+                         <tr class="ivu-table-row">
+                           <td class="">
+                             <div class="ivu-table-cell">
+                              {{row.data.target.selectedDb}}
+                             </div>
+                           </td>
+                           <td class="">
+                             <div class="ivu-table-cell">
+                              {{row.data.target.connection_name}}
+                             </div>
+                           </td>
+                           <td class="">
+                             <div class="ivu-table-cell">
+                              {{row.data.target.dbname}}
+                             </div>
+                           </td>
+                           <td class="">
+                             <div class="ivu-table-cell">
+                              {{row.data.target.host}}
+                             </div>
+                           </td>
+                           <td class="">
+                             <div class="ivu-table-cell">
+                              {{row.data.target.port}}
+                             </div>
+                           </td>
+                         </tr>
+                       </tbody>
+                      </table>
+                      </td>
+                    </tr>
+                    <tr>
+                      <th class="">
+                        <div class="ivu-table-cell">
                           <span>Mapping</span>
                         </div>
                       </th>

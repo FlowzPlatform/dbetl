@@ -1,5 +1,10 @@
 <template>
 <div>
+    <Row style="padding-bottom:5px">
+      <Col style="float:right" >
+        <Button type="primary" shape="circle" size="small" @click="goBackHandle()" icon="chevron-left">Back</Button>
+      </Col>
+    </Row>
     <Row style="border:2px solid #eee;padding:20px;background-color:#eee">
         <Col span="14" style="border:1px solid #eee; ">
             <Card :bordered="false">
@@ -134,22 +139,25 @@
                 <div class="ivu-table-header">
                     <table cellspacing="0" cellpadding="0" border="0" style="width: 100%;">
                         <colgroup>
-                            <col width="15">
+                            <col width="10">
                                 <col width="30">
                                     <col width="30">
                                         <col width="25">
                         </colgroup>
                         <thead>
                             <tr>
-                                <th class="" style="padding-left:20px">SelectTable</th>
+                                <!-- <th class="" style="padding-left:20px">SelectTable</th> -->
+                                <th class="" style="padding-left:20px">
+                                  <Checkbox v-model="selectAllTable" @on-change="selTableChange"></Checkbox>
+                                </th>
                                 <th class="">
                                     <div class="ivu-table-cell">
-                                        <span>{{source.selectedDb}} / {{source.dbname}}</span>
+                                        <span>{{source.selectedDb}} / {{source.dbname}} ( SOURCE )</span>
                                     </div>
                                 </th>
                                 <th class="">
                                     <div class="ivu-table-cell">
-                                        <span>{{target.connection_name}} / {{target.dbname}}</span>
+                                        <span>{{target.connection_name}} / {{target.dbname}} ( TARGET )</span>
                                     </div>
                                 </th>
                                 <th class="">Mapping</th>
@@ -208,15 +216,17 @@
                                                 </colgroup>
                                                 <thead>
                                                     <tr>
-                                                        <th class="" style="padding-left:10px;background-color:#f8f8f9; color:#394263;font-size:13px">SelectField</th>
+                                                        <th class="" style="padding-left:20px;background-color:#f8f8f9; color:#394263;font-size:13px">
+                                                          <Checkbox :value="true" @on-change="selectFiledChange"></Checkbox>
+                                                        </th>
                                                         <th class="" style="background-color:#f8f8f9; color:#394263;font-size:13px">
                                                             <div class="ivu-table-cell">
-                                                                <span>{{tableData[index].source}} / Fields</span>
+                                                                <span>{{tableData[index].source}} / Fields ( SOURCE )</span>
                                                             </div>
                                                         </th>
                                                         <th class="" style="background-color:#f8f8f9; color:#394263;font-size:13px">
                                                             <div class="ivu-table-cell">
-                                                                <span>{{tableData[index].target}} / Fields</span>
+                                                                <span>{{tableData[index].target}} / Fields ( TARGET )</span>
                                                             </div>
                                                         </th>
                                                         <!-- <th class="">Mapping</th> -->
@@ -277,6 +287,7 @@ import modelSettings from '@/api/settings'
 export default {
   data () {
     return {
+      selectAllTable: true,
       CascaderData: [],
       sdatabase: ['rethink'],
       openTrasformEditorIndex: -1,
@@ -355,6 +366,17 @@ export default {
     this.init()
   },
   methods: {
+    selectFiledChange (value) {
+      _.forEach(this.tableData[this.openTrasformEditorIndex].colsData, (d) => {
+        d.isField = value
+      })
+    },
+    selTableChange (value) {
+      _.forEach(this.tableData, (d) => {
+        d.isSelect = value
+      })
+      this.openTrasformEditorIndex = -1
+    },
     getFiledNames (index) {
       let _table = _.find(this.t_collection, (f) => {
         return f.name === this.tableData[index].target
@@ -522,6 +544,9 @@ export default {
         }
         this.setForInternal = false
       }
+    },
+    goBackHandle () {
+      this.$router.go(-1)
     }
   },
   mounted () {
