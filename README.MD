@@ -40,10 +40,17 @@ $ wget https://github.com/FlowzPlatform/FlowzSchemaEditor.zip -O FlowzSchemaEdit
 	$ npm install
 	
 
-	$ npm start
+	Windows User :
 	
+	$`SET RDB_HOST=localhost&& set RDB_PORT=28015&& SET MONGO_DB=mongodb://localhost:27017/flowzPDM&& npm start` 
 	
-	Your api should run on port 3030 with the development environment configuration
+	Linux User: 
+	
+	$ `RDB_HOST=localhost RDB_PORT=28015 MONGO_DB=mongodb://localhost:27017/flowzPDM npm start` . 
+	
+	P.S - Mongo DB database name must be `flowzPDM`
+	
+	Your api should run on port 3034 with the development environment configuration
 
 	Now go to client folder. Run below command
 
