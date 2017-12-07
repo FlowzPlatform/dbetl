@@ -6,13 +6,11 @@
     "default": 10,
     "max": 50
   },
-  "rethinkdb": {
-    "db": "FlowzEngine",
-    "servers": [{
-      "host": "localhost",
-      "port": "28015"
-    }]
-  },
+  "rdb_host": "RDB_HOST",
+  "rdb_port": "RDB_PORT",
+  "rdb_user": "",
+  "rdb_password": "",
+  "rdb_db": "FlowzDBETL",
   "scheduler_table": "scheduler",
   "qJobTimeout": 3600000,
   "qJobRetryMax": 0,
@@ -20,5 +18,5 @@
   "importToExternal": "import_to_external_db",
   "instance_table": "flowzinstance",
   "approvar_table": "approvalClass",
-  "mongodb": "mongodb://localhost:27017/flowzPDM"
+  "mongodb": "MONGO_DB"
 }

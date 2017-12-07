@@ -1,10 +1,11 @@
 let async = require('asyncawait/async');
 let await = require('asyncawait/await');
 const app = require('config');
-const config = app.get('rethinkdb')
-const rdash = require('rethinkdbdash')(config)
+const config = require('../config')
+  // const app = require('config');
+  // const config = app.get('rethinkdb')
+  // const rdash = require('rethinkdbdash')(config)
 const _ = require('lodash')
-
 module.exports = {
   before: {
     all: [],
@@ -17,7 +18,6 @@ module.exports = {
     patch: [],
     remove: []
   },
-
   after: {
     all: [],
     find: [],
@@ -27,7 +27,6 @@ module.exports = {
     patch: [],
     remove: []
   },
-
   error: {
     all: [],
     find: [],
@@ -41,7 +40,7 @@ module.exports = {
 
 function beforeCreate(hook) {
   const Queue = require('rethinkdb-job-queue')
-  const cxnOptions = config
+  const cxnOptions = config.rethinkdb
   const qOptions = {
     name: app.get('importToExternal')
   }
@@ -51,8 +50,8 @@ function beforeCreate(hook) {
   jobOptions.data = {}
     // jobOptions.data.fId = id
   jobOptions.data = hook.data
-  // jobOptions.app = app
-  jobOptions.configData = {host: app.get('host'), port: app.get('port')}
+    // jobOptions.app = app
+  jobOptions.configData = { host: app.get('host'), port: app.get('port') }
   console.log('hook.data', hook.data)
   jobOptions.timeout = app.get('qJobTimeout')
   jobOptions.retryMax = app.get('qJobRetryMax')
