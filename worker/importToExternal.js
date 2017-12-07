@@ -11,6 +11,8 @@ var elasticsearch = require('elasticsearch');
 var MongoClient = require('mongodb').MongoClient;
 var fs = require('fs');
 var path = require('path');
+var Datastore = require('nedb-promise');
+var nedbpath = path.join(__dirname, '../service/nedb')
 // var aurl = 'http://' + job.configData.host + ':' + job.configData.port;
 // var endecrypt = require('../service/src/services/encryption/security')			
 var mysql = require('mysql');
@@ -63,10 +65,12 @@ var createConn = async (function(data, mapdata) {
 	      }))
       // console.log(client)
     	return {conn: client, db: data.selectedDb}
+	} else if (data.selectedDb == 'nedb') {
+		var nPath = path.join(nedbpath, '/' + data.dbname)
+		return {conn: nPath, db: data.selectedDb}
 	} else if(data.selectedDb == 'mysql') {
 		// console.log('-----------import ------------',data);
 		// var pass = endecrypt.decrypt(data.password)
-
 		var connection = mysql.createConnection({
 			host     : data.host,
 			port     : data.port,
@@ -343,6 +347,10 @@ q.process(async(job, next) => {
 					        item._id = hit._id;
 					        sData.push(item);
 					    })
+					} else if (job.data.source.selectedDb == 'nedb') {
+						var tname = obj.source
+						var tconn = new Datastore({ filename: path.join(sConn.conn, '/' + tname + '.db'), autoload: true })
+          				sData = await (tconn.cfind({}).exec())
 					} else if(job.data.source.selectedDb == 'mysql') {
 						var getDatabaseTables = await(getQuery('mysql','select','commonSelect'));
 						getDatabaseTables = getDatabaseTables.replace('{{ table_name }}',obj.source);

@@ -24,7 +24,7 @@
         </Col>
       </Row>
 
-      <Row style="padding: 10px;" :gutter="16">
+      <!-- <Row style="padding: 10px;" :gutter="16">
         <Col span="8">
           <Select @on-change="handleCommand" placeholder="Sort By" size="small" style="width:135px;">
             <Option value="asc"><span>A-Za-z</span>
@@ -37,17 +37,12 @@
         </Col>
         <Col span="16">
           <Row type="flex" justify="end">
-            <!-- <Col col="8">
-              <Checkbox v-model="groupby" label="groupby" size="small" style="color:#fff;margin-top:5px;">Group By</Checkbox>
-            </Col>
-            <Col span="8"> -->
               <router-link to="/schema/new">
                 <Button type="default" size="small" icon="plus-round">Add</Button>
               </router-link>
-            <!-- </Col> -->
           </Row>
         </Col>
-      </Row>
+      </Row> -->
 
       <!-- =============== iview Side NAV ================= -->
       <Menu theme="dark" style="max-height:800px; overflow-y: auto" width="auto">
@@ -63,7 +58,7 @@
                         <img v-else-if="insObj.imgurl === 'rethink'" :src="rethink" class="schema-icon">
                         <img v-else-if="insObj.imgurl === 'elastic'" :src="elastic" class="schema-icon">
                         <img v-else-if="insObj.imgurl === 'nedb'" :src="nedb" class="schema-icon">
-                        <img v-else-if="insObj.imgurl === 'mysql'" :src="mysql" class="schema-icon">
+                        <img v-else-if="insObj.imgurl === 'mysql'" :src="mysql" style="width:25px;height:25px" class="schema-icon">
                         <img v-else :src="insObj.imgurl" class="schema-icon">
                       </span>
                       {{insObj.cname}}

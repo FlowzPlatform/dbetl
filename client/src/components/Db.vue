@@ -19,7 +19,7 @@
         <TabPane label="MySQL DB" name="mysql">
             <Table size="small" :columns="mysqlCol" :data="mysqlDt"></Table>
         </TabPane>
-        <Button type="primary" icon="navicon-round" @click="gotocsvJoblist()" size="small" slot="extra">csv JobList</Button>
+        <Button type="primary" icon="navicon-round" @click="gotocsvJoblist()" size="small" slot="extra">Import Tracker List</Button>
         <Button type="primary" style="margin:5px" icon="plus" @click="addSettings" size="small" slot="extra">Add</Button>
       </Tabs>
       <!-- {{rethinkDt}} -->
@@ -560,53 +560,53 @@ export default {
                     title: 'Notes',
                     key: 'notes'
                 },
-                {
-                  title: 'Import',
-                  key: 'import',
-                  render: (h, params) => {
-                    return h('div', [
-                      h('Button', {
-                        props: {
-                          type: 'text',
-                          size: 'large',
-                          icon: 'upload'
-                        },
-                        style: {
-                          // color: '#CC0000',
-                          color: '#5cadff',
-                          marginRight: '3px',
-                          padding: '0px',
-                          fontSize: '20px'
-                        },
-                        on: {
-                          click: () => {
-                            // alert(this.tabPane)
-                            this.import(params.row.id)
-                          }
-                        }
-                      }, ''),
-                      h('Button', {
-                        props: {
-                          type: 'text',
-                          size: 'large',
-                          icon: 'navicon-round'
-                        },
-                        style: {
-                          color: '#ff9900',
-                          marginRight: '3px',
-                          padding: '0px',
-                          fontSize: '20px'
-                        },
-                        on: {
-                          click: () => {
-                            // alert(this.tabPane)
-                            this.import(params.row.id)
-                          }
-                        }
-                      }, '')
-                    ])
-                  }
-                },
+                // {
+                //   title: 'Import',
+                //   key: 'import',
+                //   render: (h, params) => {
+                //     return h('div', [
+                //       // h('Button', {
+                //       //   props: {
+                //       //     type: 'text',
+                //       //     size: 'large',
+                //       //     icon: 'upload'
+                //       //   },
+                //       //   style: {
+                //       //     // color: '#CC0000',
+                //       //     color: '#5cadff',
+                //       //     marginRight: '3px',
+                //       //     padding: '0px',
+                //       //     fontSize: '20px'
+                //       //   },
+                //       //   on: {
+                //       //     click: () => {
+                //       //       // alert(this.tabPane)
+                //       //       this.import(params.row.id)
+                //       //     }
+                //       //   }
+                //       // }, ''),
+                //       // h('Button', {
+                //       //   props: {
+                //       //     type: 'text',
+                //       //     size: 'large',
+                //       //     icon: 'navicon-round'
+                //       //   },
+                //       //   style: {
+                //       //     color: '#ff9900',
+                //       //     marginRight: '3px',
+                //       //     padding: '0px',
+                //       //     fontSize: '20px'
+                //       //   },
+                //       //   on: {
+                //       //     click: () => {
+                //       //       // alert(this.tabPane)
+                //       //       this.import(params.row.id)
+                //       //     }
+                //       //   }
+                //       // }, '')
+                //     ])
+                //   }
+                // },
                 {
                   title: 'Action',
                   key: 'action',
