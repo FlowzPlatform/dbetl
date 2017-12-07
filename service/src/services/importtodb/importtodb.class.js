@@ -15,7 +15,6 @@ class Service {
     });
   }
   create(data, params) {
-
     // let resp;
     // fs.exists('temp', async function(exists) {
     //   if (exists) {} else {
@@ -52,13 +51,13 @@ class Service {
     //   if (err) console.log(err)
     //   console.log(data);
     // })
-    var req = s3.getObject(awsparams, function (err) {
+    var req = s3.getObject(awsparams, function(err) {
       if (err !== null) {
         //callback( err );
       }
     });
     req.done = false;
-    req.on('httpData', function (chunk) {
+    req.on('httpData', function(chunk) {
       if (req.done == false) {
         console.log(chunk.toJSON());
         //fs.createWriteStream("/path")
@@ -66,7 +65,7 @@ class Service {
         console.log('data sent after done for: ');
       }
     });
-    req.on('httpDone', function () {
+    req.on('httpDone', function() {
       //shell.exec("ps axf | grep <process name> | grep -v grep ")
       if (req.done == false) {
         req.done = true;
@@ -108,7 +107,7 @@ class Service {
     });
   }
 }
-module.exports = function (options) {
+module.exports = function(options) {
   return new Service(options);
 };
 module.exports.Service = Service;

@@ -1,30 +1,22 @@
-
-console.log("hooks called...")
 module.exports = {
   before: {
-    all: [
-    ],
+    all: [],
     find: [],
     get: [],
-    create: [
-    ],
+    create: [],
     update: [],
     patch: [],
     remove: []
   },
-
   after: {
     all: [],
     find: [],
-    get: [
-    ],
-    create: [
-    ],
+    get: [],
+    create: [],
     update: [],
     patch: [],
     remove: []
   },
-
   error: {
     all: [],
     find: [],
@@ -35,8 +27,3 @@ module.exports = {
     remove: []
   }
 };
-
-function postData(hook){
-  console.log("************",hook.data)
-  console.log("#############",hook)
-}

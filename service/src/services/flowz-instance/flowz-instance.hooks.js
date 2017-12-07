@@ -1,5 +1,3 @@
-// const app = require('config');
-// const config = app.get('rethinkdb')
 module.exports = {
   before: {
     all: [],
