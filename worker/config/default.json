@@ -5,13 +5,6 @@
     "db": "FlowzEngine"
   },
   "qOptions": {
-    "name": "importSchema",
-    "masterInterval": 60000,
-    "changeFeed": true,
-    "concurrency": 1,
-    "removeFinishedJobs": false
-  },
-  "qOptions1": {
     "name": "import_to_external_db",
     "masterInterval": 60000,
     "changeFeed": true,

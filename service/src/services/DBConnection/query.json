@@ -26,6 +26,9 @@
             },
             {
                 "getTableColumns": "select {{ fields }} FROM {{ table_name }} where table_schema = '{{ database_name }}' and table_name = '{{ tableName }}'"
+            },
+            {
+                "showColumns": "SHOW COLUMNS FROM {{ table_name }}"
             }
         ],
         "insert": [
@@ -60,6 +63,12 @@
             },
             {
                 "dropField": "ALTER TABLE {{ table_name }} DROP {{ field }}"
+            },
+            {
+                "changeFieldType": "ALTER TABLE {{ table_name }} CHANGE {{ field }} {{ field1 }} {{ fieldType }};"
+            },
+            {
+                "addPrimaryKey": "ALTER TABLE {{ table_name }} ADD PRIMARY KEY({{ field }});"
             }
         ],
         "rename": [

@@ -78,6 +78,10 @@ db1.elastic.dbinstance.forEach(function (instance, inx) {
   // }
 
 module.exports = {
+  choose: function () {
+    console.log('===================ELASTIC_DB=================');
+  },
+
   generateInstanceTable: async(function (ins_id, title){
     console.log('Elastic generate instance collection..........', ins_id, title);
     // for(let [i, db_i] of client.entries()) {
@@ -91,9 +95,97 @@ module.exports = {
     return 'success'
   }),
 
-  choose: function () {
-    console.log('===================ELASTIC_DB=================');
-  },
+  getConnsAllData: async (function(ins_id) {
+    for(let [i, db_i] of client.entries()) {
+      if(db_i.id == ins_id) {
+        var arr = []
+        // console.log('db[i].conn', db[i].conn)
+        var result = await (db_i.conn.search({
+          body: {
+            aggs: {
+              typesAgg: {
+                terms: {
+                  field: '_type',
+                  size: 200
+                }
+              }
+            },
+            size: 0
+          }
+        }))
+        // console.log(result)
+        for (let [inx, val] of result.aggregations.typesAgg.buckets.entries()) {
+          var obj = {}
+          obj['t_name'] = val.key
+          var data = await (db_i.conn.search({
+            index: db_i.dbname,
+            type: val.key,
+            body: {
+                query: {
+                    match_all: { }
+                },
+            }
+          }))
+          var a = []
+          data.hits.hits.forEach(function(hit){
+            var item =  hit._source;
+            item._id = hit._id;
+            a.push(item);
+          })
+          obj['t_data'] = a
+          arr.push(obj)
+        }
+        return arr
+      }
+    }
+  }),
+
+  postTableRecord: async(function(data) {
+    for (let [i, inst] of client.entries()) {
+      if ( inst.id == data.inst_id ) {
+        var res = await (
+          inst.conn.index({
+          index: inst.dbname,
+          type: data.tname,
+          body: data.data
+        }))
+        // console.log('rethink >>>>>>>>>>>>>>', res)
+        return res._id;
+      }
+    }
+  }),
+
+  putTableRecord: async(function(id, data) {
+    for (let [i, inst] of client.entries()) {
+      if ( inst.id == data.inst_id ) {
+        delete data.data._id
+        var res = await (
+          inst.conn.index({
+          index: inst.dbname,
+          type: data.tname,
+          id: id,
+          body: data.data
+        }))
+        // console.log('elastic >>>>>>>>>>>>>>', res)
+        return res
+      }
+    }
+  }),
+
+  deleteThisTableRecord: async(function (id, inst_id, tname) {
+    for (let [i, inst] of client.entries()) {
+      if ( inst.id == inst_id ) {
+        var res = await (inst.conn.delete({
+          index: inst.dbname,
+          type: tname,
+          id: id,
+        }))
+        // console.log('mongo >>>>>>>>>>>>>>', res)
+        return res
+      }
+    }
+  }),
+
   //***********************get cuustom methods******************
   getSchemaName: async(function (name) {
     console.log('elastic get SchemaName');
@@ -108,14 +200,14 @@ module.exports = {
             type: 'schema',
             body: {
               "query": {
-        "bool": {
-            "must": {
-                "query_string": {
-                    "fields": ["title"],
-                    "query": name
+                "bool": {
+                    "must": {
+                        "query_string": {
+                            "fields": ["title"],
+                            "query": name
+                        }
+                    },
                 }
-            },
-            }
           }}}
           ))
         result.hits.hits.forEach(function (hit) {

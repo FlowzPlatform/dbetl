@@ -35,7 +35,7 @@ export default {
     					if(this.$store.state.tabdata[parseInt(this.activetab)+1] !== undefined){
     						// alert('inside')
     						// alert(this.activetab)
-                console.log("@@@@@@@@",this.activetab)
+                // console.log("@@@@@@@@",this.activetab)
     						this.activetab = 0
                 this.$store.state.activetab = 0
               console.log("$$$$$$$$$$$$$$$$",this.activetab , this.$store.state.activetab)
@@ -53,7 +53,7 @@ export default {
 	    				}
     				}
     				else {
-              console.log("@@@@@@@@",this.activetab)
+              // console.log("@@@@@@@@",this.activetab)
     					this.activetab -= 1
 	    				this.$store.state.activetab = this.$store.state.activetab - 1
 	    				console.log("$$$$$$$$$$$$$$$$",this.activetab , this.$store.state.activetab)
