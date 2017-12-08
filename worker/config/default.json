@@ -1,0 +1,19 @@
+{
+  "rethinkdb": {
+    "host": "localhost",
+    "port": 28015,
+    "db": "FlowzEngine"
+  },
+  "qOptions": {
+    "name": "import_to_external_db",
+    "masterInterval": 60000,
+    "changeFeed": true,
+    "concurrency": 1,
+    "removeFinishedJobs": false
+  },
+  "flowz_table": "flowzinstance",
+  "scheduler_table": "scheduler",
+  "syetem_logs_table": "flowz_system_logs",
+  "qJobTimeout": 3600000,
+  "qJobRetryMax": 0
+}

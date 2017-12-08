@@ -1,0 +1,84 @@
+{
+    "mysql": {
+        "select": [
+            {
+                "commonSelect": "SELECT {{ fields }} from {{ table_name }}"
+
+            },
+            {
+                "commonSelectWithCondition": "SELECT {{ fields }} from {{ table_name }} where {{ where }}"
+
+            },
+            {
+                "getSchema": "SELECT s.id,s.title,s.database_name,s.isdeleted,GROUP_CONCAT(e.id SEPARATOR '||') as entityid,GROUP_CONCAT(e.name SEPARATOR '||') as name,GROUP_CONCAT(e.type SEPARATOR '||') as type,GROUP_CONCAT(e.customtype SEPARATOR '||') as customtype,GROUP_CONCAT(e.notes SEPARATOR '||') as notes,GROUP_CONCAT(p.IsArray SEPARATOR '||') as IsArray,GROUP_CONCAT(p.allowed_value SEPARATOR '||') as allowed_value,GROUP_CONCAT(p.default_value SEPARATOR '||') as default_value,GROUP_CONCAT(p.helper SEPARATOR '||') as helper,GROUP_CONCAT(p.max SEPARATOR '||') as max,GROUP_CONCAT(p.min SEPARATOR '||') as min,GROUP_CONCAT(p.maxdate SEPARATOR '||') as maxdate,GROUP_CONCAT(p.mindate SEPARATOR '||') as mindate,GROUP_CONCAT(p.optional SEPARATOR '||') as optional,GROUP_CONCAT(p.options SEPARATOR '||') as options,GROUP_CONCAT(p.placeholder SEPARATOR '||') as placeholder,GROUP_CONCAT(p.regEx SEPARATOR '||') as regEx FROM tbl_schema as s join tbl_entity as e on s.id=e.schemaid join tbl_property as p on e.id=p.entity_id GROUP BY s.id"
+            },
+            {
+                "getThisSchema": "SELECT s.id,s.title,s.database_name,s.isdeleted,GROUP_CONCAT(e.id SEPARATOR '||') as entityid,GROUP_CONCAT(e.name SEPARATOR '||') as name,GROUP_CONCAT(e.type SEPARATOR '||') as type,GROUP_CONCAT(e.customtype SEPARATOR '||') as customtype,GROUP_CONCAT(e.notes SEPARATOR '||') as notes,GROUP_CONCAT(p.IsArray SEPARATOR '||') as IsArray,GROUP_CONCAT(p.allowed_value SEPARATOR '||') as allowed_value,GROUP_CONCAT(p.default_value SEPARATOR '||') as default_value,GROUP_CONCAT(p.helper SEPARATOR '||') as helper,GROUP_CONCAT(p.max SEPARATOR '||') as max,GROUP_CONCAT(p.min SEPARATOR '||') as min,GROUP_CONCAT(p.maxdate SEPARATOR '||') as maxdate,GROUP_CONCAT(p.mindate SEPARATOR '||') as mindate,GROUP_CONCAT(p.optional SEPARATOR '||') as optional,GROUP_CONCAT(p.options SEPARATOR '||') as options,GROUP_CONCAT(p.placeholder SEPARATOR '||') as placeholder,GROUP_CONCAT(p.regEx SEPARATOR '||') as regEx FROM tbl_schema as s join tbl_entity as e on s.id=e.schemaid join tbl_property as p on e.id=p.entity_id where s.id={{ id }} GROUP BY s.id"
+            },
+            {
+                "schemaTabledata": "SELECT s.id,s.title,s.database_name,GROUP_CONCAT(e.name SEPARATOR '||') as name,GROUP_CONCAT(e.type SEPARATOR '||') as type,GROUP_CONCAT(e.customtype SEPARATOR '||') as customtype FROM tbl_schema as s join tbl_entity as e on s.id=e.schemaid {{ where }} GROUP BY s.id"
+            },
+            {
+                "checkColumn": "SELECT {{ fields }} FROM {{ table_name }} WHERE TABLE_NAME = '{{ tableName }}' AND table_schema='{{ database_name }}' AND COLUMN_NAME = '{{ column_name }}'"
+            },
+            {
+                "getDatabaseTables": "SELECT {{ fields }} FROM {{ table_name }} where table_schema='{{ database_name }}'"
+            },
+            {
+                "getTableColumns": "select {{ fields }} FROM {{ table_name }} where table_schema = '{{ database_name }}' and table_name = '{{ tableName }}'"
+            },
+            {
+                "showColumns": "SHOW COLUMNS FROM {{ table_name }}"
+            }
+        ],
+        "insert": [
+            {
+                "commonInsert": "INSERT INTO {{ table_name }} ({{ fields }}) VALUES ({{ values }})"
+            }
+        ],
+        "update": [
+            {
+                "commonUpdate": "UPDATE {{ table_name }} SET {{ fields }} where {{ where }}"
+            }
+        ],
+        "delete": [
+            {
+                "commonDelete": "DELETE FROM {{ table_name }} where {{ where }}"
+            }
+        ],
+        "create": [
+            {
+                "createTable": "CREATE TABLE IF NOT EXISTS {{ table_name }} ({{ fields }})"
+            },
+            {
+                "createDatabase": "CREATE DATABASE IF NOT EXISTS {{ database_name }}"
+            }
+        ],
+        "alter": [
+            {
+                "alterTableAndAddPrimaryKey": "ALTER TABLE {{ table_name }} ADD {{ field }} INT(11) NOT NULL AUTO_INCREMENT FIRST, ADD PRIMARY KEY ({{ primary_field }})"
+            },
+            {
+                "alterTableAndAddField": "ALTER TABLE {{ table_name }} ADD {{ field }} {{ type }} {{ after }}"
+            },
+            {
+                "dropField": "ALTER TABLE {{ table_name }} DROP {{ field }}"
+            },
+            {
+                "changeFieldType": "ALTER TABLE {{ table_name }} CHANGE {{ field }} {{ field1 }} {{ fieldType }};"
+            },
+            {
+                "addPrimaryKey": "ALTER TABLE {{ table_name }} ADD PRIMARY KEY({{ field }});"
+            }
+        ],
+        "rename": [
+            {
+                "commonRename": "RENAME Table {{ old_table_name }} TO {{ new_table_name }}"
+            }
+        ]
+    },
+    "mongo": {
+        "select": [
+        ]
+    }
+}
