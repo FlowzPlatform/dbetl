@@ -19,12 +19,12 @@ jobs:
       - docker tag dbetl_backend_flowz:"$DOCKER_IMAGE_TAG" $DOCKER_USERNAME/dbetl_backend_flowz:"$DOCKER_IMAGE_TAG"
       - docker push $DOCKER_USERNAME/dbetl_backend_flowz:"$DOCKER_IMAGE_TAG"
     - stage: Dbetl-Frontend-Flowz
-        script:
-        - docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
-        - docker build -t dbetl_frontend_flowz:"$DOCKER_IMAGE_TAG" ./client/
-        - docker images
-        - docker tag dbetl_frontend_flowz:"$DOCKER_IMAGE_TAG" $DOCKER_USERNAME/dbetl_frontend_flowz:"$DOCKER_IMAGE_TAG"
-        - docker push $DOCKER_USERNAME/dbetl_frontend_flowz:"$DOCKER_IMAGE_TAG"
+      script:
+      - docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
+      - docker build -t dbetl_frontend_flowz:"$DOCKER_IMAGE_TAG" ./client/
+      - docker images
+      - docker tag dbetl_frontend_flowz:"$DOCKER_IMAGE_TAG" $DOCKER_USERNAME/dbetl_frontend_flowz:"$DOCKER_IMAGE_TAG"
+      - docker push $DOCKER_USERNAME/dbetl_frontend_flowz:"$DOCKER_IMAGE_TAG"
     - stage: Upgrade Rancher Service
       script:
       - bash ./upgrade.sh
