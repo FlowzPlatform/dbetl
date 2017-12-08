@@ -3,8 +3,6 @@
 A starter node js, jade and feathers application which provides master data creation based on schema with custom validation, custom template and can merge one schema with another.Multiple database selection (mongo,rethink,elastic etc) is available also .User can configure its own database. All CRUD operation can be done based on rest API. It also provides custom APIs where user can filter data by field names or field types.
 
 
-
-
 ## Prerequisites
 Make sure you have installed all of the following prerequisites on your development machine:
 * Git - [Download & Install Git](https://git-scm.com/downloads). OSX and Linux machines typically have this already installed.
