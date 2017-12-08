@@ -48,10 +48,10 @@
                     </span>
                   </Tooltip>
 								</Col>
-								<!-- <Col  style="float:right;">
+								<Col  style="float:right;">
 									Not a member?&nbsp;
 									<router-link to="/register" >Sign Up</router-link>
-								</Col> -->
+								</Col>
 							</Row>
             </FormItem>
           </Form>
