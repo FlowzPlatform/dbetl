@@ -47,6 +47,9 @@ Vue.use(iView, { locale })
 /* jquery-ui */
 /* Animated css */
 import 'animate.css/animate.css'
+
+import VueParticles from 'vue-particles'
+Vue.use(VueParticles)
 /* IView */
 // import 'bootstrap/dist/css/bootstrap.css'
 // import 'bootstrap-vue/dist/bootstrap-vue.css'
