@@ -112,24 +112,19 @@ export default {
 						this.$cookie.set('auth_token', auth.logintoken, {expires: 1, domain: location})    // Store in cookie
 						
 						this.$router.push({path: '/'}) // Redirect to dashbord
-            // var user = await modelUser.get(this.formLogin.email).catch(error => {
-            //   this.$Message.error(error.message)
-            //   return
-            // })
-
-            // if (user) {
-            //   window.localStorage.setItem('authUser', JSON.stringify(user[0]))
-            //   this.$store.commit('SET_USER', user[0])
-            //   this.$router.push({path: '/'})
-            // }
-            // this.$Message.success('Success!')
           }
           this.loading = false
         } else {
           this.$Message.error('Form validation failed!')
         }
       })
-    }
+    },
+		handleFacebook () {
+      document.getElementById('form-facebook').submit()
+    },
+    handleGoogle () {
+      document.getElementById('form-google').submit()
+    }		
   }
 }
 </script>
