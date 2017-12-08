@@ -19,7 +19,7 @@ let socket
 if (process.env.NODE_ENV !== 'development') {
   socket = io(config.serverURI, { path: '/dbetl/socket.io' })
 } else {
-  socket = io(config.serverURI, { path: '/dbetl/socket.io' })
+  socket = io(config.serverURI)
 }
 console.log('socket', socket)
 const feathers = Feathers()
