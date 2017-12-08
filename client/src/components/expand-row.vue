@@ -136,7 +136,14 @@ import feathers from 'feathers/client';
 import socketio from 'feathers-socketio/client';
 import Emitter from '@/mixins/emitter'
 import config from '@/config'
-const socket = io(config.serverURI);
+
+let socket
+if (process.env.NODE_ENV !== 'development') {
+  socket = io(config.serverURI, { path: '/dbetl/socket.io' })
+} else {
+  socket = io(config.serverURI, { path: '/dbetl/socket.io' })
+}
+// const socket = io(config.serverURI);
 const app = feathers()
   .configure(socketio(socket));
 moment().format();
