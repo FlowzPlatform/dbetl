@@ -31,3 +31,4 @@ jobs:
     - stage: Finish Rancher Service
       script:
       - bash ./finish.sh
+      
