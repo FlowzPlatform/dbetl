@@ -28,7 +28,7 @@
     "child_process": "^1.0.2",
     "codemirror": "^5.30.0",
     "diagram-js": "^0.21.1",
-    "element-ui": "^1.4.11",
+    "element-ui": "^1.4.12",
     "feathers-hooks": "^2.1.0",
     "feathers-socketio": "^2.0.0",
     "fs": "0.0.1-security",

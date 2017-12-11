@@ -78,13 +78,21 @@ module.exports = {
       if(db_i.id == ins_id) {
         var arr = []
         // console.log('db[i].conn', db[i].conn)
-        var result = await (db_i.conn.db.listCollections().toArray())
-        // console.log(result)
+        var result = await (db_i.conn.db.listCollections().toArray().then(res => {
+          return res
+        }).catch(err => {
+          return []
+        }))
+        // console.log('result........', result)
         for (let [inx, val] of result.entries()) {
           if(val.name != "system.indexes") {
             var obj = {}
             obj['t_name'] = val.name
-            var data = await (db_i.conn.collection(val.name).find().toArray())
+            var data = await (db_i.conn.collection(val.name).find().toArray().then(res => {
+              return res
+            }).catch(err => {
+              return []
+            }))
             obj['t_data'] = data
             arr.push(obj)
           }

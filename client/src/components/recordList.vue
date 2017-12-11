@@ -18,10 +18,6 @@
         </Col>
       </Row>
       <Row>
-        <!-- <div v-if="!setData" class="demo-spin-container">
-            <Spin fix size="large"></Spin>
-        </div> -->
-        <!-- <Spin v-if="!setData" size="large"></Spin> -->
         <div class="ivu-tabs-tabpane">
           <div class="ivu-table-wrapper">
             <div class="ivu-table ivu-table-border">
@@ -53,7 +49,7 @@
                               <Col span="8">{{ value._id }}</Col>
                               <Col span="16">{{ getSomeValue(value) }}</Col>
                           </div>
-                          <div class="ivu-table-cell" v-else style="float:left">
+                          <div class="ivu-table-cell" v-else style="">
                               <Col span="8">{{ value.id }}</Col>
                               <Col span="16">{{ getSomeValue(value) }}</Col>
                           </div>

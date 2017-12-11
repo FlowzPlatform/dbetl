@@ -491,8 +491,8 @@ socket.on('res',function(res){
 socket.on('error',function(_res){
   console.log("error.....",_res)
   save_err = _res
-  self.loadingData = false
-  self.$Notice.error({title:"Error!",desc: "Error in saving CSV...!  Kindly check your data"})
+  // self.loadingData = false
+  // self.$Notice.error({title:"Error!",desc: "Error in saving CSV...!  Kindly check your data"})
 })
 socket.on('delete',function(res){
   console.log('delete',res)
@@ -505,10 +505,10 @@ socket.on('delete',function(res){
     }
     api.request('patch', '/import-tracker/'+id, obj).then(function(res){
       console.log("response",res.data)
-      self.importButton = true
-      // self.disabled = true
-      self.disableImport = false
-      self.completed = false
+      // self.importButton = true
+      // // self.disabled = true
+      // self.disableImport = false
+      // self.completed = false
     })
     .catch(error => {
       console.log(error);
@@ -540,7 +540,8 @@ export default {
         callback(new Error('Please enter port number'));
       } else {
         if ((this.frmSettings.selectedDb === 'rethink' && value === '9200') || (this.frmSettings.selectedDb === 'rethink' && value === '27017') || (this.frmSettings.selectedDb === 'rethink' && value === '8080') || (this.frmSettings.selectedDb ===
-            'mongo' && value === '9200')) {
+            'mongo' && value === '9200' || this.frmSettings.selectedDb ===
+            'mongo' && value === '28015')) {
           callback(new Error('Please enter valid port'));
         } else {
           callback();
@@ -607,17 +608,22 @@ export default {
           required: true,
           message: 'Please enter connection name',
           trigger: 'blur'
-        }],
+        },
+        { validator: validateConn_name, trigger: 'blur' }
+        ],
         host: [{
           required: true,
           message: 'Please enter host name',
           trigger: 'blur'
         }, ],
-        port: [{
-          required: true,
-          message: 'Please enter port number',
-          trigger: 'blur'
-        }, ],
+        port: [
+        // {
+        //   required: true,
+        //   message: 'Please enter port number',
+        //   trigger: 'blur'
+        // },
+        { validator: validatePort, trigger: 'blur' }
+        ],
         dbname: [{
           required: true,
           message: 'Please enter database name',
@@ -1576,10 +1582,10 @@ export default {
               })
               // console.log('flag = ', flag, c_name)
               if (!flag){
-                api.request('post', '/settings?check=' + data.selectedDb, data)
-                  .then(response => {
+                // api.request('post', '/settings?check=' + data.selectedDb, data)
+                //   .then(response => {
                     // console.log('CheckConnection', response.data)
-                    if(response.data.result){
+                    // if(response.data.result){
                         self.conn_icon = 'checkmark'
                         self.currentStep = step;
                         console.log(data.selectedDb,data.connection_name,data.host,data.port,data.username)
@@ -1604,15 +1610,15 @@ export default {
                           console.log(error);
                           self.$Notice.error({title: 'Error!',desc: 'Error in importing...!'})
                         })
-                    } else {
-                        self.conn_icon = 'close'
-                        self.$Notice.error({title: 'Connection Not Establish...!', desc: 'Please Check Your Database..'})
-                    }
-                  })
-                  .catch(error => {
-                    console.log(error)
-                    self.$Notice.error({title: 'Error!', desc: 'Connection Error...'})
-                  })
+                    // } else {
+                    //     self.conn_icon = 'close'
+                    //     self.$Notice.error({title: 'Connection Not Establish...!', desc: 'Please Check Your Database..'})
+                    // }
+                  // })
+                  // .catch(error => {
+                  //   console.log(error)
+                  //   self.$Notice.error({title: 'Error!', desc: 'Connection Error...'})
+                  // })
               } else {
                 self.conn_icon = 'close'
                 self.$Notice.error({title: 'Connection already Exist!', desc: 'with connection name :: ' + c_name})
