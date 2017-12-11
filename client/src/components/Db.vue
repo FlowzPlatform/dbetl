@@ -56,24 +56,24 @@ export default {
                             })
                         }
                     },
-                    {
-                        title: 'Default',
-                        width: 80,
-                        align: 'center',
-                        render: (h, params) => {
-                            return h('Radio', {
-                                props: {
-                                  value: this.mongoDt[params.index].isdefault
-                                },
-                                on: {
-                                  'on-change': (value) => {
-                                    this.defaultDBInstance(this.tabPane, params.index, value)
-                                    // console.log(this.mongoDt[params.index].isenable);
-                                  }
-                                }
-                            })
-                        }
-                    },
+                    // {
+                    //     title: 'Default',
+                    //     width: 80,
+                    //     align: 'center',
+                    //     render: (h, params) => {
+                    //         return h('Radio', {
+                    //             props: {
+                    //               value: this.mongoDt[params.index].isdefault
+                    //             },
+                    //             on: {
+                    //               'on-change': (value) => {
+                    //                 this.defaultDBInstance(this.tabPane, params.index, value)
+                    //                 // console.log(this.mongoDt[params.index].isenable);
+                    //               }
+                    //             }
+                    //         })
+                    //     }
+                    // },
                     {
                         title: 'Connection Name',
                         key: 'connection_name'
@@ -212,24 +212,24 @@ export default {
                         })
                     }
                 },
-                {
-                    title: 'Default',
-                    width: 80,
-                    align: 'center',
-                    render: (h, params) => {
-                        return h('Radio', {
-                            props: {
-                              value: this.rethinkDt[params.index].isdefault
-                            },
-                            on: {
-                              'on-change': (value) => {
-                                this.defaultDBInstance(this.tabPane, params.index, value)
-                                // console.log(this.mongoDt[params.index].isenable);
-                              }
-                            }
-                        })
-                    }
-                },
+                // {
+                //     title: 'Default',
+                //     width: 80,
+                //     align: 'center',
+                //     render: (h, params) => {
+                //         return h('Radio', {
+                //             props: {
+                //               value: this.rethinkDt[params.index].isdefault
+                //             },
+                //             on: {
+                //               'on-change': (value) => {
+                //                 this.defaultDBInstance(this.tabPane, params.index, value)
+                //                 // console.log(this.mongoDt[params.index].isenable);
+                //               }
+                //             }
+                //         })
+                //     }
+                // },
                 {
                     title: 'Connection Name',
                     key: 'connection_name'
@@ -367,24 +367,24 @@ export default {
                         })
                     }
                 },
-                {
-                    title: 'Default',
-                    width: 80,
-                    align: 'center',
-                    render: (h, params) => {
-                        return h('Radio', {
-                            props: {
-                              value: this.elasticDt[params.index].isdefault
-                            },
-                            on: {
-                              'on-change': (value) => {
-                                this.defaultDBInstance(this.tabPane, params.index, value)
-                                // console.log(this.mongoDt[params.index].isenable);
-                              }
-                            }
-                        })
-                    }
-                },
+                // {
+                //     title: 'Default',
+                //     width: 80,
+                //     align: 'center',
+                //     render: (h, params) => {
+                //         return h('Radio', {
+                //             props: {
+                //               value: this.elasticDt[params.index].isdefault
+                //             },
+                //             on: {
+                //               'on-change': (value) => {
+                //                 this.defaultDBInstance(this.tabPane, params.index, value)
+                //                 // console.log(this.mongoDt[params.index].isenable);
+                //               }
+                //             }
+                //         })
+                //     }
+                // },
                 {
                     title: 'Connection Name',
                     key: 'connection_name'
@@ -522,24 +522,24 @@ export default {
                         })
                     }
                 },
-                {
-                    title: 'Default',
-                    width: 80,
-                    align: 'center',
-                    render: (h, params) => {
-                        return h('Radio', {
-                            props: {
-                              value: this.nedbDt[params.index].isdefault
-                            },
-                            on: {
-                              'on-change': (value) => {
-                                this.defaultDBInstance(this.tabPane, params.index, value)
-                                // console.log(this.mongoDt[params.index].isenable);
-                              }
-                            }
-                        })
-                    }
-                },  
+                // {
+                //     title: 'Default',
+                //     width: 80,
+                //     align: 'center',
+                //     render: (h, params) => {
+                //         return h('Radio', {
+                //             props: {
+                //               value: this.nedbDt[params.index].isdefault
+                //             },
+                //             on: {
+                //               'on-change': (value) => {
+                //                 this.defaultDBInstance(this.tabPane, params.index, value)
+                //                 // console.log(this.mongoDt[params.index].isenable);
+                //               }
+                //             }
+                //         })
+                //     }
+                // },  
                 {
                     title: 'Connection Name',
                     key: 'connection_name'
@@ -676,24 +676,24 @@ export default {
                         })
                     }
                 },
-                {
-                    title: 'Default',
-                    width: 80,
-                    align: 'center',
-                    render: (h, params) => {
-                        return h('Radio', {
-                            props: {
-                              value: this.mysqlDt[params.index].isdefault
-                            },
-                            on: {
-                              'on-change': (value) => {
-                                this.defaultDBInstance(this.tabPane, params.index, value)
-                                // console.log(this.mongoDt[params.index].isenable);
-                              }
-                            }
-                        })
-                    }
-                },  
+                // {
+                //     title: 'Default',
+                //     width: 80,
+                //     align: 'center',
+                //     render: (h, params) => {
+                //         return h('Radio', {
+                //             props: {
+                //               value: this.mysqlDt[params.index].isdefault
+                //             },
+                //             on: {
+                //               'on-change': (value) => {
+                //                 this.defaultDBInstance(this.tabPane, params.index, value)
+                //                 // console.log(this.mongoDt[params.index].isenable);
+                //               }
+                //             }
+                //         })
+                //     }
+                // },  
                 {
                     title: 'Connection Name',
                     key: 'connection_name'

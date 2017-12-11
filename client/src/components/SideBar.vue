@@ -24,28 +24,8 @@
         </Col>
       </Row>
 
-      <!-- <Row style="padding: 10px;" :gutter="16">
-        <Col span="8">
-          <Select @on-change="handleCommand" placeholder="Sort By" size="small" style="width:135px;">
-            <Option value="asc"><span>A-Za-z</span>
-              <span style="float:right;">Ascending</span>
-            </Option>
-            <Option value="desc"><span>z-aZ-A</span>
-              <span style="float:right;">Descending</span>
-            </Option>
-        </Select>
-        </Col>
-        <Col span="16">
-          <Row type="flex" justify="end">
-              <router-link to="/schema/new">
-                <Button type="default" size="small" icon="plus-round">Add</Button>
-              </router-link>
-          </Row>
-        </Col>
-      </Row> -->
-
       <!-- =============== iview Side NAV ================= -->
-      <Menu theme="dark" style="max-height:800px; overflow-y: auto" width="auto">
+      <!-- <Menu theme="dark" style="max-height:800px; overflow-y: auto" width="auto">
           <Submenu v-if="dbObj.db_data.length != 0" :name="'dbinx'" v-for="(dbObj, dbinx) in allConnData" :key="dbinx">
               <template slot="title">
                   <Icon type="cube"></Icon>
@@ -62,13 +42,10 @@
                         <img v-else :src="insObj.imgurl" class="schema-icon">
                       </span>
                       {{insObj.cname}}
-                      
                   </template>
                   <MenuItem :name="'dbinx'-'insinx'-'tinx'" v-for="(tObj, tinx) in insObj.inst_data" :key="tinx">
-                    <!-- <router-link :to="{ name: 'recordList', params: { id: insObj.inst_id , tname: tObj.t_name}}"> -->
                     <a @click="setData(tObj.t_name, '/recordList/'+insObj.inst_id+'/'+tObj.t_name, dbObj.db, insObj.inst_id, tObj.t_name, 'list')">
                     <span style="padding-left:20px">
-                      <!-- <Icon type="play" class="ficon play"></Icon> -->
                       {{tObj.t_name}}
                     </span>
                     </a>
@@ -79,37 +56,46 @@
                           </a>
                       </Tooltip>
                     </span>
-                    <!-- </router-link> -->
                   </MenuItem>
               </Submenu>
           </Submenu>
-      </Menu>
+      </Menu> -->
 
       <!-- =============== ElementUI Side NAV ================= -->
-      <!-- <el-menu default-active="1" class="el-menu-vertical-demo"  style="max-height:800px; overflow-y: auto" width="auto" @open="handleOpen" @close="handleClose" background-color="#2d2f33" text-color="#fff" active-text-color="#fff">
-          <el-submenu :index="'dbinx'" v-for="(dbObj, dbinx) in allConnData">
-            <template slot="title">
-              <Icon type="cube"></Icon>
-              {{dbObj.db}}
-            </template>
-            <el-submenu :index="dbinx-insinx" v-for="(insObj, insinx) in dbObj.db_data">
+      <el-row>
+        <el-menu default-active="0" class="el-menu-vertical-demo"  style="max-height:800px; overflow-y: auto" width="auto" background-color="#545c64" text-color="#fff" active-text-color="#ffd04b">
+            <el-submenu :index="getIndex(dbinx)" :key="dbinx" v-for="(dbObj, dbinx) in allConnData">
               <template slot="title">
-                <span style="padding-left:10px">
-                    <img v-if="insObj.imgurl === 'mongo'" :src="mongo" class="schema-icon">
-                    <img v-else-if="insObj.imgurl === 'rethink'" :src="rethink" class="schema-icon">
-                    <img v-else-if="insObj.imgurl === 'elastic'" :src="elastic" class="schema-icon">
-                    <img v-else-if="insObj.imgurl === 'nedb'" :src="nedb" class="schema-icon">
-                    <img v-else-if="insObj.imgurl === 'mysql'" :src="mysql" class="schema-icon">
-                    <img v-else :src="insObj.imgurl" class="schema-icon">
-                </span>
-                  {{insObj.cname}}
+                <Icon type="cube"></Icon>
+                &nbsp;&nbsp;{{dbObj.db}}
               </template>
-              <el-menu-item :index="dbinx-insinx-tinx" v-for="(tObj, tinx) in insObj.inst_data">
-                {{tObj.t_name}}
-              </el-menu-item>
+              <el-submenu :index="getIndex(dbinx, insinx)" :key="insinx" v-for="(insObj, insinx) in dbObj.db_data">
+                <template slot="title">
+                  <span style="padding-left:0px">
+                      <img v-if="insObj.imgurl === 'mongo'" :src="mongo" class="schema-icon">
+                      <img v-else-if="insObj.imgurl === 'rethink'" :src="rethink" class="schema-icon">
+                      <img v-else-if="insObj.imgurl === 'elastic'" :src="elastic" class="schema-icon">
+                      <img v-else-if="insObj.imgurl === 'nedb'" :src="nedb" class="schema-icon">
+                      <img v-else-if="insObj.imgurl === 'mysql'" :src="mysql" class="schema-icon">
+                      <img v-else :src="insObj.imgurl" class="schema-icon">
+                  </span>
+                    {{insObj.cname}}
+                </template>
+                <el-menu-item :index="getIndex(dbinx, insinx, tinx)" :key="tinx" v-for="(tObj, tinx) in insObj.inst_data" @click="setData(tObj.t_name, '/recordList/'+insObj.inst_id+'/'+tObj.t_name, dbObj.db, insObj.inst_id, tObj.t_name, 'list')">
+                    {{tObj.t_name}}
+                    <span style="float:right">
+                      <el-tooltip content="Add record" placement="top">
+                          <a @click="AddRecord(dbObj.db, insObj.inst_id, tObj.t_name)">
+                              <!-- <i class="el-icon-caret-right ficon play"></i> -->
+                              <Icon type="play" class="ficon play"></Icon>
+                          </a>
+                      </el-tooltip>
+                    </span> 
+                </el-menu-item>
+              </el-submenu>
             </el-submenu>
-          </el-submenu>
-    </el-menu> -->
+        </el-menu>
+      </el-row>
     </div>
   </div>
 </template>
@@ -177,38 +163,58 @@
         // console.log(db, inst_id, tname)
         this.$router.push('/' + inst_id + '/' + tname + '/new')
       },
-      handleOpen(key, keyPath) {
-        console.log(key, keyPath)
+      getIndex (a, b, c) {
+        if (a !== undefined) {
+          if (b !== undefined) {
+            if (c !== undefined) {
+            a = a.toString()
+            b = b.toString()
+            c = c.toString()
+              return a + '-' + b + '-' + c
+            }
+            a = a.toString()
+            b = b.toString()
+            return a + '-' + b
+          }
+          a = a.toString()
+          return a
+        }
       },
-      handleClose(key, keyPath) {
-        console.log(key, keyPath)
-      },
-      init () {
+      // handleOpen(key, keyPath) {
+      //   console.log(key, keyPath)
+      // },
+      // handleClose(key, keyPath) {
+      //   console.log(key, keyPath)
+      // },
+      async init () {
         let self = this
-        ConnectionData.get().then(response => {
-          // console.log('response', response)
-          _.forEach(response.data, (connd, cinx) => {
-             _.forEach(connd.db_data, (insd, iinx) => {
-              // console.log(insd)
-              settings.getThis(insd.inst_id).then(res => {
-                insd.cname = res.data.connection_name
-                if(res.data.upldIcn == '') {
-                  insd.imgurl = res.data.selectedDb
-                } else {
-                  insd.imgurl = res.data.upldIcn
-                }
-              })
-            }) 
-          })
-          self.allConnData = response.data
-          self.sideBarList = false
+        var mdata = await ConnectionData.get().then(response => {
+          return response
         }).catch(error => {
           this.$Notice.error({
             title: error,
             desc: 'connection to the server timed out',
             duration: 3
           })
+          return []
         })
+        for (let [cinx, connd] of mdata.data.entries()) {
+          for (let [iinx, insd] of connd.db_data.entries()) {
+            var res = await settings.getThis(insd.inst_id).then(res => {
+              return res
+            }).catch(err => {
+              return []
+            })
+            insd.cname = res.data.connection_name
+            if(res.data.upldIcn == '') {
+              insd.imgurl = res.data.selectedDb
+            } else {
+              insd.imgurl = res.data.upldIcn
+            }
+          }
+        }
+        self.allConnData = mdata.data
+        self.sideBarList = false
       },
       handleCommand (name) {
         this.orderby = name
@@ -238,9 +244,9 @@
 </script>
 
 <style>
-  .menu-item {
+  /*.menu-item {
     background-color: #2b4c77;
-  }
+  }*/
   .ficon {
     font-size: 16px;
   }
@@ -272,16 +278,41 @@
     margin-right:5px;
   }
   .menu-action-icon {
-    float: right;
-    display: none;
+    /*float: right;*/
+    /*display: none;*/
   }
   .menu-action-icon > div {
-    margin-right:2px;
+    /*margin-right:2px;*/
   }
   .ivu-menu-item:hover .menu-action-icon{
-    display: block;
+    /*display: block;*/
   }
-  .ivu-select-dropdown {
-    z-index: 905;
+  .el-submenu__title {
+    color: #eee;
+    background-color: rgb(54, 62, 79);
+  }
+  .el-submenu__title:hover {
+    color: #ffd04b;
+    background-color: #495060;
+  }
+  .el-menu-item {
+    color: #fff;
+    background: #495060; 
+  }
+  .el-submenu .el-menu-item:hover, .el-submenu__title:hover {
+    color: #ffd04b;
+    background-color: #576075;
+  }
+  .el-menu--horizontal.el-menu--dark .el-submenu .el-menu-item.is-active, .el-menu-item.is-active {
+    color: #ffd04b;
+    background-color: #576075;
+    border-right: 2px solid #ffd04b;
+  }
+  /*.el-menu {
+    color: black;
+    background-color: black;
+  }*/
+  .el-menu-item * {
+    vertical-align: unset;
   }
 </style>

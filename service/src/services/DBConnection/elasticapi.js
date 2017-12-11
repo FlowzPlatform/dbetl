@@ -112,30 +112,40 @@ module.exports = {
             },
             size: 0
           }
+        }).then(res => {
+          return res
+        }).catch(err => {
+          return []
         }))
         // console.log(result)
-        for (let [inx, val] of result.aggregations.typesAgg.buckets.entries()) {
-          var obj = {}
-          obj['t_name'] = val.key
-          var data = await (db_i.conn.search({
-            index: db_i.dbname,
-            type: val.key,
-            body: {
-                query: {
-                    match_all: { }
-                },
-            }
-          }))
-          var a = []
-          data.hits.hits.forEach(function(hit){
-            var item =  hit._source;
-            item._id = hit._id;
-            a.push(item);
-          })
-          obj['t_data'] = a
-          arr.push(obj)
+        if(result.length != 0) {
+          for (let [inx, val] of result.aggregations.typesAgg.buckets.entries()) {
+            var obj = {}
+            obj['t_name'] = val.key
+            var data = await (db_i.conn.search({
+              index: db_i.dbname,
+              type: val.key,
+              body: {
+                  query: {
+                      match_all: { }
+                  },
+              }
+            }).then(res => {
+              return res
+            }).catch(err => {
+              return []
+            }))
+            var a = []
+            data.hits.hits.forEach(function(hit){
+              var item =  hit._source;
+              item._id = hit._id;
+              a.push(item);
+            })
+            obj['t_data'] = a
+            arr.push(obj)
+          }
+          return arr
         }
-        return arr
       }
     }
   }),
