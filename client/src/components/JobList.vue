@@ -82,7 +82,7 @@ export default {
       'import-tracker': {
         updated (message) {
             let self = this
-            console.log("messages....",message)
+            // console.log("messages....",message)
             for(var i=0;i<self.data2.length;i++){
                 if(self.data2[i].id == message.id){
                     index = i
@@ -96,12 +96,12 @@ export default {
             var desc = _.sortBy(self.data2, 'modified');
             self.data2 = desc.reverse()
 
-            
+
         },
         created (data) {
           let self = this
           // console.log('connectiondata created..', data)
-          console.log("data.....",data)
+          // console.log("data.....",data)
          self.data2.push(data)
          var desc = _.sortBy(self.data2, 'modified');
          self.data2 = desc.reverse()
@@ -116,7 +116,7 @@ export default {
       var self = this
       this.$on('send-data',this.getData)
       api.request('get', '/import-tracker/').then(function(response){
-        console.log("response",response.data)
+        // console.log("response",response.data)
         for(var i=0;i<response.data.length;i++){
           self.data2.push(response.data[i])
         }

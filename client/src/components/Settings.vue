@@ -8,7 +8,7 @@
               <Step title="2" content="Upload"></Step>
               <Step title="3" content="Import"></Step>
           </Steps>
-      </span> 
+      </span>
   </Card>
   <Form ref="frmSettings" :model="frmSettings" :rules="frmRule" class="form">
       <template v-if="currentStep == 0">
@@ -123,7 +123,7 @@
                     <Input placeholder="Everyday/Everyhour" v-model.trim="frmSettings.keep_sync"></Input>
                   </FormItem> -->
                   </Col>
-                </Row>  
+                </Row>
                 </FormItem>
                 <!-- <FormItem prop="rdodb">
                   <RadioGroup v-model="frmSettings.rdodb" v-if="frmSettings.rdoCrt == 'rbtDB'" @on-change="getTableAll()">
@@ -498,9 +498,10 @@ socket.on('delete',function(res){
   console.log('delete',res)
   if(res.ok == 1 || res.errors == 0 || res == "Deleted"){
     del_err = res
-    logs.push({date:Date(),status:"import_staging_running"})
+    logs.push({date:Date(),status:"import_rolled_back"})
     var obj = {
       status: 'import_staging_running',
+      modified: Date(),
       log:logs
     }
     api.request('patch', '/import-tracker/'+id, obj).then(function(res){
@@ -1257,7 +1258,7 @@ export default {
         self.$Loading.finish();
       }, 3000)
       var self = this;
-      console.log(self.frmSettings.upldCSV)
+      // console.log(self.frmSettings.upldCSV)
       // console.log("schema ", this.complexSchema)
       for(var i=0;i<self.frmSettings.upldCSV.length;i++){
         self.frmSettings.upldCSV[i].importTracker_id = id
@@ -1300,9 +1301,9 @@ export default {
     undo(data){
       // alert("1")
       var self = this
-      console.log(data)
+      // console.log(data)
       data["deletedFlag"] = true
-      console.log("id.......",id)
+      // console.log("id.......",id)
       if(this.$route.params.id != undefined){
         id = this.$route.params.id
         socket.emit('import-tracker::find',{ id: id} ,(error, data1) => {
@@ -1310,7 +1311,7 @@ export default {
         data["deletedFlag"] = true
         logs = data1[0].log
 
-      socket.emit('import',data,(error,data) => {
+         socket.emit('import',data,(error,data) => {
           // console.log("dattaaaa...",data)
           if(error){
             console.log(error)
@@ -1544,7 +1545,7 @@ export default {
 
     },
     createJob: function(data){
-      console.log(data.selectedDb,data.connection_name,data.host,data.port,data.username)
+      // console.log(data.selectedDb,data.connection_name,data.host,data.port,data.username)
       var obj = {
         source: "rethinkdb",
         destination: data.selectedDb,
@@ -1560,7 +1561,7 @@ export default {
         }
       }
       api.request('post', '/import-tracker', obj).then(function(res){
-        console.log("response",res.data)
+        // console.log("response",res.data)
         id = res.data.id
       })
     },
@@ -1589,7 +1590,7 @@ export default {
                         self.conn_icon = 'checkmark'
                         self.currentStep = step;
                         console.log(data.selectedDb,data.connection_name,data.host,data.port,data.username)
-                        logs.push({date: Date(),status: 'upload_pending'})
+                        logs.push({date:Date(),status: 'upload_pending'})
                         var obj = {
                           source: "rethinkdb",
                           destination: data.selectedDb,
