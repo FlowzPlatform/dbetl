@@ -3,150 +3,29 @@
         "dbinstance": [
             {
                 "isenable": true,
-                "connection_name": "Mongo-SB",
-                "host": "localhost",
-                "port": "27017",
-                "dbname": "schema_builder",
-                "username": "",
-                "password": "",
-                "notes": "",
-                "upldIcn": "",
-                "isdefault": false,
-                "id": "934c24c3-bf0e-4446-568b-bef4d5d3371b"
-            },
-            {
-                "isenable": true,
-                "connection_name": "connection_1511954234",
+                "connection_name": "connection_1513056072",
                 "host": "localhost",
                 "port": "27017",
                 "dbname": "defaultdb",
-                "username": "",
-                "password": "",
-                "upldIcn": "",
-                "notes": "",
-                "isdefault": false,
-                "id": "9ce26576-ebfe-4ec0-9c00-dd0ece3bd7fd"
-            },
-            {
-                "isenable": true,
-                "connection_name": "mLab-SB",
-                "host": "ds123381.mlab.com",
-                "port": "23381",
-                "dbname": "schema_builder",
-                "username": "nikita",
-                "password": "01d8c5c9ecb5",
-                "upldIcn": "",
-                "notes": "",
-                "isdefault": false,
-                "id": "18beee55-45d3-400a-d24f-a25522bde7d9"
-            }
-        ]
-    },
-    "rethink": {
-        "dbinstance": [
-            {
-                "isenable": false,
-                "connection_name": "Rethink",
-                "host": "localhost",
-                "port": "28015",
-                "dbname": "FlowzEngine",
-                "username": "",
-                "password": "",
-                "upldIcn": "",
-                "notes": "",
-                "isdefault": false,
-                "id": "f613518b-200b-46ca-bebd-90db7d45c553"
-            },
-            {
-                "isenable": true,
-                "connection_name": "Rethink-SB",
-                "host": "localhost",
-                "port": "28015",
-                "dbname": "schema_builder",
-                "username": "",
-                "password": "",
-                "upldIcn": "",
-                "notes": "",
-                "isdefault": false,
-                "id": "ea0fb85a-51d1-4027-b7e6-a8a36438d7de"
-            },
-            {
-                "isenable": true,
-                "connection_name": "Rethink-fs",
-                "host": "localhost",
-                "port": "28015",
-                "dbname": "flowsservice",
                 "username": "",
                 "password": "",
                 "upldIcn": "",
                 "notes": "",
                 "isdefault": true,
-                "id": "fc03995e-fa95-46cf-d401-2c0eb66bbb22"
-            },
-            {
-                "isenable": true,
-                "connection_name": "newConnection",
-                "host": "localhost",
-                "port": "28015",
-                "dbname": "defaultdb",
-                "username": "",
-                "password": "",
-                "upldIcn": "",
-                "notes": "",
-                "isdefault": false,
-                "id": "9b836db2-e778-4666-48cb-7a06f9db283a"
+                "id": "08c67e22-4fa4-4297-1760-aba6097efc9b"
             }
         ]
+    },
+    "rethink": {
+        "dbinstance": []
     },
     "elastic": {
-        "dbinstance": [
-            {
-                "isenable": true,
-                "connection_name": "Elastic-SB",
-                "host": "localhost",
-                "port": "9200",
-                "dbname": "schema_builder",
-                "username": "",
-                "password": "",
-                "upldIcn": "",
-                "notes": "",
-                "isdefault": false,
-                "id": "2f566c6c-37f6-4b2d-4893-96b6296b06e3"
-            }
-        ]
+        "dbinstance": []
     },
     "nedb": {
-        "dbinstance": [
-            {
-                "isenable": false,
-                "connection_name": "nedb-fs",
-                "host": "localhost",
-                "port": "8080",
-                "dbname": "flowsservice123456789",
-                "username": "",
-                "password": "",
-                "upldIcn": "",
-                "notes": "",
-                "isdefault": false,
-                "id": "604958ab-fed8-4801-da45-570fd6b9bf44"
-            }
-        ]
+        "dbinstance": []
     },
     "mysql": {
-        "dbinstance": [
-            {
-                "isenable": true,
-                "connection_name": "mysql-myDB",
-                "host": "localhost",
-                "port": "3306",
-                "dbname": "myDB",
-                "username": "root",
-                "password": "01d8c5c9ecb5",
-                "upldIcn": "",
-                "notes": "",
-                "isdefault": false,
-                "id": "985537a6-6ffe-4e5e-5caa-b2d1e6b87194"
-            }
-        ]
+        "dbinstance": []
     }
 }

@@ -170,7 +170,7 @@
                                         <!-- <Button @click="item.expand = true">
                                             <Icon type="chevron-right" style="margin-left: 10px;"></Icon>
                                         </Button> -->
-                                        <Checkbox v-model="tableData[index].isSelect"></Checkbox>
+                                        <Checkbox v-model="tableData[index].isSelect" @on-change="handleTableSelection"></Checkbox>
                                     </td>
                                     <td class="">
                                         <div class="ivu-table-cell">
@@ -217,7 +217,7 @@
                                                 <thead>
                                                     <tr>
                                                         <th class="" style="padding-left:20px;background-color:#f8f8f9; color:#394263;font-size:13px">
-                                                          <Checkbox :value="true" @on-change="selectFiledChange"></Checkbox>
+                                                          <Checkbox v-model="tableData[index].isFieldSelect" @on-change="selectFiledChange"></Checkbox>
                                                         </th>
                                                         <th class="" style="background-color:#f8f8f9; color:#394263;font-size:13px">
                                                             <div class="ivu-table-cell">
@@ -236,7 +236,7 @@
                                                     <template v-for="(mitem, i) in s_collection[index].columns">
                                                         <tr class="ivu-table-row">
                                                             <td class="" style="padding-left:20px">
-                                                                <Checkbox v-model="tableData[index].colsData[i].isField"></Checkbox>
+                                                                <Checkbox v-model="tableData[index].colsData[i].isField"  @on-change="handleFieldChange"></Checkbox>
                                                             </td>
                                                             <td class="">
                                                                 <div class="ivu-table-cell">
@@ -366,10 +366,22 @@ export default {
     this.init()
   },
   methods: {
+    handleFieldChange () {
+      var unChecked = _.filter(this.tableData[this.openTrasformEditorIndex].colsData, (d) => {
+        return !d.isField
+      })
+      this.tableData[this.openTrasformEditorIndex].isFieldSelect = !(unChecked.length > 0)
+    },
     selectFiledChange (value) {
       _.forEach(this.tableData[this.openTrasformEditorIndex].colsData, (d) => {
         d.isField = value
       })
+    },
+    handleTableSelection () {
+      var unChecked = _.filter(this.tableData, (d) => {
+        return !d.isSelect
+      })
+      this.selectAllTable = !(unChecked.length > 0)
     },
     selTableChange (value) {
       _.forEach(this.tableData, (d) => {
@@ -466,7 +478,7 @@ export default {
             return []
           })
           for (let i = 0; i < this.s_collection.length; i++) {
-            this.tableData.push({isSelect: true, source: this.s_collection[i].name, target: this.s_collection[i].name, colsData: []})
+            this.tableData.push({isSelect: true, isFieldSelect: true, source: this.s_collection[i].name, target: this.s_collection[i].name, colsData: []})
             this.disableCheck.push({check: false})
           }
           // console.log('this.s_collection', this.s_collection.length)
