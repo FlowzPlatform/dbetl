@@ -1,20 +1,23 @@
 const subscription = require('subscription');
+const authentication = require('../authentication')
+
+let app = undefined;
 module.exports = function () {
   // Add your custom middleware here. Remember, that
   // in Express the order matters
-  const app = this; // eslint-disable-line no-unused-vars
+  app = this; // eslint-disable-line no-unused-vars
 
+  // Check subscription
   app.use(subscription.subscription);
-  let self = this;
   subscription.secureService.validate = (route, params, secureRouteInfo) => {
     return new Promise(async(resolve, reject) => {
-      resolve(handleSubscription)
-        // if (route === '/databases' && secureRouteInfo.value > 1) {
-        //   resolve(true);
-        // }
-        // resolve(false);
+      var data = await handleSubscription(route, params, secureRouteInfo)
+      resolve(data)
     });
   };
+
+  // check authentication
+  app.use(authentication)
 };
 
 var handleSubscription = (route, params, secureRouteInfo) => {
@@ -24,7 +27,7 @@ var handleSubscription = (route, params, secureRouteInfo) => {
       return secureRouteInfo.value > _count
     }
   }
-  return (routes[route]) ? routes[route]() : false
+  return (routes[route]) ? routes[route]() : true
 }
 
 var getDatabasesCount = async() => {

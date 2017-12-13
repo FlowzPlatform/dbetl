@@ -35,5 +35,6 @@ module.exports = {
 };
 
 function beforeCreate(hook) {
+  hook.data.userId = hook.params.userId;
   hook.data.createdAt = new Date();
 }
