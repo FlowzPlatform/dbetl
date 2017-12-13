@@ -66,12 +66,13 @@
     "rethinkdbdash": "^2.3.31",
     "serve-favicon": "^2.4.4",
     "shelljs": "^0.7.8",
+    "subscription": "file:..\\..\\subscription",
     "winston": "^2.3.1"
   },
   "devDependencies": {
     "eslint": "^4.7.2",
     "mocha": "^3.5.3",
-    "request": "^2.82.0",
+    "request": "^2.83.0",
     "request-promise": "^4.2.2"
   }
 }

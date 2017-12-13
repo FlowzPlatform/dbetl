@@ -14,7 +14,7 @@ const hooks = require('feathers-hooks')
   // const authentication = require('feathers-authentication/client')
 const socketio = require('feathers-socketio/client')
 const io = require('socket.io-client')
-// const socket = io(config.serverURI)
+  // const socket = io(config.serverURI)
 let socket
 if (process.env.NODE_ENV !== 'development') {
   socket = io(config.serverURI, { path: '/dbetl/socket.io' })
@@ -34,32 +34,33 @@ import ElementUI from 'element-ui'
 import element from 'element-ui/src/locale/lang/en'
 import 'element-ui/lib/theme-default/index.css'
 Vue.use(ElementUI, { element })
-/* vueTinymce */
+  /* vueTinymce */
 import vueTinymce from '@deveodk/vue-tinymce'
 // You need a specific loader for CSS files like https://github.com/webpack/css-loader
 // import '@deveodk/vue-tinymce/dist/@deveodk/vue-tinymce.css'
 Vue.use(vueTinymce)
   /* vueTinymce */
-/* IView */
+  /* IView */
 import iView from 'iview'
 import locale from 'iview/dist/locale/en-US'
 import 'iview/dist/styles/iview.css' // CSS
 Vue.use(iView, { locale })
-/* jquery-ui */
-/* Animated css */
+  /* jquery-ui */
+  /* Animated css */
 import 'animate.css/animate.css'
 
 import VueParticles from 'vue-particles'
 Vue.use(VueParticles)
-/* IView */
-// import 'bootstrap/dist/css/bootstrap.css'
-// import 'bootstrap-vue/dist/bootstrap-vue.css'
+  /* IView */
+  // import 'bootstrap/dist/css/bootstrap.css'
+  // import 'bootstrap-vue/dist/bootstrap-vue.css'
 import AsyncComputed from 'vue-async-computed'
 Vue.use(AsyncComputed)
 Vue.config.productionTip = false
 import VueCookie from 'vue-cookie'
 Vue.use(VueCookie)
-/* eslint-disable no-new */
+  /* eslint-disable no-new */
+
 // Routing logic
 Vue.use(VueRouter)
 var router = new VueRouter({
@@ -69,12 +70,19 @@ var router = new VueRouter({
     return savedPosition || { x: 0, y: 0 }
   }
 })
+import axios from 'axios'
 // Some middleware to help us ensure the user is authenticated.
 router.beforeEach((to, from, next) => {
   iView.LoadingBar.config({ color: '#0e406d' })
     // window.console.log('Transition', transition)
     // router.app.$store.state.token
   const token = router.app.$cookie.get('auth_token')
+    // set token in axios
+  if (token) {
+    axios.defaults.headers.common['authorization'] = token
+  } else {
+    delete axios.defaults.headers.common['authorization']
+  }
   if (to.matched.some(record => record.meta.requiresAuth) && (!token || token === 'null')) {
     window.console.log('Not authenticated')
     next({
@@ -97,14 +105,6 @@ router.beforeEach((to, from, next) => {
     } else {
       next()
     }
-    // if (store.state.user == null) {
-    //   // store.dispatch('')
-    // }
-    // router.app.$store.commit('SET_TOKEN', token)
-    // const authUser = JSON.parse(window.localStorage.getItem('authUser'))
-    // router.app.$store.commit('SET_USER', authUser)
-    // window.console.log('authenticated')
-    // next()
   }
 })
 sync(store, router)
@@ -115,12 +115,3 @@ new Vue({
   template: '<App/>',
   components: { App }
 })
-// Check local storage to handle refreshes
-if (window.localStorage) {
-  var localUserString = window.localStorage.getItem('user') || 'null'
-  var localUser = JSON.parse(localUserString)
-  if (localUser && store.state.user !== localUser) {
-    store.commit('SET_USER', localUser)
-    store.commit('SET_TOKEN', window.localStorage.getItem('token'))
-  }
-}

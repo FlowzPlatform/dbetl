@@ -18,5 +18,14 @@
   "importToExternal": "import_to_external_db",
   "instance_table": "flowzinstance",
   "approvar_table": "approvalClass",
-  "mongodb": "MONGO_DB"
+  "mongodb": "MONGO_DB",
+  "rethinkdb": {
+    "db": "service",
+    "servers": [
+      {
+        "host": "localhost",
+        "port": "28015"
+      }
+    ]
+  }
 }

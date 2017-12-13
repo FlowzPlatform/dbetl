@@ -1698,7 +1698,7 @@ export default {
           let guid = (this.S4() + this.S4() + "-" + this.S4() + "-4" + this.S4().substr(0, 3) + "-" + this.S4() + "-" + this.S4() + this.S4() + this.S4()).toLowerCase();
           let obj = this.getPostObj(this.frmSettings);
           obj.id = guid;
-          api.request('post', '/settings', obj)
+          api.request('post', '/databases', obj)
             .then(response => {
               // this.$Message.success('Success');
               if (response.data == 'Exist') {
@@ -1734,7 +1734,6 @@ export default {
             title: 'Error!!',
             desc: 'Please enter inputs!'
           })
-
         }
       })
     },
