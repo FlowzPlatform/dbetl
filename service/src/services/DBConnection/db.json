@@ -1,20 +1,6 @@
 {
     "mongo": {
-        "dbinstance": [
-            {
-                "isenable": true,
-                "connection_name": "connection_1513056072",
-                "host": "localhost",
-                "port": "27017",
-                "dbname": "defaultdb",
-                "username": "",
-                "password": "",
-                "upldIcn": "",
-                "notes": "",
-                "isdefault": true,
-                "id": "08c67e22-4fa4-4297-1760-aba6097efc9b"
-            }
-        ]
+        "dbinstance": []
     },
     "rethink": {
         "dbinstance": []

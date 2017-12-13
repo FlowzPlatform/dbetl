@@ -17,7 +17,7 @@
                       </th>
                       <td class="">
                         <div class="ivu-table-cell">
-                          <span>{{row.dateFinished}}</span>
+                          <span>{{getFinishDate(row.dateFinished)}}</span>
                         </div>
                       </td>
                     </tr>
@@ -285,6 +285,7 @@
     </div>
 </template>
 <script>
+  let moment = require('moment')
   export default {
     name: 'JobList_expandRow',
     props: {
@@ -302,6 +303,9 @@
           return false
         }
         this.openTrasformEditorIndex = index
+      },
+      getFinishDate (date) {
+        return moment(date).format('MMMM Do YYYY, h:mm:ss a')
       }
     },
     mounted () {

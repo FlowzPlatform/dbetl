@@ -1,6 +1,7 @@
 <template>
   <div style="width: inherit;">
     <div  style="background: rgb(54, 62, 79); height: 100%; position: fixed;width: inherit;">
+    <!--  -->
       <Row style="padding: 16.3px 10px;border-bottom: 1px solid #15171b;">
         <Col :span="20" :offset="2">
           <Col :span="3">
@@ -62,7 +63,7 @@
       </Menu> -->
 
       <!-- =============== ElementUI Side NAV ================= -->
-      <el-row>
+      <!-- <el-row>
         <el-menu default-active="0" class="el-menu-vertical-demo"  style="max-height:800px; overflow-y: auto" width="auto" background-color="#545c64" text-color="#fff" active-text-color="#ffd04b">
             <el-submenu :index="getIndex(dbinx)" :key="dbinx" v-for="(dbObj, dbinx) in allConnData">
               <template slot="title">
@@ -86,7 +87,6 @@
                     <span style="float:right">
                       <el-tooltip content="Add record" placement="top">
                           <a @click="AddRecord(dbObj.db, insObj.inst_id, tObj.t_name)">
-                              <!-- <i class="el-icon-caret-right ficon play"></i> -->
                               <Icon type="play" class="ficon play"></Icon>
                           </a>
                       </el-tooltip>
@@ -95,7 +95,12 @@
               </el-submenu>
             </el-submenu>
         </el-menu>
-      </el-row>
+      </el-row> -->
+
+      <!-- =================== i-tree Side NAV ================= -->
+      <Row style="padding-left: 15px">  
+        <Tree :data="treeData"></Tree>
+      </Row>
     </div>
   </div>
 </template>
@@ -121,6 +126,11 @@
         elastic,
         nedb,
         mysql,
+        treeData: [],
+        buttonProps: {
+          type: 'ghost',
+          size: 'small',
+        }
         // deleteSchemaValue: 'softdel'
       }
     },
@@ -213,8 +223,169 @@
             }
           }
         }
-        self.allConnData = mdata.data
-        self.sideBarList = false
+        // self.allConnData = mdata.data
+        // self.sideBarList = false
+        // console.log(mdata.data)
+        this.treeData = []
+        for(let [j, mObj] of mdata.data.entries()) {
+          for (let mKey in mObj) {
+            if (mKey == 'db') {
+              mObj.title = mObj.db
+              mObj.render = (h, { root, node, data }) => {
+                          var setIcon = ''
+                          if (data.imgurl == 'mongo') {
+                            setIcon = this.mongo
+                          } else if (data.imgurl == 'rethink') {
+                            setIcon = this.rethink
+                          } else if (data.imgurl == 'elastic') {
+                            setIcon = this.elastic
+                          } else if (data.imgurl == 'nedb') {
+                            setIcon = this.nedb
+                          } else if (data.imgurl == 'mysql') {
+                            setIcon = this.mysql
+                          }
+                            return h('span', {
+                                style: {
+                                    // display: 'inline-block',
+                                    width: '100%',
+                                    color: '#eee',
+                                    fontSize: '18px'
+                                }
+                            }, [
+                                h('span', [
+                                    h('img', {
+                                        attrs: {
+                                            src: this[data.db]
+                                        },
+                                        style: {
+                                            marginRight: '8px',
+                                            marginLeft: '8px',
+                                            width: '20px',
+                                            height:'20px'
+                                        }
+                                    }),
+                                    h('span', {
+                                      class: {
+                                        'ivu-tree-title' :true
+                                      }
+                                    }, data.title)
+                                ])
+                            ])
+                        }
+            }
+            if (mKey == 'db_data') {
+              mObj.children = mObj.db_data
+              for (let [jx, iObj] of mObj.db_data.entries()) {
+                for (let iKey in iObj) {
+                  if (iKey == 'cname') {
+                    iObj.title = iObj.cname
+                    iObj.render = (h, { root, node, data }) => {
+                          var setIcon = ''
+                          if (data.imgurl == 'mongo') {
+                            setIcon = this.mongo
+                          } else if (data.imgurl == 'rethink') {
+                            setIcon = this.rethink
+                          } else if (data.imgurl == 'elastic') {
+                            setIcon = this.elastic
+                          } else if (data.imgurl == 'nedb') {
+                            setIcon = this.nedb
+                          } else if (data.imgurl == 'mysql') {
+                            setIcon = this.mysql
+                          } else {
+                            setIcon = data.imgurl
+                          }
+                            return h('span', {
+                                style: {
+                                    // display: 'inline-block',
+                                    width: '100%',
+                                    color: '#eee',
+                                    fontSize: '18px'
+                                }
+                            }, [
+                                h('span', [
+                                    h('img', {
+                                        attrs: {
+                                            src: setIcon
+                                        },
+                                        style: {
+                                            marginRight: '8px',
+                                            marginLeft: '8px',
+                                            width: '20px',
+                                            height:'20px'
+                                        }
+                                    }),
+                                    h('span', {
+                                      class: {
+                                        'ivu-tree-title' :true
+                                      }
+                                    }, data.title)
+                                ])
+                            ])
+                        }
+                  }
+                  if (iKey == 'inst_data') {
+                    iObj.children = iObj.inst_data
+                    for (let [jnx, tObj] of iObj.inst_data.entries()) {
+                      for (let tKey in tObj) {
+                        if (tKey == 't_name') {
+                          tObj.title = tObj.t_name
+                          tObj.render = (h, { root, node, data }) => {
+                            return [
+                              h('span', [
+                                  h('Icon', {
+                                      props: {
+                                          type: 'ios-grid-view'
+                                      },
+                                      class: {
+                                        'icon-grid': true
+                                      }
+                                  }),
+                                  h('span', {
+                                    class: {
+                                      'ivu-tree-title' :true
+                                    },
+                                    on: {
+                                      'click': () => {
+                                        this.setData(data.title, '/recordList/'+iObj.inst_id+'/'+tObj.t_name, mObj.db, iObj.inst_id, tObj.t_name, 'list')
+                                      }
+                                    }
+                                  }, data.title)
+                              ]),
+                              h('span', {
+                                  class: {
+                                    'ivu-tree-action': true
+                                  }
+                              }, [
+                                  h('Button', {
+                                      props: {
+                                        type: 'text',
+                                        icon: 'play'
+                                      },
+                                      style: {
+                                          cursor: 'pointer'
+                                      },
+                                      class: {
+                                        'play': true
+                                      },
+                                      on: {
+                                        click: () => {
+                                           this.AddRecord(mObj.db, iObj.inst_id, tObj.t_name)
+                                        }
+                                      }
+                                  })
+                              ])
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+        this.treeData = mdata.data
       },
       handleCommand (name) {
         this.orderby = name
@@ -253,6 +424,9 @@
   .play {
     color:#00C851;
   }
+  .play: hover {
+    color:#00C851;
+  }
   .list {
     color:#ffbb33;
   }
@@ -287,6 +461,8 @@
   .ivu-menu-item:hover .menu-action-icon{
     /*display: block;*/
   }
+
+  /* element-ui sidebar*/
   .el-submenu__title {
     color: #eee;
     background-color: rgb(54, 62, 79);
@@ -315,4 +491,50 @@
   .el-menu-item * {
     vertical-align: unset;
   }
+
+  /* i-tree sidebar */ 
+  .ivu-tree-arrow {
+    color: #eee;
+    font-size: 18px;
+  }
+  .ivu-tree-title {
+    color: #eee;
+    font-size: 18px; 
+  }
+  .ivu-tree-title:hover {
+    color: #ffd04b;
+    background-color: #576075;
+  }
+  .ivu-tree-title-selected {
+    color: #ffd04b;
+    background-color: rgb(54, 62, 79); 
+  }
+  .ivu-tree-title-selected:hover {
+    background-color: #576075; 
+  }
+
+  .myHover {
+    background: red;
+  }
+
+  .ivu-tree-action {
+    display: none;
+    float: right;
+    margin-right: 32px;
+  }
+
+  .ivu-tree-children > li:hover > .ivu-tree-action  {
+    display: block;
+  }
+
+  .icon-grid {
+    margin-right: 6px;
+    margin-left: 8px;
+    width: 20px;
+    height:20px;
+    color: #eee;
+    font-size: 18px;
+    padding-top: 3px;
+  }
+
 </style>
