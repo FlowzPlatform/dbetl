@@ -1,12 +1,28 @@
 <template>
   <div>
-    <Row type="flex">
-      <i-col v-if="$store.state.sidenavtoggle" :span="5" :style="styles">
+    <Row  v-if="$store.state.sidenavtoggle">
+    <Split style="height: 950px;" :gutterSize="3">
+        <SplitArea :size="20"  >
+            <f-sidebar></f-sidebar>
+        </SplitArea>
+        <SplitArea :size="80">
+            <f-header></f-header>
+            <div class="f-layout-content" @click="HandleSideNavToggel">
+              <div class="f-layout-content-main">
+                <router-view></router-view>
+              </div>
+            </div>
+            <f-footer></f-footer>
+        </SplitArea>
+    </Split>
+    </Row>
+    <Row v-else>
+     <!--  <i-col  :span="5" :style="styles">
         <f-sidebar></f-sidebar>
-      </i-col>
-      <i-col :span="contentSpan" style="z-index:1">
+      </i-col> -->
+      <i-col :span="24" style="">
         <f-header></f-header>
-        <div class="f-layout-content" @click="HandleSideNavToggel">
+        <div class="f-layout-content" >
           <div class="f-layout-content-main">
             <router-view></router-view>
           </div>
