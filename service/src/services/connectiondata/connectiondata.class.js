@@ -17,7 +17,7 @@ class Service {
   }
 
   get (id, params) {
-    var conndata = getFunction(id)
+    var conndata = getFunction(id, params.query.schemaname)
     return Promise.resolve(conndata);
   }
 
@@ -51,7 +51,18 @@ var getallSettings = async (function () {
 var getThisSetting = async( function(id) {
   var res = await (axios.get(url + '/settings/' + id))
   return res.data
-}) 
+})
+
+// var getThisSettingByName = async ( function(conn_name) {
+//   var allSettings = await (getallSettings())
+//   for (let db in allSettings) {
+//     for (let [i, inst] in allSettings[db].dbinstance.entries()) {
+//       if (inst.connection_name == conn_name) {
+//         return inst.id
+//       }
+//     }
+//   }
+// }) 
 
 var findFunction = async (function () {
   var __res = []
@@ -79,7 +90,8 @@ var findFunction = async (function () {
   return __res
 })
 
-var getFunction = async (function (id) {
+var getFunction = async (function (id, schemaname) {
+  console.log(schemaname)
   var settings = await (getallSettings())
   var res = []
   for (let db in settings) {
@@ -88,7 +100,32 @@ var getFunction = async (function (id) {
         if (inst.isenable) {
           var conn = require('../DBConnection/' + db + 'api')
           var _res = await (conn.getConnsAllData(id))
-          return _res
+          if (schemaname != undefined) {
+            for (let [inx, tObj] of _res.entries()) {
+              if (tObj.t_name == schemaname) {
+                return tObj.t_data   
+              }
+            }
+          } else {
+            return _res
+          }
+        } else {
+          return 'Please Enable the Connection for Result'
+        }
+      } 
+      if (inst.connection_name == id) {
+        if (inst.isenable) {
+          var conn = require('../DBConnection/' + db + 'api')
+          var _res = await (conn.getConnsAllData(inst.id))
+          if (schemaname != undefined) {
+            for (let [inx, tObj] of _res.entries()) {
+              if (tObj.t_name == schemaname) {
+                return tObj.t_data   
+              }
+            }
+          } else {
+            return _res
+          }
         } else {
           return 'Please Enable the Connection for Result'
         }
