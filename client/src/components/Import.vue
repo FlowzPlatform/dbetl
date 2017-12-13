@@ -212,7 +212,7 @@
                                                     <col width="10">
                                                         <col width="35">
                                                             <col width="35">
-                                                                <!-- <col width="25"> -->
+                                                                <col width="20">
                                                 </colgroup>
                                                 <thead>
                                                     <tr>
@@ -229,7 +229,11 @@
                                                                 <span>{{tableData[index].target}} / Fields ( TARGET )</span>
                                                             </div>
                                                         </th>
-                                                        <!-- <th class="">Mapping</th> -->
+                                                        <th class="" style="background-color:#f8f8f9; color:#394263;font-size:13px">
+                                                            <div class="ivu-table-cell">
+                                                                Transform
+                                                            </div>
+                                                        </th>
                                                     </tr>
                                                 </thead>
                                                 <tbody class="ivu-table-tbody">
@@ -250,7 +254,30 @@
                                                                     </AutoComplete>
                                                                 </div>
                                                             </td>
+                                                            <td class="">
+                                                                <div class="ivu-table-cell">
+                                                                    <a @click="openCodeMirror(i)"><Icon type="compose"></Icon></a>
+                                                                </div>
+                                                            </td>
                                                         </tr>
+                                                        <tr v-if="openCodeMirrorEditorIndex === i" style="">
+                                                            <td colspan="4" style="">
+                                                              <!-- {{tableData[index].source}} -->
+                                                              <div class="ivu-table-wrapper">
+                                                                <div class="ivu-table ivu-table-small">
+                                                                    <div class="ivu-table-header">
+                                                                        <table cellspacing="0" cellpadding="0" border="0" style="width: 100%;">
+                                                                            <tbody class="ivu-table-tbody">
+                                                                                    <tr class="ivu-table-row">
+                                                                                       <codemirror v-model='tableData[index].colsData[i].transform' :options="editorOptions" @change=""></codemirror>
+                                                                                    </tr>
+                                                                            </tbody>
+                                                                        </table>
+                                                                    </div>
+                                                                </div>
+                                                                </div>
+                                                            </td>
+                                                          </tr>
                                                     </template>
                                                 </tbody>
                                             </table>
@@ -291,6 +318,7 @@ export default {
       CascaderData: [],
       sdatabase: ['rethink'],
       openTrasformEditorIndex: -1,
+      openCodeMirrorEditorIndex: -1,
       check_conn: false,
       setForInternal: false,
       sourceDisable: false,
@@ -359,13 +387,29 @@ export default {
       s_collection: [],
       importedData: {},
       tableData: [],
-      disableCheck: []
+      disableCheck: [],
+      editorOptions: {
+        tabSize: 4,
+        mode: 'text/javascript',
+        theme: 'base16-light',
+        lineNumbers: true,
+        line: true,
+        // keyMap: 'sublime',
+        extraKeys: { 'Ctrl': 'autocomplete' },
+        foldGutter: true,
+        gutters: ['CodeMirror-linenumbers', 'CodeMirror-foldgutter'],
+        styleSelectedText: true,
+        highlightSelectionMatches: { showToken: /\w/, annotateScrollbar: true }
+      }
     }
   },
   created () {
     this.init()
   },
   methods: {
+    tranformFunction () {
+      alert('11')
+    },
     selectFiledChange (value) {
       _.forEach(this.tableData[this.openTrasformEditorIndex].colsData, (d) => {
         d.isField = value
@@ -423,7 +467,8 @@ export default {
       if (this.tableData[index].colsData.length === 0) {
         console.log('this.s_collection[index].columns', this.s_collection[index].columns)
         for (let i = 0; i < this.s_collection[index].columns.length; i++) {
-          this.tableData[index].colsData.push({isField: true, name: this.s_collection[index].columns[i].name, input: this.s_collection[index].columns[i].name, transform: ''})
+          var trans = 'return row["' + this.s_collection[index].columns[i].name + '"];'
+          this.tableData[index].colsData.push({isField: true, name: this.s_collection[index].columns[i].name, input: this.s_collection[index].columns[i].name, transform: trans})
         }
       } else {
         _.forEach(this.tableData[index].colsData, (obj, i) => {
@@ -439,6 +484,14 @@ export default {
       }
       this.openTrasformEditorIndex = index
       this.disableCheck[index].check = true
+    },
+    openCodeMirror (index) {
+      if (this.openCodeMirrorEditorIndex === index) {
+        this.openCodeMirrorEditorIndex = -1
+        return false
+      }
+      this.openCodeMirrorEditorIndex = index
+      // this.disableCheck[index].check = true
     },
     filterMethod (value, option) {
       return option.toUpperCase().indexOf(value.toUpperCase()) !== -1
@@ -489,19 +542,23 @@ export default {
     handleImport () {
       var mData = this.tableData
       this.importedData.mapdata = _.reject(mData, { 'isSelect': false })
-      _.forEach(this.importedData.mapdata, (d) => {
-        if (d.colsData.length !== 0) {
-          d.colsData = _.reject(d.colsData, { 'isField': false })
-        }
-      })
-      console.log('this.importedData', this.importedData)
-      api.request('post', '/import-to-external-db', this.importedData).then((res) => {
-        this.$Notice.success({title: 'Imported!', desc: ''})
-        this.$router.push('/instancejoblist/' + this.$route.params.id)
-      }).catch((err) => {
-        console.log('Error..', err)
-        this.$Notice.error({title: 'Connection Not Establish...!', desc: 'Please Check Your Database..'})
-      })
+      if (this.importedData.mapdata.length === 0) {
+        this.$Message.error('Please Select Table')
+      } else {
+        _.forEach(this.importedData.mapdata, (d) => {
+          if (d.colsData.length !== 0) {
+            d.colsData = _.reject(d.colsData, { 'isField': false })
+          }
+        })
+        console.log('this.importedData', this.importedData)
+        api.request('post', '/import-to-external-db', this.importedData).then((res) => {
+          this.$Notice.success({title: 'Imported!', desc: ''})
+          this.$router.push('/instancejoblist/' + this.$route.params.id)
+        }).catch((err) => {
+          console.log('Error..', err)
+          this.$Notice.error({title: 'Connection Not Establish...!', desc: 'Please Check Your Database..'})
+        })
+      }
     },
     clearImport () {
       // alert(this.$route.params.id)
