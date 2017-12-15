@@ -29,7 +29,7 @@
                           </th>
                           <td class="">
                             <div class="ivu-table-cell">
-                              <span>{{row.modified}}</span>
+                              <span>{{moment(row.modified).fromNow()}}</span>
                             </div>
                           </td>
                         </tr>
@@ -76,11 +76,6 @@
                                 <tr>
                                 <th class="">
                                   <div class="ivu-table-cell">
-                                    <span>Date</span>
-                                  </div>
-                                </th>
-                                <th class="">
-                                  <div class="ivu-table-cell">
                                     <span>Status</span>
                                   </div>
                                 </th>
@@ -89,24 +84,29 @@
                                     <span>Time taken</span>
                                   </div>
                                 </th>
+                                <th class="">
+                                  <div class="ivu-table-cell">
+                                    <span>Date</span>
+                                  </div>
+                                </th>
                                </tr>
                              </thead>
                              <tbody class="ivu-table-tbody">
                              <tr class="ivu-table-row" v-for="(item,index) in row.log">
                                <td class="">
                                  <div class="ivu-table-cell">
-                                   <span>{{item.date}}</span>
+                                   <span>{{ getTitle(item.status)}}</span>
                                  </div>
                                </td>
                                <td class="">
                                  <div class="ivu-table-cell">
-                                   <span>{{item.status}}</span>
+                                   <span v-if="index<row.log.length-1">{{Math.floor(moment.duration(moment(row.log[index+1].date).diff(moment(row.log[index].date))).asHours())+" hr "+moment.duration(moment(row.log[index+1].date).diff(moment(row.log[index].date))).minutes()+" min "+moment.duration(moment(row.log[index+1].date).diff(moment(row.log[index].date))).seconds()+" sec "}}</span>
+                                  <span v-else>-</span>
                                  </div>
                                </td>
                                <td class="">
                                  <div class="ivu-table-cell">
-                                   <span v-if="index<row.log.length-1">{{ Math.floor(moment.duration(moment(row.log[index+1].date).diff(moment(row.log[index].date))).asHours())+" hr "+moment.duration(moment(row.log[index+1].date).diff(moment(row.log[index].date))).minutes()+" min "+moment.duration(moment(row.log[index+1].date).diff(moment(row.log[index].date))).seconds()+" sec "}}</span>
-                                   <span v-else>-</span>
+                                   <span>{{moment(item.date).fromNow()}}</span>
                                  </div>
                                </td>
                              </tr>
@@ -116,7 +116,7 @@
                         </tr>
                     </table>
                     <div>
-                      <Button type="primary" v-if="row.status == 'import_staging_running'" @click="continueImport(row)">Continue</Button>
+                      <Button type="primary" v-if="row.status == 'import_staging_running' || row.status == 'import_rolled_back'" @click="continueImport(row)">Continue</Button>
                     </div>
                   </div>
                 </div>
@@ -127,6 +127,7 @@
 <script>
 /*eslint-disable*/
 var moment = require('moment');
+var _ = require('lodash');
 import Settings from './Settings.vue';
 import api from '../api'
 import schema from '../api/schema'
@@ -159,7 +160,7 @@ socket.on('res',function(res){
       err = (JSON.parse(res.stdout)).errors
     }
     api.request('patch', '/import-tracker/'+dataObj.id, obj).then(function(res){
-      console.log("response",res.data)
+      // console.log("response",res.data)
 
     })
     .catch(error => {
@@ -182,18 +183,23 @@ socket.on('res',function(res){
         }
       },
       methods:{
+        getTitle (title) {
+          var res = _.capitalize(title.replace(/_/g," "))
+          return res
+        },
         continueImport(rowObj){
           var self = this
         let upldCsv = []
         logs = rowObj.log
-        console.log("continue called....",rowObj.log)
+        // console.log("continue called....",rowObj.log)
         socket.emit('customer-uploaded-data::find',{ importTracker_id: rowObj.id} ,(error, data) => {
         // console.log('Found all messages', data);
         rowObj.upldCSV = data
-        console.log("Object after pushing csv.....",rowObj)
+        // console.log("Object after pushing csv.....",rowObj)
         logs.push({date:Date(),status:"import_staging_completed"})
         obj = {
           status: 'import_staging_completed',
+          modified: Date(),
           log:logs
         }
         dataObj = rowObj
@@ -243,6 +249,13 @@ socket.on('res',function(res){
     border-bottom: 1px solid #e9eaec;
     border-left: 1px solid #e9eaec;
   }
+  .ivu-table th {
+    height: 40px;
+    white-space: nowrap;
+    overflow: hidden;
+    background-color: #394263;
+    color: #fff;
+}
   .ivu-btn-primary {
     color: #fff;
     background-color: #2d8cf0;

@@ -2,7 +2,7 @@
   "rethinkdb": {
     "host": "localhost",
     "port": 28015,
-    "db": "FlowzEngine"
+    "db": "FlowzDBETL"
   },
   "qOptions": {
     "name": "import_to_external_db",
