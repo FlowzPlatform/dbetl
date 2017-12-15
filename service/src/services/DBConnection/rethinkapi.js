@@ -84,12 +84,20 @@ module.exports = {
     for(let [i, db_i] of r.entries()) {
       if(db_i.id == ins_id) {
         var arr = []
-        var result = await (r[i].conn.tableList())
+        var result = await (r[i].conn.tableList().then(res => {
+          return res
+        }).catch(err => {
+          return []
+        }))
         // console.log(result)
         for (let [inx, val] of result.entries()) {
           var obj = {}
           obj['t_name'] = val
-          var data = await (r[i].conn.table(val).run())
+          var data = await (r[i].conn.table(val).run().then(res => {
+            return res
+          }).catch(err => {
+            return []
+          }))
           obj['t_data'] = data
           arr.push(obj)
         }

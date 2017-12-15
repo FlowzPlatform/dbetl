@@ -1,6 +1,6 @@
 console.log('process.env.NODE_ENV', process.env.NODE_ENV)
 var temp = {
-  serverURI: 'http://172.16.160.117:3030',
+  serverURI: 'http://localhost:3034',
   fixedLayout: false,
   hideLogoOnMobile: false,
   microURI: 'http://ec2-54-88-11-110.compute-1.amazonaws.com/api'

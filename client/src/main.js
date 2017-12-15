@@ -59,6 +59,9 @@ Vue.use(AsyncComputed)
 Vue.config.productionTip = false
 import VueCookie from 'vue-cookie'
 Vue.use(VueCookie)
+
+import VueSplit from 'vue-split-panel'
+Vue.use(VueSplit)
 /* eslint-disable no-new */
 // Routing logic
 Vue.use(VueRouter)

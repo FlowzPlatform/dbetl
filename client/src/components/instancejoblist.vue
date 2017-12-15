@@ -27,6 +27,7 @@ import api from '../api'
 import settings from '../api/settings'
 import expandRow from './JobList_expandRow.vue'
 const _ = require('lodash')
+let moment = require('moment')
 export default {
   name: 'instancejoblist',
   data () {
@@ -136,6 +137,7 @@ export default {
                 // console.log('...', obj)
                 obj.source = obj.data.source.selectedDb + ' / ' + obj.data.source.dbname
                 obj.target = obj.data.target.selectedDb + ' / ' + obj.data.target.dbname
+                obj.dateCreated = moment(obj.dateCreated).fromNow()
                 res.push(obj)
               }
             }

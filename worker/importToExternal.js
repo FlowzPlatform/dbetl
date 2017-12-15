@@ -286,6 +286,12 @@ var UUID = async(function generateUUID() {
 var filterObj = async (function(mobj, fArr) {
 	var fobj = {}
 	for( let [i, obj] of fArr.entries()) {
+		console.log('...........................', i, '>>>>', obj)
+		if (obj.trasform != '') {
+			let res = await (transformFunction(mobj, obj.transform, obj.name))
+			mobj[obj.name] = res
+			// console.log('obj.trasform.....>>>> ', res)
+		}
 		for(let k in mobj) {
 			if(k == obj.name) {
 				if(obj.input != "") {
@@ -297,10 +303,18 @@ var filterObj = async (function(mobj, fArr) {
 			}
 		}
 	}
-	// console.log('\n >>> ', fobj)
-	// if(mobj.hasOwnProperty('Schemaid'))
 	return fobj
 })
+
+var transformFunction = function (row, trans) {
+	var result = '';
+	try {
+		result = new Function("row", trans).call(this, row)
+	} catch (err){
+		// console.log('Error...........', err)
+	} 
+	return result
+}
 
 q.process(async(job, next) => {
 	try {
@@ -414,7 +428,7 @@ q.process(async(job, next) => {
 
 							if (obj.colsData.length !== 0) {
 								sObj = await (filterObj(sObj, obj.colsData))
-							} 
+							}
 							// console.log('>>>>> ', sObj)
 							var s = await (tConn.conn.table(obj.target).insert(sObj).run())
 							_res.push(s)		
