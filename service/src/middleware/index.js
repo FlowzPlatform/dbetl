@@ -7,6 +7,10 @@ module.exports = function () {
   // in Express the order matters
   app = this; // eslint-disable-line no-unused-vars
 
+
+  // check authentication
+  app.use(authentication)
+
   // Check subscription
   app.use(subscription.subscription);
   subscription.secureService.validate = (route, params, secureRouteInfo) => {
@@ -15,9 +19,6 @@ module.exports = function () {
       resolve(data)
     });
   };
-
-  // check authentication
-  app.use(authentication)
 };
 
 var handleSubscription = (route, params, secureRouteInfo) => {
