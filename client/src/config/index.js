@@ -7,7 +7,13 @@ var temp = {
   facebookSuccessCallbackUrl: 'http://localhost:8000',
   loginWithFacebookUrl: 'http://auth.flowz.com/auth/facebook',
   googleSuccessCallbackUrl: 'http://localhost:8000',
-  loginWithGoogleUrl: 'http://auth.flowz.com/auth/Gplus'
+  loginWithGoogleUrl: 'http://auth.flowz.com/auth/Gplus',
+  twitterSuccessCallbackUrl: 'http://localhost:8000',
+  loginWithTwitterUrl: 'http://auth.flowz.com/auth/twitter',
+  linkedinSuccessCallbackUrl: 'http://localhost:8000',
+  loginWithLinkedinUrl: 'http://auth.flowz.com/auth/linkedin',
+  githubSuccessCallbackUrl: 'http://localhost:8000',
+  loginWithGithubUrl: 'http://auth.flowz.com/auth/github'
 }
 if (process.env.NODE_ENV !== 'development') {
   temp = {
