@@ -95,7 +95,7 @@ module.exports = {
     return 'success'
   }),
 
-  getConnsAllData: async (function(ins_id) {
+  getConnsAllData: async (function(ins_id, limit) {
     for(let [i, db_i] of client.entries()) {
       if(db_i.id == ins_id) {
         var arr = []
@@ -123,6 +123,7 @@ module.exports = {
             var obj = {}
             obj['t_name'] = val.key
             var data = await (db_i.conn.search({
+              size: limit,
               index: db_i.dbname,
               type: val.key,
               body: {
@@ -145,6 +146,86 @@ module.exports = {
             arr.push(obj)
           }
           return arr
+        }
+      }
+    }
+  }),
+
+  getTableRecord: async (function(ins_id, tname, sl, el) {
+    var limit = el - sl
+    for(let [i, db_i] of client.entries()) {
+      if(db_i.id == ins_id) {
+        var arr = []
+        // console.log('db[i].conn', db[i].conn)
+        var result = await (db_i.conn.search({
+          body: {
+            aggs: {
+              typesAgg: {
+                terms: {
+                  field: '_type',
+                  size: 200
+                }
+              }
+            },
+            size: 0
+          }
+        }).then(res => {
+          return res
+        }).catch(err => {
+          return []
+        }))
+        // console.log(result)
+        if(result.length != 0) {
+          for (let [inx, val] of result.aggregations.typesAgg.buckets.entries()) {
+            var obj = {}
+            // obj['t_name'] = val.key
+            if (val.key == tname) {
+              var tcount = await (db_i.conn.count({
+                from: sl,
+                size: limit,
+                index: db_i.dbname,
+                type: val.key,
+                body: {
+                    query: {
+                        match_all: { }
+                    },
+                }
+              }).then(res => {
+                return res.count
+              }).catch(err => {
+                return 0
+              }))
+              // console.log('elastic total ', tcount)
+              var obj = {}
+              obj.total = tcount
+              var _data = await (db_i.conn.search({
+                from: sl,
+                size: limit,
+                index: db_i.dbname,
+                type: val.key,
+                body: {
+                    query: {
+                        match_all: { }
+                    },
+                }
+              }).then(res => {
+                return res
+              }).catch(err => {
+                return []
+              }))
+              var a = []
+              _data.hits.hits.forEach(function(hit){
+                var item =  hit._source;
+                item._id = hit._id;
+                a.push(item);
+              })
+              console.log(a)
+              // obj['t_data'] = a
+              // arr.push(obj)
+              obj.data = a
+              return obj
+            }
+          }
         }
       }
     }
