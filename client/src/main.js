@@ -72,11 +72,21 @@ var router = new VueRouter({
   }
 })
 import axios from 'axios'
+import psl from 'psl'
 // Some middleware to help us ensure the user is authenticated.
 router.beforeEach((to, from, next) => {
   iView.LoadingBar.config({ color: '#0e406d' })
     // window.console.log('Transition', transition)
     // router.app.$store.state.token
+  let obId = false
+  let location = psl.parse(window.location.hostname) // get parent domain
+  location = location.domain === null ? location.input : location.domain
+  if (to.query.ob_id) {
+    obId = to.query.ob_id
+  }
+  if (to.query.token) {
+    router.app.$cookie.set('auth_token', to.query.token, { expires: 1, domain: location })
+  }
   const token = router.app.$cookie.get('auth_token')
     // set token in axios
   if (token) {
@@ -84,7 +94,13 @@ router.beforeEach((to, from, next) => {
   } else {
     delete axios.defaults.headers.common['authorization']
   }
-  if (to.matched.some(record => record.meta.requiresAuth) && (!token || token === 'null')) {
+  if (to.matched.some(record => record.meta.requiresAuth) && obId) {
+    window.console.log('ob_id obtained')
+    next({
+      path: '/email-verification',
+      query: { ob_id: obId }
+    })
+  } else if (to.matched.some(record => record.meta.requiresAuth) && (!token || token === 'null')) {
     window.console.log('Not authenticated')
     next({
       path: '/login',
@@ -104,7 +120,13 @@ router.beforeEach((to, from, next) => {
         })
       })
     } else {
-      next()
+      if (to.path === '/login' && token) {
+        next({
+          path: '/'
+        })
+      } else {
+        next()
+      }
     }
   }
 })

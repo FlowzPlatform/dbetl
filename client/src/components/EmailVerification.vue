@@ -1,66 +1,33 @@
 <template>
   <div class="loginpage">
     <div class="loginpanel">
-			<vue-particles color="#dedede">
+      <vue-particles color="#dedede">
       </vue-particles>
       <Row type="flex" justify="center" align="middle">
         <Col :span="6" offset="1">
-          <form id="form-facebook" name="form-facebook" :action="loginWithFacebookUrl" method="post">
-            <input type="hidden" name="success_url" :value="facebookSuccessCallbackUrl">
-          </form>
-          <form id="form-google" name="form-google" :action ="loginWithGoogleUrl" method="post">
-            <input type="hidden" name="success_url" :value="googleSuccessCallbackUrl">
-          </form>
           <Form ref="formLogin" :model="formLogin" :rules="ruleLogin">
             <FormItem class="animate0 bounceIn">
 							<div class="pageheader">
                 <div class="pageicon"><i class="fa fa-unlock-alt"></i></div>
                 <div class="pagetitle">
-                  <h5>Your Login Information</h5>
-                  <h1>Login</h1>
+                  <h1>Enter Email</h1>
                 </div>
               </div>
               <!-- <div style="text-align: center;">
-                <img src="../assets/images/logo.png" style="width:60%;"/>
+                <img src="../assets/images/Flowz-Icon.png" style="width:60%;"/>
               </div> -->
             </FormItem>
             <FormItem prop="email" class="animate1 bounceIn">
               <Input type="text" v-model="formLogin.email" placeholder="Email ID">
               </Input>
             </FormItem>
-            <FormItem prop="password" class="animate2 bounceIn">
-              <Input type="password" v-model="formLogin.password" placeholder="Password">
-              </Input>
-            </FormItem>
             <FormItem class="animate3 bounceIn">
-              <Button type="primary" long @click="handleSubmit('formLogin')" :loading="loading" class="login-btn">
-                <span v-if="!loading">SIGN IN</span>
+              <Button type="primary" @click="handleSubmit('formLogin')" :loading="loading" class="login-btn" long>
+                <span v-if="!loading">Continue</span>
                 <span v-else>Loading...</span>
               </Button>
             </FormItem>
-						<FormItem  class="animate4 bounceIn redirectlink">
-							<Row>
-								<Col style="float:left;">
-                  <Tooltip content="Facebook">
-                    <span @click="handleFacebook" class="fa-stack fa-lg animated fadeInRight social-icon" style="-webkit-animation-delay: 1s;animation-delay: 1s;-moz-animation-delay: 1s;">
-                      <i class="fa fa-square-o fa-stack-2x"></i>
-                      <i class="fa fa-facebook fa-stack-1x"></i>
-                    </span>
-                  </Tooltip>
-                  <Tooltip content="Google">
-                    <span @click="handleGoogle" class="fa-stack fa-lg animated fadeInRight social-icon" style="-webkit-animation-delay: 2s;animation-delay: 2s;-moz-animation-delay: 2s;">
-                      <i class="fa fa-square-o fa-stack-2x"></i>
-                      <i class="fa fa-google fa-stack-1x"></i>
-                    </span>
-                  </Tooltip>
-								</Col>
-								<Col  style="float:right;">
-									Not a member?&nbsp;
-									<router-link to="/register" >Sign Up</router-link>
-								</Col>
-							</Row>
-            </FormItem>
-          </Form>
+					</Form>
         </Col>
         <Col :span="1">
           <div style="height: 100vh"></div>
@@ -68,9 +35,10 @@
       </Row>
     </div>
 
-    <!-- <div class="loginfooter">
+    <div class="loginfooter">
         <p>© 2017. Flowz technology. All Rights Reserved.</p>
-    </div> -->
+    </div>
+
   </div>
 </template>
 
@@ -82,27 +50,20 @@ import modelUser from '@/api/user'
 import config from '@/config'
 import psl from 'psl'
 export default {
-  name: 'login',
+  name: 'email-verification',
   data () {
     return {
       loading: false,
       formLogin: {
         email: '',
-        password: ''
+        id: null
       },
       ruleLogin: {
         email: [
           { required: true, message: 'Please fill in the email id', trigger: 'blur' },
           { type: 'email', message: 'Please input correct email address', trigger: 'blur,change' }
-        ],
-        password: [
-          { required: true, message: 'Please fill in the password.', trigger: 'blur' }
         ]
-      },
-      facebookSuccessCallbackUrl : config.facebookSuccessCallbackUrl,
-      googleSuccessCallbackUrl : config.googleSuccessCallbackUrl,
-      loginWithFacebookUrl : config.loginWithFacebookUrl,
-      loginWithGoogleUrl : config.loginWithGoogleUrl
+      }
     }
   },
   methods: {
@@ -110,31 +71,31 @@ export default {
       this.$refs[name].validate(async (valid) => {
         if (valid) {
           this.loading = true
-          var auth = await modelAuthentication.login(this.formLogin).catch(error => {
+          var auth = await modelAuthentication.social(this.formLogin).catch(error => {
+            console.log(error)
 						this.$Message.error(error.response.data)
             return
           })
+          console.log(auth)
           if (auth) {
             this.$store.commit('SET_TOKEN', auth.logintoken)
 						// Token Store in cookie
 						let location = psl.parse(window.location.hostname)    // get parent domain
 						location = location.domain === null ? location.input : location.domain
 						this.$cookie.set('auth_token', auth.logintoken, {expires: 1, domain: location})    // Store in cookie
-
-						this.$router.push({path: '/'}) // Redirect to dashbord
+						this.$store.commit('SET_ROLE', null)
+            this.$router.push({path: '/'}) // Redirect to dashbord
           }
           this.loading = false
         } else {
-          this.$Message.error('Form validation failed!')
+          // this.$Message.error('Form validation failed!')
         }
       })
-    },
-		handleFacebook () {
-      document.getElementById('form-facebook').submit()
-    },
-    handleGoogle () {
-      document.getElementById('form-google').submit()
     }
+  },
+  mounted () {
+    let params = new URLSearchParams(window.location.search)
+    this.formLogin.id = params.get('ob_id')
   }
 }
 </script>
