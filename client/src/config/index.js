@@ -16,9 +16,9 @@ if (process.env.NODE_ENV !== 'development') {
     hideLogoOnMobile: false,
     microURI: 'http://ec2-54-88-11-110.compute-1.amazonaws.com/api',
     facebookSuccessCallbackUrl: 'http://dbetl.flowz.com/',
-    loginWithFacebookUrl: 'http://auth.flowz.com/auth/facebook',
+    loginWithFacebookUrl: 'http://ec2-54-88-11-110.compute-1.amazonaws.com/api/facebook',
     googleSuccessCallbackUrl: 'http://dbetl.flowz.com/',
-    loginWithGoogleUrl: 'http://auth.flowz.com/auth/Gplus'
+    loginWithGoogleUrl: 'http://ec2-54-88-11-110.compute-1.amazonaws.com/api/Gplus'
   }
 }
 export default temp
