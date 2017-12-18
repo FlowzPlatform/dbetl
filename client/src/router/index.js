@@ -18,6 +18,7 @@ import schemaList from '@/components/schemaList'
 import recordList from '@/components/recordList'
 import instancejoblist from '@/components/instancejoblist'
 import createRecord from '@/components/createRecord'
+import EmailVerification from '@/components/EmailVerification'
 
 // import FlowzList from '@/components/FlowList'
 // import Instance from '@/components/instance'
@@ -149,6 +150,10 @@ const routes = [{
   path: '/Login',
   name: 'Login',
   component: Login
+}, {
+  path: '/email-verification',
+  name: 'email-verification',
+  component: EmailVerification
 }, {
   path: '/Register',
   name: 'Register',

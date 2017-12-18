@@ -13,10 +13,10 @@ var endecrypt = require('../encryption/security')
 
 var Datastore = require('nedb-promise');
 var fs = require('fs');
-var nedbpath = path.join(__dirname, '../../../nedb') 
-// console.log('__dirname >>>>>>>>>>>>>>>>>>>', fs.existsSync(nedbpath))
+var nedbpath = path.join(__dirname, '../../../nedb')
+  // console.log('__dirname >>>>>>>>>>>>>>>>>>>', fs.existsSync(nedbpath))
 if (!fs.existsSync(nedbpath)) {
-  fs.mkdir(nedbpath, function(res, err) {
+  fs.mkdir(nedbpath, function (res, err) {
     // console.log('created...... directory')
   })
 }
@@ -27,51 +27,50 @@ var elasticsearch = require('elasticsearch');
 var MongoClient = require('mongodb').MongoClient;
 var mysql = require('mysql');
 
-var getQuery = async(function (dbName,type,queryFor) {
+var getQuery = async(function (dbName, type, queryFor) {
   let result = new Promise((resolve, reject) => {
-    fs.readFile(path.join(__dirname, '../DBConnection/query.json'),function (err, data) {
+    fs.readFile(path.join(__dirname, '../DBConnection/query.json'), function (err, data) {
       if (err) return console.log(err);
-          resolve(JSON.parse(data));
-          });
+      resolve(JSON.parse(data));
     });
+  });
 
-    var _data = Promise.resolve(result).then(function(dbdata){
-        var instance;
+  var _data = Promise.resolve(result).then(function (dbdata) {
+    var instance;
 
-        _.forEach(dbdata[dbName][type], function(instances, db){
-            if(Object.keys(instances)[0] == queryFor)
-            {
-              var obj = _.find(instances)
-              if(obj != undefined){
-                instance = obj
-              }
-            }   
-        })
-        return instance
-    });
-    return _data
-});
-
-var getFunction = function(id) {
-  let result = new Promise((resolve, reject) => {
-      fs.readFile(path.join(__dirname, '../DBConnection/db.json'), function (err, data) {
-        if (err) return console.log(err);
-        resolve(JSON.parse(data));
-      });
-    });
-    var _data = Promise.resolve(result).then(function (dbdata) {
-      // console.log(dbdata)
-      var instance;
-      _.forEach(dbdata, function (instances, db) {
-        var obj = _.find(instances.dbinstance, { id: id })
+    _.forEach(dbdata[dbName][type], function (instances, db) {
+      if (Object.keys(instances)[0] == queryFor) {
+        var obj = _.find(instances)
         if (obj != undefined) {
           instance = obj
-          instance.selectedDb = db
         }
-      })
-      return instance
+      }
+    })
+    return instance
+  });
+  return _data
+});
+
+var getFunction = function (id) {
+  let result = new Promise((resolve, reject) => {
+    fs.readFile(path.join(__dirname, '../DBConnection/db.json'), function (err, data) {
+      if (err) return console.log(err);
+      resolve(JSON.parse(data));
     });
-    return _data
+  });
+  var _data = Promise.resolve(result).then(function (dbdata) {
+    // console.log(dbdata)
+    var instance;
+    _.forEach(dbdata, function (instances, db) {
+      var obj = _.find(instances.dbinstance, { id: id })
+      if (obj != undefined) {
+        instance = obj
+        instance.selectedDb = db
+      }
+    })
+    return instance
+  });
+  return _data
 }
 
 var check_Connection = async(function (db, data) {
@@ -172,20 +171,20 @@ var check_Connection = async(function (db, data) {
   } else if (db == 'mysql') {
 
     var connection = mysql.createConnection({
-      host     : data.host,
-      port     : data.port,
-      user     : data.username,
-      password : data.password,
-      database : data.dbname
+      host: data.host,
+      port: data.port,
+      user: data.username,
+      password: data.password,
+      database: data.dbname
     });
-    connection.connect(); 
+    connection.connect();
     return connection;
-  } else if (db == 'nedb') { 
+  } else if (db == 'nedb') {
     if (fs.existsSync(path.join(nedbpath, '/' + data.dbname))) {
       return 'Success'
     } else {
       var _res = new error()
-      return _res  
+      return _res
     }
   } else {
     var _res = new error()
@@ -213,17 +212,17 @@ var getConnectionData = async(function (db, data) {
       // console.log('collections', collections)
 
     var result = await (conn.listCollections().toArray())
-    
+
     for (let [inx, obj] of result.entries()) {
       for (let k in obj) {
         if (k !== 'name') {
           delete obj[k]
         }
         var a = await (conn.collection(obj.name).find().toArray())
-        var cols =[]
-        if(a[0] != undefined) {
-          for(let k in a[0]) {
-            cols.push({name: k})
+        var cols = []
+        if (a[0] != undefined) {
+          for (let k in a[0]) {
+            cols.push({ name: k })
           }
         }
       }
@@ -244,13 +243,13 @@ var getConnectionData = async(function (db, data) {
     var result = await (connection.db(data.dbname).tableList())
     for (let [inx, val] of result.entries()) {
       var a = await (connection.db(data.dbname).table(val).run())
-      var cols =[]
-      if(a[0] != undefined) {
-        for(let k in a[0]) {
-          cols.push({name: k})
+      var cols = []
+      if (a[0] != undefined) {
+        for (let k in a[0]) {
+          cols.push({ name: k })
         }
       }
-      result[inx] = { name: val, columns: cols}
+      result[inx] = { name: val, columns: cols }
     }
     return result
   } else if (db == 'elastic') {
@@ -287,23 +286,23 @@ var getConnectionData = async(function (db, data) {
       // data1.push({ name: obj.key, columns: mapping[data.dbname].mappings[obj.key].properties })
       var data = []
       var a = await (connection.search({
-          index: data.dbname,
-          type: obj.key,
-          body: {
-              query: {
-                  match_all: { }
-              },
-          }
+        index: data.dbname,
+        type: obj.key,
+        body: {
+          query: {
+            match_all: {}
+          },
+        }
       }))
-      a.hits.hits.forEach(function(hit){
-        var item =  hit._source;
+      a.hits.hits.forEach(function (hit) {
+        var item = hit._source;
         item._id = hit._id;
         data.push(item);
       })
-      var cols =[]
-      if(data[0] != undefined) {
-        for(let k in data[0]) {
-          cols.push({name: k})
+      var cols = []
+      if (data[0] != undefined) {
+        for (let k in data[0]) {
+          cols.push({ name: k })
         }
       }
       // result[inx] = { name: val, columns: cols}
@@ -317,46 +316,46 @@ var getConnectionData = async(function (db, data) {
     for (let [inx, val] of result.entries()) {
       var s = val.split('.')
       var tname = s[0]
-      // console.log('path...........', path.join(db_i.conn, '/' + tname + '.db'))
+        // console.log('path...........', path.join(db_i.conn, '/' + tname + '.db'))
       var tconn = new Datastore({ filename: path.join(mpath, '/' + tname + '.db'), autoload: true })
       var data = await (tconn.cfind({}).exec())
       var cols = []
       if (data[0] != undefined) {
-        for(let k in data[0]) {
-          cols.push({name: k})
+        for (let k in data[0]) {
+          cols.push({ name: k })
         }
       }
-      result[inx] = { name: tname, columns: cols}
+      result[inx] = { name: tname, columns: cols }
     }
     return result
   } else if (db == 'mysql') {
-     var connection = mysql.createConnection({
-      host     : data.host,
-      port     : data.port,
-      user     : data.username,
-      password : data.password,
-      database : data.dbname
+    var connection = mysql.createConnection({
+      host: data.host,
+      port: data.port,
+      user: data.username,
+      password: data.password,
+      database: data.dbname
     });
     connection.connect();
-///////////////////////////////////
-// //get tables
-    var getDatabaseTables = await(getQuery('mysql','select','getDatabaseTables'));
-    getDatabaseTables = getDatabaseTables.replace('{{ table_name }}','information_schema.tables');
-    getDatabaseTables = getDatabaseTables.replace('{{ database_name }}',data.dbname);
-    getDatabaseTables = getDatabaseTables.replace('{{ fields }}','group_concat(table_name) as table_name');
-    
+    ///////////////////////////////////
+    // //get tables
+    var getDatabaseTables = await (getQuery('mysql', 'select', 'getDatabaseTables'));
+    getDatabaseTables = getDatabaseTables.replace('{{ table_name }}', 'information_schema.tables');
+    getDatabaseTables = getDatabaseTables.replace('{{ database_name }}', data.dbname);
+    getDatabaseTables = getDatabaseTables.replace('{{ fields }}', 'group_concat(table_name) as table_name');
+
     var tableList = function () {
       var result = []
-      
+
       return new Promise((resolve, reject) => {
         connection.query(getDatabaseTables, function (error, result, fields) {
-          error? reject(error) : resolve(result[0].table_name)
+          error ? reject(error) : resolve(result[0].table_name)
         })
       }).then(content => {
         return content;
-      }).catch(err=> {
+      }).catch(err => {
         return err;
-      })     
+      })
     };
     var resTableList = await (tableList())
 
@@ -367,57 +366,57 @@ var getConnectionData = async(function (db, data) {
 
       var tableName = resTableList.split(",");
 
-      _.forEach(tableName, function (t,key) {
+      _.forEach(tableName, function (t, key) {
         //if(t != 'tbl_schema' && t != 'tbl_entity' && t != 'tbl_property')
         {
-          var getTableColumns = await(getQuery('mysql','select','getTableColumns'));
-          getTableColumns = getTableColumns.replace('{{ table_name }}','information_schema.columns');
-          getTableColumns = getTableColumns.replace('{{ fields }}','group_concat(column_name order by ordinal_position) as columns');
-          getTableColumns = getTableColumns.replace('{{ database_name }}',data.dbname);
-          getTableColumns = getTableColumns.replace('{{ tableName }}',t);
-          
-          
+          var getTableColumns = await (getQuery('mysql', 'select', 'getTableColumns'));
+          getTableColumns = getTableColumns.replace('{{ table_name }}', 'information_schema.columns');
+          getTableColumns = getTableColumns.replace('{{ fields }}', 'group_concat(column_name order by ordinal_position) as columns');
+          getTableColumns = getTableColumns.replace('{{ database_name }}', data.dbname);
+          getTableColumns = getTableColumns.replace('{{ tableName }}', t);
+
+
           var process = new Promise((resolve, reject) => {
             connection.query(getTableColumns, function (error, result, fields) {
               // console.log('result???????????????',result)
-              _.forEach(result, function (column,key) {
-                // var columnName = result[0];
-                var columnName = column.columns.split(",");
-                cols = []
-                _.forEach(columnName, function (c,k) {
-                  cols.push({name: c})
+              _.forEach(result, function (column, key) {
+                  // var columnName = result[0];
+                  var columnName = column.columns.split(",");
+                  cols = []
+                  _.forEach(columnName, function (c, k) {
+                    cols.push({ name: c })
+                  })
                 })
-              })
-              // console.log('cols???????????????',cols) 
-              
-              rs[key] = { name: t, columns: cols}
-              // console.log('rs[key]???????????????',rs[key]) 
-              
-              error? reject(error) : resolve(rs[key])
+                // console.log('cols???????????????',cols) 
+
+              rs[key] = { name: t, columns: cols }
+                // console.log('rs[key]???????????????',rs[key]) 
+
+              error ? reject(error) : resolve(rs[key])
             })
           })
-          promises.push(process); 
+          promises.push(process);
         }
       });
-    
+
       return Promise.all(promises).then(content => {
         return _.union(content)
       });
-    })  
+    })
     var columnsResponse = await (entitydata())
-///////////////////////////////////
+      ///////////////////////////////////
 
 
-    
+
     //get tables
     // var getDatabaseTables = await(getQuery('mysql','select','getDatabaseTables'));
     // getDatabaseTables = getDatabaseTables.replace('{{ table_name }}','information_schema.tables');
     // getDatabaseTables = getDatabaseTables.replace('{{ database_name }}',data.dbname);
     // getDatabaseTables = getDatabaseTables.replace('{{ fields }}','group_concat(table_name) as table_name');
-    
+
     // var tableList = function () {
     //   var result = []
-      
+
     //   return new Promise((resolve, reject) => {
     //     connection.query(getDatabaseTables, function (error, result, fields) {
     //       error? reject(error) : resolve(result[0].table_name)
@@ -430,16 +429,16 @@ var getConnectionData = async(function (db, data) {
     // };
     // var resTableList = await (tableList())
     // let res = resTableList.split(",");
-    
+
     // result = [];
 
     // _.forEach(res, function (results) {
     //   instanceVal = {};         
-      
+
     //   instanceVal['name'] = results.toString();
     //   result.push(instanceVal);
     // })
-    
+
     return columnsResponse
   } else {
     return 'not_found_db'
@@ -526,20 +525,20 @@ class Service {
       //   return Promise.resolve({ result: true, data: [] })
       // } else 
       // {
-        var _res = check_Connection(params.query.check, data)
-        return Promise.resolve(_res).then(function (res) {
-            // console.log('result.................', res)
-            var abc = getConnectionData(params.query.check, data)
-            return Promise.resolve(abc).then(function (__res) {
-                return { result: true, data: __res }
-              })
-              // return {result: true}
-          })
-          .catch(function (err) {
-            console.log('Error..............', err)
-            return { result: false }
-          })
-      // }
+      var _res = check_Connection(params.query.check, data)
+      return Promise.resolve(_res).then(function (res) {
+          // console.log('result.................', res)
+          var abc = getConnectionData(params.query.check, data)
+          return Promise.resolve(abc).then(function (__res) {
+              return { result: true, data: __res }
+            })
+            // return {result: true}
+        })
+        .catch(function (err) {
+          console.log('Error..............', err)
+          return { result: false }
+        })
+        // }
     } else {
       if (params.query.checkconn != undefined) {
         var _res = check_Connection(params.query.checkconn, data)
@@ -678,27 +677,27 @@ class Service {
 }
 
 
-var getFunction = function(id) {
+var getFunction = function (id) {
   let result = new Promise((resolve, reject) => {
-      fs.readFile(path.join(__dirname, '../DBConnection/db.json'), function (err, data) {
-        if (err) return console.log(err);
-        resolve(JSON.parse(data));
-      });
+    fs.readFile(path.join(__dirname, '../DBConnection/db.json'), function (err, data) {
+      if (err) return console.log(err);
+      resolve(JSON.parse(data));
     });
-    var _data = Promise.resolve(result).then(function (dbdata) {
-      // console.log(dbdata)
-      var instance;
-      _.forEach(dbdata, function (instances, db) {
-        var obj = _.find(instances.dbinstance, { id: id })
-        if (obj != undefined) {
-          instance = obj
-          instance.selectedDb = db
-          instance.password = endecrypt.decrypt(instance.password)
-        }
-      })
-      return instance
-    });
-    return _data
+  });
+  var _data = Promise.resolve(result).then(function (dbdata) {
+    // console.log(dbdata)
+    var instance;
+    _.forEach(dbdata, function (instances, db) {
+      var obj = _.find(instances.dbinstance, { id: id })
+      if (obj != undefined) {
+        instance = obj
+        instance.selectedDb = db
+        instance.password = endecrypt.decrypt(instance.password)
+      }
+    })
+    return instance
+  });
+  return _data
 }
 
 module.exports = function (options) {

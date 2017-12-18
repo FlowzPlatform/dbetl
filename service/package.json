@@ -60,18 +60,19 @@
     "nedb": "^1.8.0",
     "nedb-promise": "^2.0.1",
     "path": "^0.12.7",
+    "request": "^2.83.0",
+    "request-promise": "^4.2.2",
     "require_optional": "^1.0.1",
     "rethinkdb": "^2.3.3",
     "rethinkdb-job-queue": "^3.1.4",
     "rethinkdbdash": "^2.3.31",
     "serve-favicon": "^2.4.4",
     "shelljs": "^0.7.8",
+    "subscription": "file:..\\..\\subscription",
     "winston": "^2.3.1"
   },
   "devDependencies": {
     "eslint": "^4.7.2",
-    "mocha": "^3.5.3",
-    "request": "^2.82.0",
-    "request-promise": "^4.2.2"
+    "mocha": "^3.5.3"
   }
 }
