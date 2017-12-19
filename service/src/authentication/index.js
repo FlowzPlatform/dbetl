@@ -3,7 +3,7 @@ const axios = require('axios');
 var checkAuth = (authToken) => {
   return axios({
     method: 'get',
-    url: 'http://ec2-54-88-11-110.compute-1.amazonaws.com/api/userdetails',
+    url: 'http://auth.flowz.com/api/userdetails', // 'http://ec2-54-88-11-110.compute-1.amazonaws.com/api/userdetails',
     headers: {
       'authorization': authToken
     }
@@ -22,8 +22,9 @@ var checkAuth = (authToken) => {
 module.exports = async(req, res, next) => {
   // req.feathers.headers = req.headers;
   var user = await checkAuth(req.headers.authorization)
-  console.log("======", user)
   if (user) {
+    // req.feathers.headers = req.headers
+    req.feathers.user = user
     next();
   } else {
     res.send(401, 'invalid token...');
