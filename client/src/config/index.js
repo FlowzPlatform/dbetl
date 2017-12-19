@@ -22,13 +22,13 @@ if (process.env.NODE_ENV !== 'development') {
     hideLogoOnMobile: false,
     microURI: 'http://ec2-54-88-11-110.compute-1.amazonaws.com/api',
     facebookSuccessCallbackUrl: 'http://dbetl.flowz.com/',
-    loginWithFacebookUrl: 'http://ec2-54-88-11-110.compute-1.amazonaws.com/api/facebook',
+    loginWithFacebookUrl: 'http://auth.flowz.com/auth/facebook',
     googleSuccessCallbackUrl: 'http://dbetl.flowz.com/',
-    loginWithGoogleUrl: 'http://ec2-54-88-11-110.compute-1.amazonaws.com/api/Gplus',
+    loginWithGoogleUrl: 'http://auth.flowz.com/auth/Gplus',
     linkedinSuccessCallbackUrl: 'http://dbetl.flowz.com/',
-    loginWithLinkedinUrl: 'http://ec2-54-88-11-110.compute-1.amazonaws.com/api/linkedin',
+    loginWithLinkedinUrl: 'http://auth.flowz.com/auth/linkedin',
     githubSuccessCallbackUrl: 'http://dbetl.flowz.com/',
-    loginWithGithubUrl: 'http://ec2-54-88-11-110.compute-1.amazonaws.com/api/github'
+    loginWithGithubUrl: 'http://auth.flowz.com/auth/github'
   }
 }
 export default temp
