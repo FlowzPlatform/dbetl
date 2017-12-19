@@ -28,9 +28,9 @@ if (process.env.NODE_ENV !== 'development') {
     googleSuccessCallbackUrl: 'http://dbetl.flowz.com/',
     loginWithGoogleUrl: 'http://auth.flowz.com/auth/Gplus',
     linkedinSuccessCallbackUrl: 'http://dbetl.flowz.com/',
-    loginWithLinkedinUrl: 'http://ec2-54-88-11-110.compute-1.amazonaws.com/api/linkedin',
+    loginWithLinkedinUrl: 'http://auth.flowz.com/auth/linkedin',
     githubSuccessCallbackUrl: 'http://dbetl.flowz.com/',
-    loginWithGithubUrl: 'http://ec2-54-88-11-110.compute-1.amazonaws.com/api/github'
+    loginWithGithubUrl: 'http://auth.flowz.com/auth/github'
   }
 }
 export default temp
