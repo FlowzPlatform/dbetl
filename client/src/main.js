@@ -113,7 +113,10 @@ router.beforeEach((to, from, next) => {
         next()
       }).catch(error => {
         console.log(error.message)
-          // window.console.log('Not authenticated')
+        if (error.response.data === 'invalid token') {
+          router.app.$cookie.delete('auth_token')
+        }
+        // window.console.log('Not authenticated')
         next({
           path: '/login',
           query: { redirect: to.fullPath }
