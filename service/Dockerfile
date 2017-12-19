@@ -6,6 +6,6 @@ WORKDIR /usr/src/app/server
 RUN npm install
 
 
-EXPOSE 3034
+EXPOSE 3034 4034
 
 CMD NODE_ENV=production npm start

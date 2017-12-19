@@ -28,6 +28,7 @@
     "mocha": "mocha test/ --recursive"
   },
   "dependencies": {
+    "@feathersjs/errors": "^3.2.0",
     "asyncawait": "^1.0.6",
     "aws-sdk": "^2.138.0",
     "axios": "^0.16.2",
@@ -50,6 +51,7 @@
     "feathers-socketio": "^2.0.0",
     "feathers-swagger": "^0.5.0",
     "fibers": "^2.0.0",
+    "flowz-subscription": "0.0.0",
     "fs": "0.0.1-security",
     "get-json": "^1.0.0",
     "helmet": "^3.8.1",
@@ -68,7 +70,6 @@
     "rethinkdbdash": "^2.3.31",
     "serve-favicon": "^2.4.4",
     "shelljs": "^0.7.8",
-    "subscription": "file:..\\..\\subscription",
     "winston": "^2.3.1"
   },
   "devDependencies": {

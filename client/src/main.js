@@ -15,13 +15,13 @@ const hooks = require('feathers-hooks')
 const socketio = require('feathers-socketio/client')
 const io = require('socket.io-client')
   // const socket = io(config.serverURI)
-let socket
-if (process.env.NODE_ENV !== 'development') {
-  socket = io(config.serverURI, { path: '/dbetl/socket.io' })
-} else {
-  socket = io(config.serverURI)
-}
-console.log('socket', socket)
+let socket = io(config.socketURI)
+  // if (process.env.NODE_ENV !== 'development') {
+  //   socket = io(config.serverURI, { path: '/dbetl/socket.io' })
+  // } else {
+  //   socket = io(config.serverURI)
+  // }
+
 const feathers = Feathers()
   .configure(socketio(socket))
   .configure(hooks())
@@ -61,8 +61,8 @@ import VueCookie from 'vue-cookie'
 Vue.use(VueCookie)
 import VueSplit from 'vue-split-panel'
 Vue.use(VueSplit)
-/* eslint-disable no-new */
-// Routing logic
+  /* eslint-disable no-new */
+  // Routing logic
 Vue.use(VueRouter)
 var router = new VueRouter({
   routes: routes,
@@ -113,7 +113,10 @@ router.beforeEach((to, from, next) => {
         next()
       }).catch(error => {
         console.log(error.message)
-          // window.console.log('Not authenticated')
+        if (error.response.data === 'invalid token') {
+          router.app.$cookie.delete('auth_token')
+        }
+        // window.console.log('Not authenticated')
         next({
           path: '/login',
           query: { redirect: to.fullPath }

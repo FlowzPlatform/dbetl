@@ -184,7 +184,7 @@
               <div v-if="frmSettings.rdoCrt == 'rbtCSV'">
                   <div id="example1" class="hot handsontable htColumnHeaders"></div>
                   <table>
-                    <tr class="ivu-table-row" v-for="(item, index) in errmsg" style="color:red;font-size:14px;">{{item}}</tr>
+                    <tr class="ivu-table-row" v-for="(item, index) in [errmsg[0]]" style="color:red;font-size:14px;">{{item}}</tr>
                   </table>
                   <Row>
                     <FormItem>
@@ -1170,34 +1170,37 @@ export default {
                 // console.log("Validation errors!");
                 // console.log("error at : "+ JSON.stringify(errors) + " on row "+ key);
                 // errrows.push(key)
-                self.data1.push(Object.values(value))
-                // console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@",self.data1)
+                if (!_.isEqual(Object.values(value),[""]))
+                {
+                  self.data1.push(Object.values(value))
+                  // console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@",self.data1)
 
-                // self.errmsg.push("error at : "+ JSON.stringify(errors) + " on row "+ key)
-                // console.log("*****************errmsg",self.errmsg);
-                let old_headers = _.keys(self.frmSettings.upldCSV[0]);
-                _.forEach(errors, (item) => {
+                  // self.errmsg.push("error at : "+ JSON.stringify(errors) + " on row "+ key)
+                  // console.log("*****************errmsg",self.errmsg);
+                  let old_headers = _.keys(self.frmSettings.upldCSV[0]);
+                  _.forEach(errors, (item) => {
 
-                  // console.log("}}}}}}}}}}}}}}}}}",new headers)
-                  errcols.push({
-                    cols: _.indexOf(old_headers, item.field),
-                    rows: key
+                    // console.log("}}}}}}}}}}}}}}}}}",new headers)
+                    errcols.push({
+                      cols: _.indexOf(old_headers, item.field),
+                      rows: key
+                    })
+                    // console.log("}}}}}}}}}}}}}}}}}",item.field)
+                    // console.log("@@@@@@@@@@@@@@@@@@",item.message)
+                    self.errmsg.push("* " + item.message + " at column: " + item.field)
+                    // console.log("!!!!!!!!!!!!!!!!!!",self.errmsg)
+                    // console.log("123456",errcols)
                   })
-                  // console.log("}}}}}}}}}}}}}}}}}",item.field)
-                  // console.log("@@@@@@@@@@@@@@@@@@",item.message)
-                  self.errmsg.push("* " + item.message + " at column: " + item.field)
-                  // console.log("!!!!!!!!!!!!!!!!!!",self.errmsg)
-                  // console.log("123456",errcols)
-                })
-                self.showHandson = true
-
+                  self.showHandson = true
+                }
               } else {
-                console.log("newP:");
+                console.log("row " + key + " successfully parsed");
                 // console.log( newP );
               }
             }
           });
         })
+        console.log(data.length,self.data1)
         self.loadingData = false
         self.validateButton = false
         // .log("@@@@@@@@@@@@",self.data1)
@@ -1220,7 +1223,7 @@ export default {
             console.log(error);
           })
         } else {
-          self.$Message.error('validation error');
+          // self.$Message.error('validation error');
         }
         self.showerrmsg(errcols)
         document.getElementById("hot-display-license-info").style.display = "none";
@@ -1235,16 +1238,16 @@ export default {
         headers.push(value.header)
       })
       hot = new Handsontable(example1, {
-        data: this.data1,
+        data: [this.data1[0]],
         // rowHeaders: true,
         colHeaders: headers,
         // rowHeaders: true,
-        height: 300,
+        height: 60,
         cells: function(row, col) {
           var cellProp = {};
-          _.forEach(errcols, function(value, key) {
+          _.forEach([errcols[0]], function(value, key) {
             if (col === value.cols && row === key) {
-              cellProp.className = 'error'
+              cellProp.className = 'error';
             }
           });
           return cellProp;
@@ -1338,7 +1341,7 @@ export default {
         })
         document.getElementsByClassName("ht_master handsontable")[0].remove();
         self.showerrmsg(errcols)
-        self.$Message.error('validation error');
+        // self.$Message.error('validation error');
       }
       document.getElementById("hot-display-license-info").style.display = "none";
     },
