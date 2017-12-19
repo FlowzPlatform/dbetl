@@ -1,6 +1,7 @@
 console.log('process.env.NODE_ENV', process.env.NODE_ENV)
 var temp = {
   serverURI: 'http://localhost:3034',
+  socketURI: 'http://localhost:3034',
   fixedLayout: false,
   hideLogoOnMobile: false,
   microURI: 'http://auth.flowz.com/api',
@@ -11,14 +12,15 @@ var temp = {
 }
 if (process.env.NODE_ENV !== 'development') {
   temp = {
-    serverURI: 'http://api.flowz.com/dbetl',
+    serverURI: 'http://api.flowz.com/dbetl', // 'http://api.flowz.com/dbetl', // ws.flowz.com:4034
+    socketURI: 'http://ws.flowz.com:4034',
     fixedLayout: false,
     hideLogoOnMobile: false,
-    microURI: 'http://ec2-54-88-11-110.compute-1.amazonaws.com/api',
+    microURI: 'http://auth.flowz.com/api',
     facebookSuccessCallbackUrl: 'http://dbetl.flowz.com/',
-    loginWithFacebookUrl: 'http://ec2-54-88-11-110.compute-1.amazonaws.com/api/facebook',
+    loginWithFacebookUrl: 'http://auth.flowz.com/auth/facebook',
     googleSuccessCallbackUrl: 'http://dbetl.flowz.com/',
-    loginWithGoogleUrl: 'http://ec2-54-88-11-110.compute-1.amazonaws.com/api/Gplus'
+    loginWithGoogleUrl: 'http://auth.flowz.com/auth/Gplus'
   }
 }
 export default temp

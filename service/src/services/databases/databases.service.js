@@ -19,6 +19,10 @@ module.exports = function () {
 
   // Get our initialized service so that we can register hooks and filters
   const service = app.service('databases');
+  // service.find = (data, params, callback) => {
+  //   console.log('abc')
+  //   callback(new { 'abc': 123 });
+  // };
 
   service.hooks(hooks);
 

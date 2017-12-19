@@ -1,4 +1,4 @@
-const subscription = require('subscription');
+const subscription = require('flowz-subscription');
 const authentication = require('../authentication')
 
 let app = undefined;
@@ -12,13 +12,13 @@ module.exports = function () {
   app.use(authentication)
 
   // Check subscription
-  app.use(subscription.subscription);
-  subscription.secureService.validate = (route, params, secureRouteInfo) => {
-    return new Promise(async(resolve, reject) => {
-      var data = await handleSubscription(route, params, secureRouteInfo)
-      resolve(data)
-    });
-  };
+  // app.use(subscription.subscription);
+  // subscription.secureService.validate = (route, params, secureRouteInfo) => {
+  //   return new Promise(async(resolve, reject) => {
+  //     var data = await handleSubscription(route, params, secureRouteInfo)
+  //     resolve(data)
+  //   });
+  // };
 };
 
 var handleSubscription = (route, params, secureRouteInfo) => {

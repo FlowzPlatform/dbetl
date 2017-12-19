@@ -33,7 +33,11 @@ app.configure(hooks());
 // app.configure(mongodb);
 app.configure(rethinkdb);
 app.configure(rest());
-app.configure(socketio());
+// app.configure(socketio());
+app.configure(socketio(4034, {
+  wsEngine: 'uws',
+  origin: '*.flowz.com:*'
+}));
 // Configure other middleware (see `middleware/index.js`)
 app.configure(middleware);
 // Set up our services (see `services/index.js`)
