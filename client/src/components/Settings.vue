@@ -448,6 +448,7 @@ let axios = require("axios")
 import Papa from 'papaparse'
 import api from '../api'
 import schema from '../api/schema'
+import databases from '../api/databases'
 import InputTag from 'vue-input-tag'
 import mongo from '../assets/images/mongo.png'
 import rethink from '../assets/images/rethink.png'
@@ -1816,7 +1817,8 @@ export default {
           let obj = this.getPostObj(this.frmSettings);
           obj.id = guid;
           // api.request('post', '/databases', obj)
-          api.request('post', '/databases', obj)
+          // api.request('post', '/databases', obj)
+          databases.post(obj)
             .then(response => {
               console.log('response....', response)
               // this.$Message.success('Success');

@@ -29,6 +29,7 @@
 /* eslint-disable*/
 import $ from 'jquery'
 import api from '../api'
+import databases from '../api/databases'
 import expandRow from './DbData.vue'
 import _ from 'lodash'
 export default {
@@ -832,7 +833,8 @@ export default {
                 content: '<p>Are you sure you want to delete Connection?</p>',
                 onOk: () => {
                     var id = this[db+'Dt'][index].id
-                      api.request('delete', '/databases/'+id)
+                      // api.request('delete', '/databases/'+id)
+                      databases.delete(id)
                         .then(response => {
                           console.log('response', response.data)
                             this[db+'Dt'].splice(index, 1)
@@ -908,7 +910,8 @@ export default {
         },
         getSettings() {
           let self = this
-          api.request('get', '/databases')
+          // api.request('get', '/databases')
+          databases.get()
           .then(response => {
               // _.forEach(response.data, function(instances, db){
               //     self[db+'Dt'] = response.data[db].dbinstance
