@@ -826,21 +826,22 @@ export default {
           this.$router.push('Dbsetting/import/'+id)
         },
         instanceRemove (db, index) {
-          console.log(index,db)
+          // console.log(index,db)
             this.$Modal.confirm({
                 title: 'Confirm',
                 content: '<p>Are you sure you want to delete Connection?</p>',
                 onOk: () => {
                     var id = this[db+'Dt'][index].id
-                        api.request('delete', '/settings/'+id+'?db='+db)
-                            .then(response => {
-                                this[db+'Dt'].splice(index, 1)
-                                this.$Notice.success({title: 'Success', desc: 'Connection Deleted.....',})
-                            })
-                            .catch(error => {
-                                console.log(error)
-                                this.$Notice.error({title: 'Error', desc: 'Connection Not Deleted.....',})
-                            })
+                      api.request('delete', '/databases/'+id)
+                        .then(response => {
+                          console.log('response', response.data)
+                            this[db+'Dt'].splice(index, 1)
+                            this.$Notice.success({title: 'Success', desc: 'Connection Deleted.....',})
+                        })
+                        .catch(error => {
+                            console.log(error)
+                            this.$Notice.error({title: 'Error', desc: 'Connection Not Deleted.....',})
+                        })
                 },
                 onCancel: () => {
                 }
@@ -853,21 +854,21 @@ export default {
                 content: '<p>Are you sure you want to enable Connection?</p>',
                 onOk: () => {
                     // alert(this[db+'Dt'][index].id)
-                    var id = this[db+'Dt'][index].id
-                    api.request('put', '/settings/'+id+'?db='+db, {isenable: value})
-                        .then(response => {
-                          var result = response.data
-                          this[db+'Dt'][index].isenable = value
+                    // var id = this[db+'Dt'][index].id
+                    // api.request('put', '/settings/'+id+'?db='+db, {isenable: value})
+                    //     .then(response => {
+                    //       var result = response.data
+                    //       this[db+'Dt'][index].isenable = value
 
-                          this.$Notice.success({duration:3, title:'Success!!', desc:'Connection Enable Successfully..'})
-                          this.$store.dispatch('getSchema')
-                          this.getSettings()
-                          console.log('result put ',result)
-                        })
-                        .catch(error => {
-                          console.log(error)
-                          this.$Notice.error({duration:3, title:'Error!!', desc:'Connection not Enable...'})
-                        })
+                    //       this.$Notice.success({duration:3, title:'Success!!', desc:'Connection Enable Successfully..'})
+                    //       this.$store.dispatch('getSchema')
+                    //       this.getSettings()
+                    //       console.log('result put ',result)
+                    //     })
+                    //     .catch(error => {
+                    //       console.log(error)
+                    //       this.$Notice.error({duration:3, title:'Error!!', desc:'Connection not Enable...'})
+                    //     })
                   },
                 onCancel: () => {
                   // console.log('Here............', !value)
@@ -884,20 +885,20 @@ export default {
                   // alert(this[db+'Dt'][index].id)
                   var id = this[db+'Dt'][index].id
                   console.log(db, index, value, id)
-                  api.request('patch', '/settings/'+id+'?db='+db, {isdefault: value})
-                      .then(response => {
-                        var result = response.data
-                        this[db+'Dt'][index].isdefault = value
+                  // api.request('patch', '/settings/'+id+'?db='+db, {isdefault: value})
+                  //     .then(response => {
+                  //       var result = response.data
+                  //       this[db+'Dt'][index].isdefault = value
                         
-                        this.$Notice.success({duration:3, title:'Success!!', desc:'Connection set Default Successfully..'})
-                        this.$store.dispatch('getSchema')
-                        this.getSettings()
-                        console.log('result patch ',result)
-                      })
-                      .catch(error => {
-                        console.log(error)
-                        this.$Notice.error({duration:3, title:'Error!!', desc:'Connection not set Default...'})
-                      })
+                  //       this.$Notice.success({duration:3, title:'Success!!', desc:'Connection set Default Successfully..'})
+                  //       this.$store.dispatch('getSchema')
+                  //       this.getSettings()
+                  //       console.log('result patch ',result)
+                  //     })
+                  //     .catch(error => {
+                  //       console.log(error)
+                  //       this.$Notice.error({duration:3, title:'Error!!', desc:'Connection not set Default...'})
+                  //     })
                 },
               onCancel: () => {
                 this.getSettings()
@@ -907,11 +908,16 @@ export default {
         },
         getSettings() {
           let self = this
-          api.request('get', '/settings')
+          api.request('get', '/databases')
           .then(response => {
-              _.forEach(response.data, function(instances, db){
-                  self[db+'Dt'] = response.data[db].dbinstance
-              })
+              // _.forEach(response.data, function(instances, db){
+              //     self[db+'Dt'] = response.data[db].dbinstance
+              // })
+            this.mongoDt = _.filter(response.data.data, {selectedDb: 'mongo'}) 
+            this.rethinkDt = _.filter(response.data.data, {selectedDb: 'rethink'}) 
+            this.elasticDt = _.filter(response.data.data, {selectedDb: 'elastic'}) 
+            this.nedbDt = _.filter(response.data.data, {selectedDb: 'nedb'}) 
+            this.mysqlDt = _.filter(response.data.data, {selectedDb: 'mysql'})
           })
           .catch(error => {
               this.$Notice.error({title:'Network Error!!'})
@@ -962,29 +968,54 @@ export default {
     },
     mounted () {
         let self = this
-        api.request('get', '/settings')
-        .then(response => {
-            _.forEach(response.data, function(instances, db){
-                self[db+'Dt'] = response.data[db].dbinstance
-            })
-        })
-        .catch(error => {
-            this.$Notice.error({title:'Network Error!!'})
-            console.log(error)
-        })
+        this.getSettings()
+        // api.request('get', '/databases')
+        // .then(response => {
+        //     // _.forEach(response.data.data, function(item, inx){
+        //     //   console.log('>>> ', v, k)
+        //     //     // self[db+'Dt'] = response.data[db].dbinstance
+        //     // })
+        //     // console.log(response.data.data)
+        //     this.mongoDt = _.filter(response.data.data, {selectedDb: 'mongo'}) 
+        //     this.rethinkDt = _.filter(response.data.data, {selectedDb: 'rethink'}) 
+        //     this.elasticDt = _.filter(response.data.data, {selectedDb: 'elastic'}) 
+        //     this.nedbDt = _.filter(response.data.data, {selectedDb: 'nedb'}) 
+        //     this.mysqlDt = _.filter(response.data.data, {selectedDb: 'mysql'}) 
+        // })
+        // .catch(error => {
+        //     this.$Notice.error({title:'Network Error!!'})
+        //     console.log(error)
+        // })
+    },
+    feathers: {
+      'databases': {
+        updated (data) {
+          // console.log('connectiondata updated..', data)
+          var findKey = _.findKey(this[data.selectedDb + 'Dt'], {id: data.id})
+          this[data.selectedDb + 'Dt'][findKey] = data
+        },
+        created (data) {
+          // console.log('connectiondata created..', data)
+          // console.log(this[data.selectedDb + 'Dt'])
+          this[data.selectedDb + 'Dt'].push(data)
+        },
+        removed (data) {
+          // console.log('connectiondata removed..', data)
+        }
+      }
     }
 }
 </script>
 <style>
 .expand-row{
-        margin-bottom: 16px;
-    }
+  margin-bottom: 16px;
+}
 .ivu-table-small th {
-      height: 32px;
-      background-color: #394263;
-      color: #fff;
-    }
+  height: 32px;
+  background-color: #394263;
+  color: #fff;
+}
 .btn {
-    margin-top: 20px;
+  margin-top: 20px;
 }
 </style>

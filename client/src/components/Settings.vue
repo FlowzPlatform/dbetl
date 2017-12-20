@@ -1530,7 +1530,7 @@ export default {
       }
       api.request('get', '/settings')
         .then(response => {
-          this.allSetting = response.data
+          this.allSetting = response.data.data
           _.forEach(this.allSetting, (dbInst, db) => {
             if (dbInst.dbinstance.length != 0) {
               this.tabsData[db + 'Cols'].push({
@@ -1816,8 +1816,9 @@ export default {
           let obj = this.getPostObj(this.frmSettings);
           obj.id = guid;
           // api.request('post', '/databases', obj)
-          api.request('post', '/settings', obj)
+          api.request('post', '/databases', obj)
             .then(response => {
+              console.log('response....', response)
               // this.$Message.success('Success');
               if (response.data == 'Exist') {
                 this.$Notice.error({
