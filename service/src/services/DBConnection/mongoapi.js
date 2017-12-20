@@ -73,7 +73,7 @@ module.exports = {
     return 'success'
   }),
 
-  getConnsAllData: async (function(ins_id) {
+  getConnsAllData: async (function(ins_id, limit) {
     for(let [i, db_i] of db.entries()) {
       if(db_i.id == ins_id) {
         var arr = []
@@ -88,7 +88,7 @@ module.exports = {
           if(val.name != "system.indexes") {
             var obj = {}
             obj['t_name'] = val.name
-            var data = await (db_i.conn.collection(val.name).find().toArray().then(res => {
+            var data = await (db_i.conn.collection(val.name).find().limit(limit).toArray().then(res => {
               return res
             }).catch(err => {
               return []
@@ -98,6 +98,46 @@ module.exports = {
           }
         }
         return arr
+      }
+    }
+  }),
+
+  getTableRecord: async(function(ins_id, tname, sl, el) {
+    console.log(ins_id, tname, sl, el)
+    var limit = el - sl 
+    for(let [i, db_i] of db.entries()) {
+      if(db_i.id == ins_id) {
+        var arr = []
+        // console.log('db[i].conn', db[i].conn)
+        var result = await (db_i.conn.db.listCollections().toArray().then(res => {
+          return res
+        }).catch(err => {
+          return []
+        }))
+        // console.log('result........', result)
+        for (let [inx, val] of result.entries()) {
+          if(val.name == tname) {
+            // var obj = {}
+            // obj['t_name'] = val.name
+            var tcount = await (db_i.conn.collection(val.name).find().count().then(res => {
+              return res
+            }).catch(err => {
+              return 0
+            }))
+            // console.log('mongo tcount', tcount)
+            var obj = {}
+            obj.total = tcount
+            var _data = await (db_i.conn.collection(val.name).find().skip(sl).limit(limit).toArray().then(res => {
+              return res
+            }).catch(err => {
+              return []
+            }))
+            // obj['t_data'] = data
+            obj.data = _data
+            return obj
+            // arr.push(obj)
+          }
+        }
       }
     }
   }),

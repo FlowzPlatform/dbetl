@@ -98,7 +98,7 @@
       </el-row> -->
 
       <!-- =================== i-tree Side NAV ================= -->
-      <Row style="padding-left: 15px">  
+      <Row style="padding-left: 15px;max-height:1000px; overflow-y: auto">  
         <Tree :data="treeData"></Tree>
       </Row>
     </div>

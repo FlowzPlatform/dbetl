@@ -376,12 +376,14 @@ export default {
           required: true,
           message: 'Please enter host name',
           trigger: 'blur'
-        }],
-        port: [{
-          required: true,
-          message: 'Please enter port number',
-          trigger: 'blur'
         }]
+        // ,
+        // port: [{
+        //   required: true,
+        //   message: 'Please enter port number',
+        //   trigger: 'blur'
+        // }
+        // ]
       },
       t_collection: [],
       s_collection: [],

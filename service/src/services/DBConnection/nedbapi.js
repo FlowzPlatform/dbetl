@@ -55,7 +55,7 @@ module.exports = {
     console.log('===================NEDB=================');
   }),
 
-  getConnsAllData: async (function(ins_id) {
+  getConnsAllData: async (function(ins_id, limit) {
     // console.log('getConnsAllData............', ins_id)
     // console.log(dbapi)
     for(let [i, db_i] of dbapi.entries()) {
@@ -69,12 +69,55 @@ module.exports = {
           obj['t_name'] = tname
           // console.log('path...........', path.join(db_i.conn, '/' + tname + '.db'))
           var tconn = new Datastore({ filename: path.join(db_i.conn, '/' + tname + '.db'), autoload: true })
-          var data = await (tconn.cfind({}).exec())
+          var data = await (tconn.cfind({}).limit(limit).exec())
           // console.log('data............', data)
           obj['t_data'] = data
           arr.push(obj)
         }
         return arr
+      }
+    }
+  }),
+
+  getTableRecord: async(function(ins_id, tname, sl, el) {
+    console.log(ins_id, tname, sl, el)
+    var limit = el - sl 
+    for(let [i, db_i] of dbapi.entries()) {
+      if(db_i.id == ins_id) {
+        var arr = []
+        // console.log('db[i].conn', db[i].conn)
+        // var result = await (db_i.conn.db.listCollections().toArray().then(res => {
+        //   return res
+        // }).catch(err => {
+        //   return []
+        // }))
+        var result = await (fs.readdirSync(db_i.conn))
+        // console.log('result........', result)
+        for (let [inx, val] of result.entries()) {
+          var s = val.split('.')
+          if(s[0] == tname) {
+            // var obj = {}
+            // obj['t_name'] = val.name
+            var tconn = new Datastore({ filename: path.join(db_i.conn, '/' + tname + '.db'), autoload: true })
+            var tcount = await (tconn.count().then(res => {
+              return res
+            }).catch(err => {
+              return 0
+            }))
+            // console.log('mongo tcount', tcount)
+            var obj = {}
+            obj.total = tcount
+            var _data = await (tconn.cfind({}).skip(sl).limit(limit).exec().then(res => {
+              return res
+            }).catch(err => {
+              return []
+            }))
+            // obj['t_data'] = data
+            obj.data = _data
+            return obj
+            // arr.push(obj)
+          }
+        }
       }
     }
   }),

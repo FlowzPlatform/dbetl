@@ -5,6 +5,8 @@ var axios = require('axios');
 let config = require('config');
 var _ = require('lodash');
 var url = 'http://' + config.host + ':' + config.port;
+var slimit = 0
+var elimit = 50
 
 class Service {
   constructor (options) {
@@ -17,8 +19,13 @@ class Service {
   }
 
   get (id, params) {
-    var conndata = getFunction(id, params.query.schemaname)
-    return Promise.resolve(conndata);
+    if (params.query.schemaname != undefined) {
+      var conndata = getThisFunction(id, params.query.schemaname, params.query.sl, params.query.el)
+      return Promise.resolve(conndata);
+    } else {
+      var conndata = getFunction(id, params.query.schemaname, params.query.sl, params.query.el)
+      return Promise.resolve(conndata);
+    }
   }
 
   create (data, params) {
@@ -77,7 +84,7 @@ var findFunction = async (function () {
         var obj = {}
         obj['inst_id'] = inst.id  
         var conn = require('../DBConnection/' + db + 'api')
-        var _res = await (conn.getConnsAllData(inst.id))
+        var _res = await (conn.getConnsAllData(inst.id, elimit))
         obj['inst_data'] = _res   
         // _res.id = inst.id
         // _res.selectedDb = db
@@ -90,8 +97,14 @@ var findFunction = async (function () {
   return __res
 })
 
-var getFunction = async (function (id, schemaname) {
-  console.log(schemaname)
+var getThisFunction = async(function (id, schemaname, sl, el) {
+  if (sl == undefined) {
+    sl = slimit
+    el = elimit
+  } else {
+    sl = parseInt(sl)
+    el = parseInt(el)
+  }
   var settings = await (getallSettings())
   var res = []
   for (let db in settings) {
@@ -99,7 +112,35 @@ var getFunction = async (function (id, schemaname) {
       if (inst.id == id) {
         if (inst.isenable) {
           var conn = require('../DBConnection/' + db + 'api')
-          var _res = await (conn.getConnsAllData(id))
+          var _res = await (conn.getTableRecord(id, schemaname, sl, el))
+          return _res
+        } else {
+          return 'Please Enable the Connection for Result'
+        }
+      } 
+      if (inst.connection_name == id) {
+        if (inst.isenable) {
+          var conn = require('../DBConnection/' + db + 'api')
+          var _res = await (conn.getTableRecord(inst.id, schemaname, sl, el))
+          return _res
+        } else {
+          return 'Please Enable the Connection for Result'
+        }
+      }
+    }
+  }
+  return res
+})
+
+var getFunction = async (function (id, schemaname, sl, el) {
+  var settings = await (getallSettings())
+  var res = []
+  for (let db in settings) {
+    for (let [i, inst] of settings[db].dbinstance.entries()) {
+      if (inst.id == id) {
+        if (inst.isenable) {
+          var conn = require('../DBConnection/' + db + 'api')
+          var _res = await (conn.getConnsAllData(id, elimit))
           if (schemaname != undefined) {
             for (let [inx, tObj] of _res.entries()) {
               if (tObj.t_name == schemaname) {
@@ -116,7 +157,7 @@ var getFunction = async (function (id, schemaname) {
       if (inst.connection_name == id) {
         if (inst.isenable) {
           var conn = require('../DBConnection/' + db + 'api')
-          var _res = await (conn.getConnsAllData(inst.id))
+          var _res = await (conn.getConnsAllData(inst.id, elimit))
           if (schemaname != undefined) {
             for (let [inx, tObj] of _res.entries()) {
               if (tObj.t_name == schemaname) {

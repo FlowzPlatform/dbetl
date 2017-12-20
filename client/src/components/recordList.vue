@@ -14,7 +14,7 @@
           </Breadcrumb>
         </Col>
         <Col span="3">
-          Total: &nbsp;<b>{{tableData.length}}</b>        
+          Total: &nbsp;<b>{{tcount}}</b>        
         </Col>
       </Row>
       <Row>
@@ -93,6 +93,11 @@
           </div>
         </div>
       </Row>
+      <div style="margin: 10px;overflow: hidden">
+        <div style="float: right;">
+            <Page :total="tcount" :current="cpage" @on-change="changePage"></Page>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -112,6 +117,9 @@ export default {
   },
   data () {
     return {
+      cpage: 1,
+      sl: 0,
+      el: 10,
       jsoneditordata: {},
       tableData: [],
       // finalvalue: {},
@@ -121,10 +129,18 @@ export default {
         tname: ''
       },
       setData: false,
-      viewData: []
+      viewData: [],
+      tcount: 0
     }
   },
   methods: {
+    changePage (pageno) {
+      // console.log('pageno', pageno)
+      this.cpage = pageno
+      this.el = (pageno * 10)
+      this.sl = (pageno * 10) - 10
+      this.setTableData()
+    },
     ToggleFunction (index) {
       this.viewData[index].isView = !this.viewData[index].isView
       this.viewData[index].isUpdate = false
@@ -147,48 +163,48 @@ export default {
       this.viewData[index].isUpdate = !this.viewData[index].isUpdate
       this.viewData[index].isView = false
     },
-    init () {
-      let self = this
-      self.setData = false
-      self.viewData = []
-      ConnectionData.get().then(response => {
-        // console.log('response', response.data)
-        settings.getThis(self.$route.params.id).then(res => {
-          var insId = res.data.id
-          var sDb = res.data.selectedDb
-          self.crumbData.cname = res.data.connection_name
-          self.crumbData.db = sDb
-          self.crumbData.tname = self.$route.params.tname
-          _.forEach(response.data, (connd, cinx) => {
-            if (connd.db === sDb) {
-              _.forEach(connd.db_data, (insd, iinx) => {
-                if (insd.inst_id === insId) {
-                  _.forEach(insd.inst_data, (tabled, tinx) => {
-                    if (tabled.t_name === self.$route.params.tname) {
-                      self.tableData = tabled.t_data
-                      console.log('self.tableData', self.tableData)
-                      for (var i = 0; i < tabled.t_data.length; i++) {
-                        var obj = _.cloneDeep(tabled.t_data[i])
-                        delete obj.id
-                        delete obj._id
-                        self.viewData.push({isView: false, isUpdate: false, data: obj})
-                      }
-                      self.setData = true
-                    }
-                  })
-                }
-              })
-            }
-          })
-          self.setData = true
-        })
+    async setCrumbData () {
+      var self = this
+      var _res = await settings.getThis(self.$route.params.id).then(res => {
+        return res.data
+      }).catch(error => {
+        console.log('Network Error', error)
+      })
+      // console.log(_res)
+      var sDb = _res.selectedDb
+      self.crumbData.cname = _res.connection_name
+      self.crumbData.db = sDb
+      self.crumbData.tname = self.$route.params.tname
+    },
+    setTableData () {
+      var self = this
+      ConnectionData.getRecords(self.$route.params.id, self.$route.params.tname, self.sl, self.el).then(response => {
+        self.tableData = response.data.data
+        // console.log('self.tableData', self.tableData)
+        self.tcount = response.data.total
+        for (var i = 0; i < self.tableData.length; i++) {
+          var obj = _.cloneDeep(self.tableData[i])
+          delete obj.id
+          delete obj._id
+          self.viewData.push({isView: false, isUpdate: false, data: obj})
+        }
+        self.setData = true
       }).catch(error => {
         this.$Notice.error({
           title: error,
           desc: 'Network Error',
           duration: 0
         })
+        self.setData = true
       })
+    },
+    init () {
+      let self = this
+      self.cpage = 1
+      self.setData = false
+      self.viewData = []
+      self.setCrumbData()
+      self.setTableData()
     },
     // onJsonChange (value) {
     //   this.jsoneditordata = value

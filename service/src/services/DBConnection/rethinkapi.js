@@ -80,7 +80,7 @@ module.exports = {
     }
   }),
 
-  getConnsAllData: async (function(ins_id) {
+  getConnsAllData: async (function(ins_id, limit) {
     for(let [i, db_i] of r.entries()) {
       if(db_i.id == ins_id) {
         var arr = []
@@ -93,7 +93,7 @@ module.exports = {
         for (let [inx, val] of result.entries()) {
           var obj = {}
           obj['t_name'] = val
-          var data = await (r[i].conn.table(val).run().then(res => {
+          var data = await (r[i].conn.table(val).slice(0,limit).run().then(res => {
             return res
           }).catch(err => {
             return []
@@ -102,6 +102,47 @@ module.exports = {
           arr.push(obj)
         }
         return arr
+      }
+    }
+  }),
+
+  getTableRecord: async(function(ins_id, tname, sl, el) {
+    console.log('getTableRecord >> rethink', ins_id, tname, sl, el)
+    for(let [i, db_i] of r.entries()) {
+      if(db_i.id == ins_id) {
+        var arr = []
+        // console.log('db[i].conn', db[i].conn)
+        var result = await (r[i].conn.tableList().then(res => {
+          return res
+        }).catch(err => {
+          return []
+        }))
+        // console.log('result........', result)
+        for (let [inx, val] of result.entries()) {
+          if(val == tname) {
+            // var obj = {}
+            // obj['t_name'] = val.name
+            // console.log('.....>> ')
+            var tcount = await (r[i].conn.table(tname).count().run().then(res => {
+              return res
+            }).catch(err => {
+              return 0
+            }))
+            console.log('rethink tcount', tcount)
+            var obj = {}
+            obj.total = tcount
+            var _data = await (r[i].conn.table(tname).slice(sl,el).run().then(res => {
+              // console.log(data)
+              return res
+            }).catch(err => {
+              return []
+            }))
+            obj.data = _data
+            // obj['t_data'] = data
+            return obj
+            // arr.push(obj)
+          }
+        }
       }
     }
   }),

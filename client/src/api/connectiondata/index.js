@@ -16,6 +16,9 @@ export default {
   getThis: (id) => {
     return api.request('get', '/' + model + '/' + id)
   },
+  getRecords: (id, tname, sl, el) => {
+    return api.request('get', '/' + model + '/' + id + '?schemaname=' + tname + '&&sl=' + sl + '&&el=' + el)
+  },
   post: (data) => {
     return api.request('post', '/' + model, data)
   },
