@@ -97,9 +97,9 @@
         </el-menu>
       </el-row> -->
 
-      <!-- =================== i-tree Side NAV ================= -->
+      <!-- =================== i-tree Side NAV =================  treeData for connectionapi-->
       <Row style="padding-left: 15px;max-height:1000px; overflow-y: auto">  
-        <Tree :data="treeData"></Tree>
+        <Tree :data="sidebarData"></Tree>
       </Row>
     </div>
   </div>
@@ -107,6 +107,7 @@
 <script>
 /*eslint-disable*/
   import ConnectionData from '../api/connectiondata'
+  import databases from '../api/databases'
   import settings from '../api/settings'
   import mongo from '../assets/images/mongo.png'
   import rethink from '../assets/images/rethink.png'
@@ -121,6 +122,7 @@
         groupby: true,
         sideBarList: true,
         allConnData: [],
+        sidebarData: [],
         mongo,
         rethink,
         elastic,
@@ -135,7 +137,10 @@
       }
     },
     created () {
-      this.init()
+      // for connectiondata api 'init'
+      // this.init()
+      // for databases api
+      this.startMethod()
       this.$store.dispatch('getSchema')
       this.$store.dispatch('getSettings')
     },
@@ -156,15 +161,15 @@
       'settings': {
         updated (data) {
           // console.log('connectiondata updated..', data)
-          this.init()
+          // this.init()
         },
         created (data) {
           // console.log('connectiondata created..', data)
-          this.init()
+          // this.init()
         },
         removed (data) {
           // console.log('connectiondata removed..', data)
-          this.init()
+          // this.init()
         }
       }
     },
@@ -189,6 +194,105 @@
           a = a.toString()
           return a
         }
+      },
+      async startMethod() {
+        var mdata = await databases.get().then(res => {
+          return res.data.data
+        }).catch(err => {
+          return []
+        })
+        // console.log('mdata', mdata)
+        var fdata = _.filter(mdata, {isenable: true})
+        var s = _.groupBy(fdata, function(d) {
+          return d.selectedDb
+        })
+        this.sidebarData = []
+        for(let key in s) {
+          var makeobj = {}
+          makeobj.title = key
+          makeobj.render = (h, { root, node, data }) => {
+            return h('span', {
+                style: {
+                    // display: 'inline-block',
+                    width: '100%',
+                    color: '#eee',
+                    fontSize: '18px'
+                }
+            }, [
+                h('span', [
+                    h('img', {
+                        attrs: {
+                            src: this[data.title]
+                        },
+                        style: {
+                            marginRight: '8px',
+                            marginLeft: '8px',
+                            width: '20px',
+                            height:'20px'
+                        }
+                    }),
+                    h('span', {
+                      class: {
+                        'ivu-tree-title' :true
+                      }
+                    }, data.title)
+                ])
+            ])
+          }
+          for (let [i, item] of s[key].entries()) {
+            item.title = item.connection_name
+            item.imgurl = item.selectedDb
+            item.render = (h, { root, node, data }) => {
+              var setIcon = ''
+              if (data.imgurl == 'mongo') {
+                setIcon = this.mongo
+              } else if (data.imgurl == 'rethink') {
+                setIcon = this.rethink
+              } else if (data.imgurl == 'elastic') {
+                setIcon = this.elastic
+              } else if (data.imgurl == 'nedb') {
+                setIcon = this.nedb
+              } else if (data.imgurl == 'mysql') {
+                setIcon = this.mysql
+              } else {
+                setIcon = data.imgurl
+              }
+                return h('span', {
+                    style: {
+                        // display: 'inline-block',
+                        width: '100%',
+                        color: '#eee',
+                        fontSize: '18px'
+                    }
+                }, [
+                    h('span', [
+                        h('img', {
+                            attrs: {
+                                src: setIcon
+                            },
+                            style: {
+                                marginRight: '8px',
+                                marginLeft: '8px',
+                                width: '20px',
+                                height:'20px'
+                            }
+                        }),
+                        h('span', {
+                          class: {
+                            'ivu-tree-title' :true
+                          }
+                        }, data.title)
+                    ])
+                ])
+            }
+            item.children = [{title: 'abc'}]
+          }
+          makeobj.children = s[key]
+          this.sidebarData.push(makeobj)
+        }
+
+        // this.sidebarData = s
+        // console.log(s)
       },
       // handleOpen(key, keyPath) {
       //   console.log(key, keyPath)

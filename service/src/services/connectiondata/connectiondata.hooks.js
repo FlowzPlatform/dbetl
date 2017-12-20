@@ -1,9 +1,14 @@
-
+let async = require('asyncawait/async');
+let await = require('asyncawait/await');
+// const app = require('config');
 
 module.exports = {
   before: {
-    all: [],
-    find: [],
+    all: [
+    ],
+    find: [
+      hook => beforeAll(hook)
+    ],
     get: [],
     create: [],
     update: [],
@@ -31,3 +36,8 @@ module.exports = {
     remove: []
   }
 };
+
+
+var beforeAll = async(function(hook) {
+  console.log(hook)
+})
