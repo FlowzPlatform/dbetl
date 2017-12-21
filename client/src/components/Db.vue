@@ -26,970 +26,778 @@
     </div>
 </template>
 <script>
-/* eslint-disable*/
-import $ from 'jquery'
 import api from '../api'
 import databasesModel from '../api/databases'
-import expandRow from './DbData.vue'
 import _ from 'lodash'
 export default {
-    components: { expandRow },
-    data () {
-        return {
-            tabPane: 'mongo',
-            row: '',
-            mongoCol: [
-                    {
-                        title: 'Select',
-                        width: 80,
-                        align: 'center',
-                        render: (h, params) => {
-                            return h('Checkbox', {
-                                props: {
-                                  value: this.mongoDt[params.index].isenable
-                                },
-                                on: {
-                                  'on-change': (value) => {
-                                    this.enableDbInstance(this.tabPane, params.index, value)
-                                    // console.log(this.mongoDt[params.index].isenable);
-                                  }
-                                }
-                            })
-                        }
-                    },
-                    // {
-                    //     title: 'Default',
-                    //     width: 80,
-                    //     align: 'center',
-                    //     render: (h, params) => {
-                    //         return h('Radio', {
-                    //             props: {
-                    //               value: this.mongoDt[params.index].isdefault
-                    //             },
-                    //             on: {
-                    //               'on-change': (value) => {
-                    //                 this.defaultDBInstance(this.tabPane, params.index, value)
-                    //                 // console.log(this.mongoDt[params.index].isenable);
-                    //               }
-                    //             }
-                    //         })
-                    //     }
-                    // },
-                    {
-                        title: 'Connection Name',
-                        key: 'connection_name'
-                    },
-                    {
-                        title: 'Host',
-                        key: 'host'
-                    },
-                    {
-                        title: 'Port',
-                        key: 'port'
-                    },
-                    {
-                        title: 'Database Name',
-                        key: 'dbname'
-                    },
-                    {
-                        title: 'Notes',
-                        key: 'notes'
-                    },
-                    {
-                      title: 'Import',
-                      key: 'import',
-                      render: (h, params) => {
-                        return h('div', [
-                          h('Button', {
-                            props: {
-                              type: 'text',
-                              size: 'large',
-                              icon: 'upload'
-                            },
-                            style: {
-                              // color: '#CC0000',
-                              color: '#5cadff',
-                              marginRight: '3px',
-                              padding: '0px',
-                              fontSize: '20px'
-                            },
-                            on: {
-                              click: () => {
-                                // alert(this.tabPane)
-                                this.import(params.row.id)
-                              }
-                            }
-                          }, ''),
-                          h('Button', {
-                            props: {
-                              type: 'text',
-                              size: 'large',
-                              icon: 'navicon-round'
-                            },
-                            style: {
-                              color: '#ff9900',
-                              marginRight: '3px',
-                              padding: '0px',
-                              fontSize: '20px'
-                            },
-                            on: {
-                              click: () => {
-                                // console.log(params.row, this.tabPane)
-                                this.$router.push('/instancejoblist/' + params.row.id )
-                                // alert(this.tabPane)
-                                // this.import(params.row.id)
-                              }
-                            }
-                          }, '')
-                        ])
-                      }
-                    },
-                    {
-                      title: 'Action',
-                      key: 'action',
-                      width: 150,
-                      align: 'center',
-                      render: (h, params) => {
-                        return h('div', [
-                          h('Button', {
-                            props: {
-                              type: 'success',
-                              size: 'small',
-                              icon: ''
-                            },
-                            style: {
-                              // color: '#CC0000',
-                              marginRight: '10px',
-                              // padding: '0px',
-                              fontSize: '12px'
-                            },
-                            on: {
-                              click: () => {
-                                this.testConnection(this.tabPane, params.index)
-                                // alert(this.tabPane)
-                                // this.instanceRemove(this.tabPane, params.index)
-                              }
-                            }
-                          }, 'Test'),
-                          h('Button', {
-                            props: {
-                              type: 'text',
-                              size: 'large',
-                              icon: 'trash-b'
-                            },
-                            style: {
-                              color: '#CC0000',
-                              marginRight: '3px',
-                              padding: '0px',
-                              fontSize: '20px'
-                            },
-                            on: {
-                              click: () => {
-                                // alert(this.tabPane)
-                                this.instanceRemove(this.tabPane, params.index)
-                              }
-                            }
-                          }, '')
-                        ])
-                      }
-                    }
-            ],
-            mongoDt: [],
-            rethinkCol: [
-                {
-                    title: 'Select',
-                    width: 80,
-                    align: 'center',
-                    render: (h, params) => {
-                        return h('Checkbox', {
-                            props: {
-                              value: this.rethinkDt[params.index].isenable
-                            },
-                            on: {
-                              'on-change': (value) => {
-                                this.enableDbInstance(this.tabPane, params.index, value)
-                              }
-                            }
-                        })
-                    }
-                },
-                // {
-                //     title: 'Default',
-                //     width: 80,
-                //     align: 'center',
-                //     render: (h, params) => {
-                //         return h('Radio', {
-                //             props: {
-                //               value: this.rethinkDt[params.index].isdefault
-                //             },
-                //             on: {
-                //               'on-change': (value) => {
-                //                 this.defaultDBInstance(this.tabPane, params.index, value)
-                //                 // console.log(this.mongoDt[params.index].isenable);
-                //               }
-                //             }
-                //         })
-                //     }
-                // },
-                {
-                    title: 'Connection Name',
-                    key: 'connection_name'
-                },
-                {
-                    title: 'Host',
-                    key: 'host'
-                },
-                {
-                    title: 'Port',
-                    key: 'port'
-                },
-                {
-                    title: 'Database Name',
-                    key: 'dbname'
-                },
-                {
-                    title: 'Notes',
-                    key: 'notes'
-                },
-                {
-                  title: 'Import',
-                  key: 'import',
-                  render: (h, params) => {
-                    return h('div', [
-                      h('Button', {
-                        props: {
-                          type: 'text',
-                          size: 'large',
-                          icon: 'upload'
-                        },
-                        style: {
-                          // color: '#CC0000',
-                          color: '#5cadff',
-                          marginRight: '3px',
-                          padding: '0px',
-                          fontSize: '20px'
-                        },
-                        on: {
-                          click: () => {
-                            // alert(params)
-                            this.import(params.row.id)
-                          }
-                        }
-                      }, ''),
-                      h('Button', {
-                        props: {
-                          type: 'text',
-                          size: 'large',
-                          icon: 'navicon-round'
-                        },
-                        style: {
-                          color: '#ff9900',
-                          marginRight: '3px',
-                          padding: '0px',
-                          fontSize: '20px'
-                        },
-                        on: {
-                          click: () => {
-                            this.$router.push('/instancejoblist/' + params.row.id )
-                            // alert(this.tabPane)
-                            // this.import(params.row.id)
-                          }
-                        }
-                      }, '')
-                    ])
-                  }
-                },
-                {
-                  title: 'Action',
-                  key: 'action',
-                  width: 150,
-                  align: 'center',
-                  render: (h, params) => {
-                    return h('div', [
-                        h('Button', {
-                          props: {
-                            type: 'success',
-                            size: 'small',
-                            icon: ''
-                          },
-                          style: {
-                            // color: '#CC0000',
-                            marginRight: '10px',
-                            // padding: '0px',
-                            fontSize: '12px'
-                          },
-                          on: {
-                            click: () => {
-                              this.testConnection(this.tabPane, params.index)
-                              // alert(this.tabPane)
-                              // this.instanceRemove(this.tabPane, params.index)
-                            }
-                          }
-                        }, 'Test'),
-                      h('Button', {
-                        props: {
-                          type: 'text',
-                          size: 'large',
-                          icon: 'trash-b'
-                        },
-                        style: {
-                          color: '#CC0000',
-                          marginRight: '3px',
-                          padding: '0px',
-                          fontSize: '20px'
-                        },
-                        on: {
-                          click: () => {
-                            // this.remove(params.index)
-                            this.instanceRemove(this.tabPane, params.index)
-                          }
-                        }
-                      }, '')
-                    ])
-                  }
-                }
-            ],
-            rethinkDt: [],
-            esCol: [
-                {
-                    title: 'Select',
-                    width: 80,
-                    align: 'center',
-                    render: (h, params) => {
-                        return h('Checkbox', {
-                            props: {
-                              value: this.elasticDt[params.index].isenable
-                            },
-                            on: {
-                              'on-change': (value) => {
-                                this.enableDbInstance(this.tabPane, params.index, value)
-                              }
-                            }
-                        })
-                    }
-                },
-                // {
-                //     title: 'Default',
-                //     width: 80,
-                //     align: 'center',
-                //     render: (h, params) => {
-                //         return h('Radio', {
-                //             props: {
-                //               value: this.elasticDt[params.index].isdefault
-                //             },
-                //             on: {
-                //               'on-change': (value) => {
-                //                 this.defaultDBInstance(this.tabPane, params.index, value)
-                //                 // console.log(this.mongoDt[params.index].isenable);
-                //               }
-                //             }
-                //         })
-                //     }
-                // },
-                {
-                    title: 'Connection Name',
-                    key: 'connection_name'
-                },
-                {
-                    title: 'Host',
-                    key: 'host'
-                },
-                {
-                    title: 'Port',
-                    key: 'port'
-                },
-                {
-                    title: 'Database Name',
-                    key: 'dbname'
-                },
-                {
-                    title: 'Notes',
-                    key: 'notes'
-                },
-                {
-                  title: 'Import',
-                  key: 'import',
-                  render: (h, params) => {
-                    return h('div', [
-                      h('Button', {
-                        props: {
-                          type: 'text',
-                          size: 'large',
-                          icon: 'upload'
-                        },
-                        style: {
-                          // color: '#CC0000',
-                          color: '#5cadff',
-                          marginRight: '3px',
-                          padding: '0px',
-                          fontSize: '20px'
-                        },
-                        on: {
-                          click: () => {
-                            // alert(this.tabPane)
-                            this.import(params.row.id)
-                          }
-                        }
-                      }, ''),
-                      h('Button', {
-                        props: {
-                          type: 'text',
-                          size: 'large',
-                          icon: 'navicon-round'
-                        },
-                        style: {
-                          color: '#ff9900',
-                          marginRight: '3px',
-                          padding: '0px',
-                          fontSize: '20px'
-                        },
-                        on: {
-                          click: () => {
-                            // alert(this.tabPane)
-                            this.$router.push('/instancejoblist/' + params.row.id )
-                            // this.import(params.row.id)
-                          }
-                        }
-                      }, '')
-                    ])
-                  }
-                },
-                {
-                  title: 'Action',
-                  key: 'action',
-                  width: 150,
-                  align: 'center',
-                  render: (h, params) => {
-                    return h('div', [
-                        h('Button', {
-                          props: {
-                            type: 'success',
-                            size: 'small',
-                            icon: ''
-                          },
-                          style: {
-                            // color: '#CC0000',
-                            marginRight: '10px',
-                            // padding: '0px',
-                            fontSize: '12px'
-                          },
-                          on: {
-                            click: () => {
-                              this.testConnection(this.tabPane, params.index)
-                              // alert(this.tabPane)
-                              // this.instanceRemove(this.tabPane, params.index)
-                            }
-                          }
-                        }, 'Test'),
-                      h('Button', {
-                        props: {
-                          type: 'text',
-                          size: 'large',
-                          icon: 'trash-b'
-                        },
-                        style: {
-                          color: '#CC0000',
-                          marginRight: '3px',
-                          padding: '0px',
-                          fontSize: '20px'
-                        },
-                        on: {
-                          click: () => {
-                            // this.remove(params.index)
-                            this.instanceRemove(this.tabPane, params.index)
-                          }
-                        }
-                      }, '')
-                    ])
-                  }
-                }
-            ],
-            elasticDt: [],
-            neCol: [
-                {
-                    title: 'Select',
-                    width: 80,
-                    align: 'center',
-                    render: (h, params) => {
-                        return h('Checkbox', {
-                            props: {
-                              value: this.nedbDt[params.index].isenable
-                            },
-                            on: {
-                              'on-change': (value) => {
-                                this.enableDbInstance(this.tabPane, params.index, value)
-                              }
-                            }
-                        })
-                    }
-                },
-                // {
-                //     title: 'Default',
-                //     width: 80,
-                //     align: 'center',
-                //     render: (h, params) => {
-                //         return h('Radio', {
-                //             props: {
-                //               value: this.nedbDt[params.index].isdefault
-                //             },
-                //             on: {
-                //               'on-change': (value) => {
-                //                 this.defaultDBInstance(this.tabPane, params.index, value)
-                //                 // console.log(this.mongoDt[params.index].isenable);
-                //               }
-                //             }
-                //         })
-                //     }
-                // },  
-                {
-                    title: 'Connection Name',
-                    key: 'connection_name'
-                },
-                {
-                    title: 'Host',
-                    key: 'host'
-                },
-                {
-                    title: 'Port',
-                    key: 'port'
-                },
-                {
-                    title: 'Database Name',
-                    key: 'dbname'
-                },
-                {
-                    title: 'Notes',
-                    key: 'notes'
-                },
-                // {
-                //   title: 'Import',
-                //   key: 'import',
-                //   render: (h, params) => {
-                //     return h('div', [
-                //       // h('Button', {
-                //       //   props: {
-                //       //     type: 'text',
-                //       //     size: 'large',
-                //       //     icon: 'upload'
-                //       //   },
-                //       //   style: {
-                //       //     // color: '#CC0000',
-                //       //     color: '#5cadff',
-                //       //     marginRight: '3px',
-                //       //     padding: '0px',
-                //       //     fontSize: '20px'
-                //       //   },
-                //       //   on: {
-                //       //     click: () => {
-                //       //       // alert(this.tabPane)
-                //       //       this.import(params.row.id)
-                //       //     }
-                //       //   }
-                //       // }, ''),
-                //       // h('Button', {
-                //       //   props: {
-                //       //     type: 'text',
-                //       //     size: 'large',
-                //       //     icon: 'navicon-round'
-                //       //   },
-                //       //   style: {
-                //       //     color: '#ff9900',
-                //       //     marginRight: '3px',
-                //       //     padding: '0px',
-                //       //     fontSize: '20px'
-                //       //   },
-                //       //   on: {
-                //       //     click: () => {
-                //       //       // alert(this.tabPane)
-                //       //       this.import(params.row.id)
-                //       //     }
-                //       //   }
-                //       // }, '')
-                //     ])
-                //   }
-                // },
-                {
-                  title: 'Action',
-                  key: 'action',
-                  width: 150,
-                  align: 'center',
-                  render: (h, params) => {
-                    return h('div', [
-                        h('Button', {
-                          props: {
-                            type: 'success',
-                            size: 'small',
-                            icon: ''
-                          },
-                          style: {
-                            // color: '#CC0000',
-                            marginRight: '10px',
-                            // padding: '0px',
-                            fontSize: '12px'
-                          },
-                          on: {
-                            click: () => {
-                              this.testConnection(this.tabPane, params.index)
-                              // alert(this.tabPane)
-                              // this.instanceRemove(this.tabPane, params.index)
-                            }
-                          }
-                        }, 'Test'),
-                      h('Button', {
-                        props: {
-                          type: 'text',
-                          size: 'large',
-                          icon: 'trash-b'
-                        },
-                        style: {
-                          color: '#CC0000',
-                          marginRight: '3px',
-                          padding: '0px',
-                          fontSize: '20px'
-                        },
-                        on: {
-                          click: () => {
-                            // this.remove(params.index)
-                            this.instanceRemove(this.tabPane, params.index)
-                          }
-                        }
-                      }, '')
-                    ])
-                  }
-                }
-            ],
-            nedbDt:[],
-            mysqlCol: [
-                {
-                    title: 'Select',
-                    width: 80,
-                    align: 'center',
-                    render: (h, params) => {
-                        return h('Checkbox', {
-                            props: {
-                              value: this.mysqlDt[params.index].isenable
-                            },
-                            on: {
-                              'on-change': (value) => {
-                                this.enableDbInstance(this.tabPane, params.index, value)
-                              }
-                            }
-                        })
-                    }
-                },
-                // {
-                //     title: 'Default',
-                //     width: 80,
-                //     align: 'center',
-                //     render: (h, params) => {
-                //         return h('Radio', {
-                //             props: {
-                //               value: this.mysqlDt[params.index].isdefault
-                //             },
-                //             on: {
-                //               'on-change': (value) => {
-                //                 this.defaultDBInstance(this.tabPane, params.index, value)
-                //                 // console.log(this.mongoDt[params.index].isenable);
-                //               }
-                //             }
-                //         })
-                //     }
-                // },  
-                {
-                    title: 'Connection Name',
-                    key: 'connection_name'
-                },
-                {
-                    title: 'Host',
-                    key: 'host'
-                },
-                {
-                    title: 'Port',
-                    key: 'port'
-                },
-                {
-                    title: 'Database Name',
-                    key: 'dbname'
-                },
-                {
-                    title: 'Notes',
-                    key: 'notes'
-                },
-                {
-                  title: 'Import',
-                  key: 'import',
-                  render: (h, params) => {
-                    return h('div', [
-                      h('Button', {
-                        props: {
-                          type: 'text',
-                          size: 'large',
-                          icon: 'upload'
-                        },
-                        style: {
-                          color: '#5cadff',
-                          marginRight: '3px',
-                          padding: '0px',
-                          fontSize: '20px'
-                        },
-                        on: {
-                          click: () => {
-                            // alert(this.tabPane)
-                            this.import(params.row.id)
-                          }
-                        }
-                      }, ''),
-                      h('Button', {
-                        props: {
-                          type: 'text',
-                          size: 'large',
-                          icon: 'navicon-round'
-                        },
-                        style: {
-                          color: '#ff9900',
-                          marginRight: '3px',
-                          padding: '0px',
-                          fontSize: '20px'
-                        },
-                        on: {
-                          click: () => {
-                            // alert(this.tabPane)
-                            this.$router.push('/instancejoblist/' + params.row.id )
-                            // this.import(params.row.id)
-                          }
-                        }
-                      }, '')
-                    ])
-                  }
-                },
-                {
-                  title: 'Action',
-                  key: 'action',
-                  width: 150,
-                  align: 'center',
-                  render: (h, params) => {
-                    return h('div', [
-                        h('Button', {
-                          props: {
-                            type: 'success',
-                            size: 'small',
-                            icon: ''
-                          },
-                          style: {
-                            // color: '#CC0000',
-                            marginRight: '10px',
-                            // padding: '0px',
-                            fontSize: '12px'
-                          },
-                          on: {
-                            click: () => {
-                              this.testConnection(this.tabPane, params.index)
-                              // alert(this.tabPane)
-                              // this.instanceRemove(this.tabPane, params.index)
-                            }
-                          }
-                        }, 'Test'),
-                      h('Button', {
-                        props: {
-                          type: 'text',
-                          size: 'large',
-                          icon: 'trash-b'
-                        },
-                        style: {
-                          color: '#CC0000',
-                          marginRight: '3px',
-                          padding: '0px',
-                          fontSize: '20px'
-                        },
-                        on: {
-                          click: () => {
-                            // this.remove(params.index)
-                            this.instanceRemove(this.tabPane, params.index)
-                          }
-                        }
-                      }, '')
-                    ])
-                  }
-                }
-            ],
-            mysqlDt:[]
-        }
-    },
-    methods: {
-        gotocsvJoblist () {
-          this.$router.push('/jobs/list')
-        },
-        addSettings (){
-            this.$router.push('db/'+this.tabPane+'/new')
-        },
-        import (id){
-          console.log(id)
-          this.$router.push('Dbsetting/import/'+id)
-        },
-        instanceRemove (db, index) {
-          // console.log(index,db)
-            this.$Modal.confirm({
-                title: 'Confirm',
-                content: '<p>Are you sure you want to delete Connection?</p>',
-                onOk: () => {
-                    var id = this[db+'Dt'][index].id
-                      databasesModel.delete(id)
-                        .then(response => {
-                          console.log('response', response.data)
-                            this[db+'Dt'].splice(index, 1)
-                            this.$Notice.success({title: 'Success', desc: 'Connection Deleted.....',})
-                        })
-                        .catch(error => {
-                            console.log(error)
-                            this.$Notice.error({title: 'Error', desc: 'Connection Not Deleted.....',})
-                        })
-                },
-                onCancel: () => {
-                }
-              })
-        },
-        enableDbInstance (db, index, value) {
-          this.$Modal.confirm({
-              title: 'Confirm',
-              content: '<p>Are you sure you want to enable Connection?</p>',
-              onOk: () => {
-                databasesModel.patch(this[db+'Dt'][index].id, {isenable: value}).catch(error =>{
-                  this.$Notice.error({duration:10, title:'Error!!', desc:error.message})
-                })
+  data () {
+    return {
+      tabPane: 'mongo',
+      row: '',
+      mongoCol: [
+        {
+          title: 'Select',
+          width: 80,
+          align: 'center',
+          render: (h, params) => {
+            return h('Checkbox', {
+              props: {
+                value: this.mongoDt[params.index].isenable
               },
-              onCancel: () => {
-                this.getSettings()
+              on: {
+                'on-change': (value) => {
+                  this.enableDbInstance(this.tabPane, params.index, value)
+                  // console.log(this.mongoDt[params.index].isenable);
+                }
               }
-          })
+            })
+          }
         },
-        defaultDBInstance (db, index, value) {
-          this.$Modal.confirm({
-              title: 'Confirm',
-              content: '<p>Are you sure you want to change default Connection?</p>',
-              onOk: () => {
-                  // alert(this[db+'Dt'][index].id)
-                  var id = this[db+'Dt'][index].id
-                  console.log(db, index, value, id)
-                  // api.request('patch', '/settings/'+id+'?db='+db, {isdefault: value})
-                  //     .then(response => {
-                  //       var result = response.data
-                  //       this[db+'Dt'][index].isdefault = value
-                        
-                  //       this.$Notice.success({duration:3, title:'Success!!', desc:'Connection set Default Successfully..'})
-                  //       this.$store.dispatch('getSchema')
-                  //       this.getSettings()
-                  //       console.log('result patch ',result)
-                  //     })
-                  //     .catch(error => {
-                  //       console.log(error)
-                  //       this.$Notice.error({duration:3, title:'Error!!', desc:'Connection not set Default...'})
-                  //     })
+        {
+          title: 'Connection Name',
+          key: 'connection_name'
+        },
+        {
+          title: 'Host',
+          key: 'host'
+        },
+        {
+          title: 'Port',
+          key: 'port'
+        },
+        {
+          title: 'Database Name',
+          key: 'dbname'
+        },
+        {
+          title: 'Notes',
+          key: 'notes'
+        },
+        {
+          title: 'Import',
+          key: 'import',
+          render: (h, params) => {
+            return h('div', [
+              h('Button', {
+                props: {
+                  type: 'text',
+                  size: 'large',
+                  icon: 'upload'
                 },
-              onCancel: () => {
-                this.getSettings()
-                // this[db+'Dt'][index].isenable = !value
-              }
-          })
+                style: {
+                  // color: '#CC0000',
+                  color: '#5cadff',
+                  marginRight: '3px',
+                  padding: '0px',
+                  fontSize: '20px'
+                },
+                on: {
+                  click: () => {
+                    // alert(this.tabPane)
+                    this.import(params.row.id)
+                  }
+                }
+              }, ''),
+              h('Button', {
+                props: {
+                  type: 'text',
+                  size: 'large',
+                  icon: 'navicon-round'
+                },
+                style: {
+                  color: '#ff9900',
+                  marginRight: '3px',
+                  padding: '0px',
+                  fontSize: '20px'
+                },
+                on: {
+                  click: () => {
+                    this.$router.push('/instancejoblist/' + params.row.id)
+                  }
+                }
+              }, '')
+            ])
+          }
         },
-        getSettings() {
-          let self = this
-          // api.request('get', '/databases')
-          databasesModel.get()
+        {
+          title: 'Action',
+          key: 'action',
+          width: 150,
+          align: 'center',
+          render: (h, params) => {
+            return h('div', [
+              h('Button', {
+                props: {
+                  type: 'success',
+                  size: 'small',
+                  icon: ''
+                },
+                style: {
+                  // color: '#CC0000',
+                  marginRight: '10px',
+                  // padding: '0px',
+                  fontSize: '12px'
+                },
+                on: {
+                  click: () => {
+                    this.testConnection(this.tabPane, params.index)
+                    // alert(this.tabPane)
+                    // this.instanceRemove(this.tabPane, params.index)
+                  }
+                }
+              }, 'Test'),
+              h('Button', {
+                props: {
+                  type: 'text',
+                  size: 'large',
+                  icon: 'trash-b'
+                },
+                style: {
+                  color: '#CC0000',
+                  marginRight: '3px',
+                  padding: '0px',
+                  fontSize: '20px'
+                },
+                on: {
+                  click: () => {
+                    // alert(this.tabPane)
+                    this.instanceRemove(this.tabPane, params.index)
+                  }
+                }
+              }, '')
+            ])
+          }
+        }
+      ],
+      mongoDt: [],
+      rethinkCol: [
+        {
+          title: 'Select',
+          width: 80,
+          align: 'center',
+          render: (h, params) => {
+            return h('Checkbox', {
+              props: {
+                value: this.rethinkDt[params.index].isenable
+              },
+              on: {
+                'on-change': (value) => {
+                  this.enableDbInstance(this.tabPane, params.index, value)
+                }
+              }
+            })
+          }
+        },
+        {
+          title: 'Connection Name',
+          key: 'connection_name'
+        },
+        {
+          title: 'Host',
+          key: 'host'
+        },
+        {
+          title: 'Port',
+          key: 'port'
+        },
+        {
+          title: 'Database Name',
+          key: 'dbname'
+        },
+        {
+          title: 'Notes',
+          key: 'notes'
+        },
+        {
+          title: 'Import',
+          key: 'import',
+          render: (h, params) => {
+            return h('div', [
+              h('Button', {
+                props: {
+                  type: 'text',
+                  size: 'large',
+                  icon: 'upload'
+                },
+                style: {
+                  // color: '#CC0000',
+                  color: '#5cadff',
+                  marginRight: '3px',
+                  padding: '0px',
+                  fontSize: '20px'
+                },
+                on: {
+                  click: () => {
+                    // alert(params)
+                    this.import(params.row.id)
+                  }
+                }
+              }, ''),
+              h('Button', {
+                props: {
+                  type: 'text',
+                  size: 'large',
+                  icon: 'navicon-round'
+                },
+                style: {
+                  color: '#ff9900',
+                  marginRight: '3px',
+                  padding: '0px',
+                  fontSize: '20px'
+                },
+                on: {
+                  click: () => {
+                    this.$router.push('/instancejoblist/' + params.row.id)
+                  }
+                }
+              }, '')
+            ])
+          }
+        },
+        {
+          title: 'Action',
+          key: 'action',
+          width: 150,
+          align: 'center',
+          render: (h, params) => {
+            return h('div', [
+              h('Button', {
+                props: {
+                  type: 'success',
+                  size: 'small',
+                  icon: ''
+                },
+                style: {
+                  // color: '#CC0000',
+                  marginRight: '10px',
+                  // padding: '0px',
+                  fontSize: '12px'
+                },
+                on: {
+                  click: () => {
+                    this.testConnection(this.tabPane, params.index)
+                    // alert(this.tabPane)
+                    // this.instanceRemove(this.tabPane, params.index)
+                  }
+                }
+              }, 'Test'),
+              h('Button', {
+                props: {
+                  type: 'text',
+                  size: 'large',
+                  icon: 'trash-b'
+                },
+                style: {
+                  color: '#CC0000',
+                  marginRight: '3px',
+                  padding: '0px',
+                  fontSize: '20px'
+                },
+                on: {
+                  click: () => {
+                    // this.remove(params.index)
+                    this.instanceRemove(this.tabPane, params.index)
+                  }
+                }
+              }, '')
+            ])
+          }
+        }
+      ],
+      rethinkDt: [],
+      esCol: [
+        {
+          title: 'Select',
+          width: 80,
+          align: 'center',
+          render: (h, params) => {
+            return h('Checkbox', {
+              props: {
+                value: this.elasticDt[params.index].isenable
+              },
+              on: {
+                'on-change': (value) => {
+                  this.enableDbInstance(this.tabPane, params.index, value)
+                }
+              }
+            })
+          }
+        },
+        {
+          title: 'Connection Name',
+          key: 'connection_name'
+        },
+        {
+          title: 'Host',
+          key: 'host'
+        },
+        {
+          title: 'Port',
+          key: 'port'
+        },
+        {
+          title: 'Database Name',
+          key: 'dbname'
+        },
+        {
+          title: 'Notes',
+          key: 'notes'
+        },
+        {
+          title: 'Import',
+          key: 'import',
+          render: (h, params) => {
+            return h('div', [
+              h('Button', {
+                props: {
+                  type: 'text',
+                  size: 'large',
+                  icon: 'upload'
+                },
+                style: {
+                  // color: '#CC0000',
+                  color: '#5cadff',
+                  marginRight: '3px',
+                  padding: '0px',
+                  fontSize: '20px'
+                },
+                on: {
+                  click: () => {
+                    // alert(this.tabPane)
+                    this.import(params.row.id)
+                  }
+                }
+              }, ''),
+              h('Button', {
+                props: {
+                  type: 'text',
+                  size: 'large',
+                  icon: 'navicon-round'
+                },
+                style: {
+                  color: '#ff9900',
+                  marginRight: '3px',
+                  padding: '0px',
+                  fontSize: '20px'
+                },
+                on: {
+                  click: () => {
+                    this.$router.push('/instancejoblist/' + params.row.id)
+                  }
+                }
+              }, '')
+            ])
+          }
+        },
+        {
+          title: 'Action',
+          key: 'action',
+          width: 150,
+          align: 'center',
+          render: (h, params) => {
+            return h('div', [
+              h('Button', {
+                props: {
+                  type: 'success',
+                  size: 'small',
+                  icon: ''
+                },
+                style: {
+                  // color: '#CC0000',
+                  marginRight: '10px',
+                  // padding: '0px',
+                  fontSize: '12px'
+                },
+                on: {
+                  click: () => {
+                    this.testConnection(this.tabPane, params.index)
+                    // alert(this.tabPane)
+                    // this.instanceRemove(this.tabPane, params.index)
+                  }
+                }
+              }, 'Test'),
+              h('Button', {
+                props: {
+                  type: 'text',
+                  size: 'large',
+                  icon: 'trash-b'
+                },
+                style: {
+                  color: '#CC0000',
+                  marginRight: '3px',
+                  padding: '0px',
+                  fontSize: '20px'
+                },
+                on: {
+                  click: () => {
+                    // this.remove(params.index)
+                    this.instanceRemove(this.tabPane, params.index)
+                  }
+                }
+              }, '')
+            ])
+          }
+        }
+      ],
+      elasticDt: [],
+      neCol: [
+        {
+          title: 'Select',
+          width: 80,
+          align: 'center',
+          render: (h, params) => {
+            return h('Checkbox', {
+              props: {
+                value: this.nedbDt[params.index].isenable
+              },
+              on: {
+                'on-change': (value) => {
+                  this.enableDbInstance(this.tabPane, params.index, value)
+                }
+              }
+            })
+          }
+        },
+        {
+          title: 'Connection Name',
+          key: 'connection_name'
+        },
+        {
+          title: 'Host',
+          key: 'host'
+        },
+        {
+          title: 'Port',
+          key: 'port'
+        },
+        {
+          title: 'Database Name',
+          key: 'dbname'
+        },
+        {
+          title: 'Notes',
+          key: 'notes'
+        },
+        {
+          title: 'Action',
+          key: 'action',
+          width: 150,
+          align: 'center',
+          render: (h, params) => {
+            return h('div', [
+              h('Button', {
+                props: {
+                  type: 'success',
+                  size: 'small',
+                  icon: ''
+                },
+                style: {
+                  // color: '#CC0000',
+                  marginRight: '10px',
+                  // padding: '0px',
+                  fontSize: '12px'
+                },
+                on: {
+                  click: () => {
+                    this.testConnection(this.tabPane, params.index)
+                    // alert(this.tabPane)
+                    // this.instanceRemove(this.tabPane, params.index)
+                  }
+                }
+              }, 'Test'),
+              h('Button', {
+                props: {
+                  type: 'text',
+                  size: 'large',
+                  icon: 'trash-b'
+                },
+                style: {
+                  color: '#CC0000',
+                  marginRight: '3px',
+                  padding: '0px',
+                  fontSize: '20px'
+                },
+                on: {
+                  click: () => {
+                    // this.remove(params.index)
+                    this.instanceRemove(this.tabPane, params.index)
+                  }
+                }
+              }, '')
+            ])
+          }
+        }
+      ],
+      nedbDt: [],
+      mysqlCol: [
+        {
+          title: 'Select',
+          width: 80,
+          align: 'center',
+          render: (h, params) => {
+            return h('Checkbox', {
+              props: {
+                value: this.mysqlDt[params.index].isenable
+              },
+              on: {
+                'on-change': (value) => {
+                  this.enableDbInstance(this.tabPane, params.index, value)
+                }
+              }
+            })
+          }
+        },
+        {
+          title: 'Connection Name',
+          key: 'connection_name'
+        },
+        {
+          title: 'Host',
+          key: 'host'
+        },
+        {
+          title: 'Port',
+          key: 'port'
+        },
+        {
+          title: 'Database Name',
+          key: 'dbname'
+        },
+        {
+          title: 'Notes',
+          key: 'notes'
+        },
+        {
+          title: 'Import',
+          key: 'import',
+          render: (h, params) => {
+            return h('div', [
+              h('Button', {
+                props: {
+                  type: 'text',
+                  size: 'large',
+                  icon: 'upload'
+                },
+                style: {
+                  color: '#5cadff',
+                  marginRight: '3px',
+                  padding: '0px',
+                  fontSize: '20px'
+                },
+                on: {
+                  click: () => {
+                    // alert(this.tabPane)
+                    this.import(params.row.id)
+                  }
+                }
+              }, ''),
+              h('Button', {
+                props: {
+                  type: 'text',
+                  size: 'large',
+                  icon: 'navicon-round'
+                },
+                style: {
+                  color: '#ff9900',
+                  marginRight: '3px',
+                  padding: '0px',
+                  fontSize: '20px'
+                },
+                on: {
+                  click: () => {
+                    this.$router.push('/instancejoblist/' + params.row.id)
+                  }
+                }
+              }, '')
+            ])
+          }
+        },
+        {
+          title: 'Action',
+          key: 'action',
+          width: 150,
+          align: 'center',
+          render: (h, params) => {
+            return h('div', [
+              h('Button', {
+                props: {
+                  type: 'success',
+                  size: 'small',
+                  icon: ''
+                },
+                style: {
+                  // color: '#CC0000',
+                  marginRight: '10px',
+                  // padding: '0px',
+                  fontSize: '12px'
+                },
+                on: {
+                  click: () => {
+                    this.testConnection(this.tabPane, params.index)
+                    // alert(this.tabPane)
+                    // this.instanceRemove(this.tabPane, params.index)
+                  }
+                }
+              }, 'Test'),
+              h('Button', {
+                props: {
+                  type: 'text',
+                  size: 'large',
+                  icon: 'trash-b'
+                },
+                style: {
+                  color: '#CC0000',
+                  marginRight: '3px',
+                  padding: '0px',
+                  fontSize: '20px'
+                },
+                on: {
+                  click: () => {
+                    // this.remove(params.index)
+                    this.instanceRemove(this.tabPane, params.index)
+                  }
+                }
+              }, '')
+            ])
+          }
+        }
+      ],
+      mysqlDt: []
+    }
+  },
+  methods: {
+    gotocsvJoblist () {
+      this.$router.push('/jobs/list')
+    },
+    addSettings () {
+      this.$router.push('db/' + this.tabPane + '/new')
+    },
+    import (id) {
+      this.$router.push('Dbsetting/import/' + id)
+    },
+    instanceRemove (db, index) {
+      this.$Modal.confirm({
+        title: 'Confirm',
+        content: '<p>Are you sure you want to delete Connection?</p>',
+        onOk: () => {
+          var id = this[db + 'Dt'][index].id
+          databasesModel.delete(id)
           .then(response => {
-              // _.forEach(response.data, function(instances, db){
-              //     self[db+'Dt'] = response.data[db].dbinstance
-              // })
-            this.mongoDt = _.filter(response.data.data, {selectedDb: 'mongo'}) 
-            this.rethinkDt = _.filter(response.data.data, {selectedDb: 'rethink'}) 
-            this.elasticDt = _.filter(response.data.data, {selectedDb: 'elastic'}) 
-            this.nedbDt = _.filter(response.data.data, {selectedDb: 'nedb'}) 
-            this.mysqlDt = _.filter(response.data.data, {selectedDb: 'mysql'})
+            this[db + 'Dt'].splice(index, 1)
+            this.$Notice.success({title: 'Success', desc: 'Connection Deleted.....'})
           })
           .catch(error => {
-              this.$Notice.error({title:'Network Error!!'})
-              console.log(error)
+            this.$Notice.error({title: 'Error', desc: error.message})
           })
         },
-        testConnection (db, index) {
-          var tdata = this[db+'Dt'][index]
-          // console.log('testConnection',data)
-          api.request('post', '/settings?checkconn=' + db, tdata)
-            .then(res => {
-              // console.log('testConnection response', res.data)
-              if (res.data.hasOwnProperty('result')) {
-                var title = ''
-                var content = '<p>Content of dialog</p><p>Content of dialog</p>'
-                var mtype = ''
-                if (res.data.result) {
-                  title = 'Sucess!!'
-                  mtype = 'success'
-                  content = '<b>Successfully Connected to Database</b>'
-                } else {
-                  title = 'Error!!'
-                  mtype = 'error'
-                  if (db === 'mongo') {
-                    content = res.data.error.message
-                  } else if (db === 'rethink') {
-                    content = res.data.error.msg
-                  } else if (db === 'elastic') {
-                    content = res.data.error.message
-                  } else {
-                    content = JSON.stringify(res.data.error)
-                  }
-                }
-                this.$Modal[mtype]({
-                    title: title,
-                    content: content,
-                    width: 500
-                });
+        onCancel: () => {
+        }
+      })
+    },
+    enableDbInstance (db, index, value) {
+      this.$Modal.confirm({
+        title: 'Confirm',
+        content: '<p>Are you sure you want to enable Connection?</p>',
+        onOk: () => {
+          databasesModel.patch(this[db + 'Dt'][index].id, {isenable: value}).catch(error => {
+            this.$Notice.error({
+              duration: 10,
+              title: 'Error!!',
+              desc: error.message
+            })
+          })
+        },
+        onCancel: () => {
+          this.getSettings()
+        }
+      })
+    },
+    getSettings () {
+      databasesModel.get()
+      .then(response => {
+        this.mongoDt = _.filter(response.data.data, {selectedDb: 'mongo'})
+        this.rethinkDt = _.filter(response.data.data, {selectedDb: 'rethink'})
+        this.elasticDt = _.filter(response.data.data, {selectedDb: 'elastic'})
+        this.nedbDt = _.filter(response.data.data, {selectedDb: 'nedb'})
+        this.mysqlDt = _.filter(response.data.data, {selectedDb: 'mysql'})
+      })
+      .catch(error => {
+        this.$Notice.error({
+          duration: 10,
+          title: 'Error!!',
+          desc: error.message
+        })
+      })
+    },
+    testConnection (db, index) {
+      var tdata = this[db + 'Dt'][index]
+      // console.log('testConnection',data)
+      api.request('post', '/settings?checkconn=' + db, tdata)
+        .then(res => {
+          // console.log('testConnection response', res.data)
+          if (res.data.hasOwnProperty('result')) {
+            var title = ''
+            var content = '<p>Content of dialog</p><p>Content of dialog</p>'
+            var mtype = ''
+            if (res.data.result) {
+              title = 'Sucess!!'
+              mtype = 'success'
+              content = '<b>Successfully Connected to Database</b>'
+            } else {
+              title = 'Error!!'
+              mtype = 'error'
+              if (db === 'mongo') {
+                content = res.data.error.message
+              } else if (db === 'rethink') {
+                content = res.data.error.msg
+              } else if (db === 'elastic') {
+                content = res.data.error.message
               } else {
-                this.$Notice.error({duration: 3, title:'Something Error!!', desc:''})
+                content = JSON.stringify(res.data.error)
               }
+            }
+            this.$Modal[mtype]({
+              title: title,
+              content: content,
+              width: 500
             })
-            .catch(err => {
-              console.log('err', err)
-              this.$Notice.error({duration: 3, title:'Error!!', desc:'Connection Time Out.'})
+          } else {
+            this.$Notice.error({
+              duration: 10,
+              title: 'Error!!',
+              desc: ''
             })
-        }
-    },
-    mounted () {
-        let self = this
-        this.getSettings()
-        // api.request('get', '/databases')
-        // .then(response => {
-        //     // _.forEach(response.data.data, function(item, inx){
-        //     //   console.log('>>> ', v, k)
-        //     //     // self[db+'Dt'] = response.data[db].dbinstance
-        //     // })
-        //     // console.log(response.data.data)
-        //     this.mongoDt = _.filter(response.data.data, {selectedDb: 'mongo'}) 
-        //     this.rethinkDt = _.filter(response.data.data, {selectedDb: 'rethink'}) 
-        //     this.elasticDt = _.filter(response.data.data, {selectedDb: 'elastic'}) 
-        //     this.nedbDt = _.filter(response.data.data, {selectedDb: 'nedb'}) 
-        //     this.mysqlDt = _.filter(response.data.data, {selectedDb: 'mysql'}) 
-        // })
-        // .catch(error => {
-        //     this.$Notice.error({title:'Network Error!!'})
-        //     console.log(error)
-        // })
-    },
-    feathers: {
-      'databases': {
-        updated (data) {
-          // console.log('connectiondata updated..', data)
-          var findKey = _.findKey(this[data.selectedDb + 'Dt'], {id: data.id})
-          this[data.selectedDb + 'Dt'][findKey] = data
-        },
-        created (data) {
-          // console.log('connectiondata created..', data)
-          // console.log(this[data.selectedDb + 'Dt'])
-          this[data.selectedDb + 'Dt'].push(data)
-        },
-        removed (data) {
-          // console.log('connectiondata removed..', data)
-        }
+          }
+        })
+        .catch(err => {
+          this.$Notice.error({
+            duration: 10,
+            title: 'Error!!',
+            desc: err.message
+          })
+        })
+    }
+  },
+  mounted () {
+    this.getSettings()
+  },
+  feathers: {
+    'databases': {
+      updated (data) {
+        // console.log('connectiondata updated..', data)
+        var findKey = _.findKey(this[data.selectedDb + 'Dt'], {id: data.id})
+        this[data.selectedDb + 'Dt'][findKey] = data
+      },
+      created (data) {
+        // console.log('connectiondata created..', data)
+        // console.log(this[data.selectedDb + 'Dt'])
+        this[data.selectedDb + 'Dt'].push(data)
+      },
+      removed (data) {
+        // console.log('connectiondata removed..', data)
       }
     }
+  }
 }
 </script>
 <style>
