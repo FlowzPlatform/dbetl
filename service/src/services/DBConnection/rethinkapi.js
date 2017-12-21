@@ -6,64 +6,95 @@ var endecrypt = require('../encryption/security')
 var r = []
 var dr = []
 
-db.rethink.dbinstance.forEach(function (instance, inx) {
-    if (instance.isenable) {
+// db.rethink.dbinstance.forEach(function (instance, inx) {
+//     if (instance.isenable) {
 
-      var connection = require('rethinkdbdash')({
-        username: instance.username,
-        password: endecrypt.decrypt(instance.password),
-        port: instance.port,
-        host: instance.host,
-        db: instance.dbname
-      });
+//       var connection = require('rethinkdbdash')({
+//         username: instance.username,
+//         password: endecrypt.decrypt(instance.password),
+//         port: instance.port,
+//         host: instance.host,
+//         db: instance.dbname
+//       });
 
-      var yes = connection.dbList().contains(instance.dbname) // create db if not exists
-        .do(function (dbExists) {
-          return connection.branch(dbExists, { created: 0 }, connection.dbCreate(instance.dbname));
-        }).run().then(function () {
-          return connection.db(instance.dbname).tableList().contains('schema') // create table if not exists
-            .do(function (tableExists) {
-              return connection.branch(tableExists, { created: 0 }, connection.db(instance.dbname).tableCreate('schema'));
-            }).run().then(function () {
-              return connection.db(instance.dbname).tableList().contains('flowsinstance') // create table if not exists
-                .do(function (tableExists) {
-                  return connection.branch(tableExists, { created: 0 }, connection.db(instance.dbname).tableCreate('flowsinstance'));
-                }).run();
-            });
-        });
-      r.push({ id: instance.id, conn: connection ,dbname: instance.dbname})
-    }
-    if (instance.isdefault) {
+//       var yes = connection.dbList().contains(instance.dbname) // create db if not exists
+//         .do(function (dbExists) {
+//           return connection.branch(dbExists, { created: 0 }, connection.dbCreate(instance.dbname));
+//         }).run().then(function () {
+//           return connection.db(instance.dbname).tableList().contains('schema') // create table if not exists
+//             .do(function (tableExists) {
+//               return connection.branch(tableExists, { created: 0 }, connection.db(instance.dbname).tableCreate('schema'));
+//             }).run().then(function () {
+//               return connection.db(instance.dbname).tableList().contains('flowsinstance') // create table if not exists
+//                 .do(function (tableExists) {
+//                   return connection.branch(tableExists, { created: 0 }, connection.db(instance.dbname).tableCreate('flowsinstance'));
+//                 }).run();
+//             });
+//         });
+//       r.push({ id: instance.id, conn: connection ,dbname: instance.dbname})
+//     }
+//     if (instance.isdefault) {
 
-      var connection = require('rethinkdbdash')({
-        username: instance.username,
-        password: endecrypt.decrypt(instance.password),
-        port: instance.port,
-        host: instance.host,
-        db: instance.dbname
-      });
+//       var connection = require('rethinkdbdash')({
+//         username: instance.username,
+//         password: endecrypt.decrypt(instance.password),
+//         port: instance.port,
+//         host: instance.host,
+//         db: instance.dbname
+//       });
 
-      var yes = connection.dbList().contains(instance.dbname) // create db if not exists
-        .do(function (dbExists) {
-          return connection.branch(dbExists, { created: 0 }, connection.dbCreate(instance.dbname));
-        }).run().then(function () {
-          return connection.db(instance.dbname).tableList().contains('schema') // create table if not exists
-            .do(function (tableExists) {
-              return connection.branch(tableExists, { created: 0 }, connection.db(instance.dbname).tableCreate('schema'));
-            }).run().then(function () {
-              return connection.db(instance.dbname).tableList().contains('flowsinstance') // create table if not exists
-                .do(function (tableExists) {
-                  return connection.branch(tableExists, { created: 0 }, connection.db(instance.dbname).tableCreate('flowsinstance'));
-                }).run();
-            });
-        });
-      dr.push({ id: instance.id, conn: connection })
-    }
-  })
+//       var yes = connection.dbList().contains(instance.dbname) // create db if not exists
+//         .do(function (dbExists) {
+//           return connection.branch(dbExists, { created: 0 }, connection.dbCreate(instance.dbname));
+//         }).run().then(function () {
+//           return connection.db(instance.dbname).tableList().contains('schema') // create table if not exists
+//             .do(function (tableExists) {
+//               return connection.branch(tableExists, { created: 0 }, connection.db(instance.dbname).tableCreate('schema'));
+//             }).run().then(function () {
+//               return connection.db(instance.dbname).tableList().contains('flowsinstance') // create table if not exists
+//                 .do(function (tableExists) {
+//                   return connection.branch(tableExists, { created: 0 }, connection.db(instance.dbname).tableCreate('flowsinstance'));
+//                 }).run();
+//             });
+//         });
+//       dr.push({ id: instance.id, conn: connection })
+//     }
+//   })
+
+var getConnection = async (function(data) {
+  var connection = require('rethinkdbdash')({
+    username: data.username,
+    password: data.password,
+    port: data.port,
+    host: data.host,
+    db: data.dbname
+  });
+  return connection
+})
 
 module.exports = {
   choose: async(function () {
     console.log('===================RETHINKDB=================');
+  }),
+
+  getTables: async(function(data) {
+    var conn = await( getConnection(data).then(res => {
+      return res
+    }).catch(err => {
+      console.log('Error...........', err)
+      return {iserror: true, msg: err}
+    }))
+    if (conn.hasOwnProperty('iserror') && conn.iserror) {
+        return res
+      } else {
+        var result = await(conn.db(data.dbname).tableList())
+        // console.log(result)
+        return _.map(result, (d)=> {
+          // console.log(d)
+          return { name: d}
+        })
+      }
+    // return conn    
   }),
 
   generateInstanceTable: async(function (data){
