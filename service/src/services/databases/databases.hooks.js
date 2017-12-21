@@ -61,7 +61,7 @@ var beforeGet = (hook) => {
     if (response.data.length === 1) {
       hook.result = response[0];
     } else {
-      throw new errors.BadRequest();
+      throw new errors.NotAuthenticated();
     }
     return hook;
   });
@@ -73,15 +73,25 @@ var beforeCreate = (hook) => {
   hook.data.createdAt = new Date();
 };
 
-var beforeUpdate = () => {
-  throw new errors.NotImplemented();
+var beforeUpdate = async(hook) => {
+  if (!(await checkValidUser(hook))) {
+    throw new errors.NotAuthenticated();
+  }
 };
 
-var beforePatch = () => {
-  throw new errors.NotImplemented();
+var beforePatch = async(hook) => {
+  if (!(await checkValidUser(hook))) {
+    throw new errors.NotAuthenticated();
+  }
 };
 
-var beforeRemove = (hook) => {
+var beforeRemove = async(hook) => {
+  if (!(await checkValidUser(hook))) {
+    throw new errors.NotAuthenticated();
+  }
+};
+
+var checkValidUser = async(hook) => {
   hook.params.query.userId = hook.params.user._id;
   if (hook.id) {
     const query = Object.assign({
@@ -89,9 +99,13 @@ var beforeRemove = (hook) => {
     }, hook.params.query);
 
     return hook.app.service('databases').find({ query }).then(response => {
-      if (response.data.length !== 1) {
-        throw new errors.BadRequest();
+      if (response.data.length === 1) {
+        return true
+      } else {
+        return false
       }
+    }).catch(e => {
+      throw new errors.Forbidden()
     });
   }
 };
