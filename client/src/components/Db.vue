@@ -2,19 +2,19 @@
     <div>
       <Tabs  v-model="tabPane">
         <TabPane label="Mongo DB" name="mongo">
-            <Table size="small" :columns="mongoCol" :data="mongoDt"></Table>
+            <Table border :loading="loading" size="small" :columns="mongoCol" :data="mongoDt"></Table>
         </TabPane>
         <TabPane label="Rethink DB" name="rethink">
-            <Table size="small" :columns="rethinkCol" :data="rethinkDt"></Table>
+            <Table border :loading="loading" size="small" :columns="rethinkCol" :data="rethinkDt"></Table>
         </TabPane>
         <TabPane label="Elastic Search" name="elastic">
-            <Table size="small" :columns="esCol" :data="elasticDt"></Table>
+            <Table border :loading="loading" size="small" :columns="esCol" :data="elasticDt"></Table>
         </TabPane>
         <TabPane label="Ne DB" name="nedb">
-            <Table size="small" :columns="neCol" :data="nedbDt"></Table>
+            <Table border :loading="loading" size="small" :columns="neCol" :data="nedbDt"></Table>
         </TabPane>
         <TabPane label="MySQL DB" name="mysql">
-            <Table size="small" :columns="mysqlCol" :data="mysqlDt"></Table>
+            <Table border :loading="loading" size="small" :columns="mysqlCol" :data="mysqlDt"></Table>
         </TabPane>
         <Button type="primary" icon="navicon-round" @click="gotocsvJoblist()" size="small" slot="extra">Import Tracker List</Button>
         <Button type="primary" style="margin:5px" icon="plus" @click="addSettings" size="small" slot="extra">Add</Button>
@@ -28,6 +28,7 @@ import _ from 'lodash'
 export default {
   data () {
     return {
+      loading: true,
       tabPane: 'mongo',
       row: '',
       mongoCol: [
@@ -799,11 +800,12 @@ export default {
     getSettings () {
       databasesModel.get()
       .then(response => {
-        this.mongoDt = _.filter(response.data.data, {selectedDb: 'mongo'})
-        this.rethinkDt = _.filter(response.data.data, {selectedDb: 'rethink'})
-        this.elasticDt = _.filter(response.data.data, {selectedDb: 'elastic'})
-        this.nedbDt = _.filter(response.data.data, {selectedDb: 'nedb'})
-        this.mysqlDt = _.filter(response.data.data, {selectedDb: 'mysql'})
+        this.mongoDt = _.filter(response, {selectedDb: 'mongo'})
+        this.rethinkDt = _.filter(response, {selectedDb: 'rethink'})
+        this.elasticDt = _.filter(response, {selectedDb: 'elastic'})
+        this.nedbDt = _.filter(response, {selectedDb: 'nedb'})
+        this.mysqlDt = _.filter(response, {selectedDb: 'mysql'})
+        this.loading = false
       })
       .catch(error => {
         this.$Notice.error({
@@ -811,6 +813,7 @@ export default {
           title: 'Error!!',
           desc: error.message
         })
+        this.loading = false
       })
     },
     testConnection (db, index) {
