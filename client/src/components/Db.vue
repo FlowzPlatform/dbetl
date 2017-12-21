@@ -29,7 +29,7 @@
 /* eslint-disable*/
 import $ from 'jquery'
 import api from '../api'
-import databases from '../api/databases'
+import databasesModel from '../api/databases'
 import expandRow from './DbData.vue'
 import _ from 'lodash'
 export default {
@@ -833,8 +833,7 @@ export default {
                 content: '<p>Are you sure you want to delete Connection?</p>',
                 onOk: () => {
                     var id = this[db+'Dt'][index].id
-                      // api.request('delete', '/databases/'+id)
-                      databases.delete(id)
+                      databasesModel.delete(id)
                         .then(response => {
                           console.log('response', response.data)
                             this[db+'Dt'].splice(index, 1)
@@ -850,34 +849,18 @@ export default {
               })
         },
         enableDbInstance (db, index, value) {
-          console.log('enableDbInstance....')
-            this.$Modal.confirm({
-                title: 'Confirm',
-                content: '<p>Are you sure you want to enable Connection?</p>',
-                onOk: () => {
-                    // alert(this[db+'Dt'][index].id)
-                    // var id = this[db+'Dt'][index].id
-                    // api.request('put', '/settings/'+id+'?db='+db, {isenable: value})
-                    //     .then(response => {
-                    //       var result = response.data
-                    //       this[db+'Dt'][index].isenable = value
-
-                    //       this.$Notice.success({duration:3, title:'Success!!', desc:'Connection Enable Successfully..'})
-                    //       this.$store.dispatch('getSchema')
-                    //       this.getSettings()
-                    //       console.log('result put ',result)
-                    //     })
-                    //     .catch(error => {
-                    //       console.log(error)
-                    //       this.$Notice.error({duration:3, title:'Error!!', desc:'Connection not Enable...'})
-                    //     })
-                  },
-                onCancel: () => {
-                  // console.log('Here............', !value)
-                  this.getSettings()
-                  // this.$router.push('/')
-                }
-            })
+          this.$Modal.confirm({
+              title: 'Confirm',
+              content: '<p>Are you sure you want to enable Connection?</p>',
+              onOk: () => {
+                databasesModel.patch(this[db+'Dt'][index].id, {isenable: value}).catch(error =>{
+                  this.$Notice.error({duration:10, title:'Error!!', desc:error.message})
+                })
+              },
+              onCancel: () => {
+                this.getSettings()
+              }
+          })
         },
         defaultDBInstance (db, index, value) {
           this.$Modal.confirm({
@@ -911,7 +894,7 @@ export default {
         getSettings() {
           let self = this
           // api.request('get', '/databases')
-          databases.get()
+          databasesModel.get()
           .then(response => {
               // _.forEach(response.data, function(instances, db){
               //     self[db+'Dt'] = response.data[db].dbinstance
