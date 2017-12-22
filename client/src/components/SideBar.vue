@@ -99,7 +99,7 @@
 
       <!-- =================== i-tree Side NAV =================  treeData for connectionapi-->
       <Row style="padding-left: 15px;max-height:1000px; overflow-y: auto">  
-        <Tree :data="sidebarData"></Tree>
+        <Tree :data="sidebarData" :load-data="loadData" @on-select-change="onSelect" @on-toggle-expand="toggleExpand"></Tree>
       </Row>
     </div>
   </div>
@@ -109,6 +109,7 @@
   import ConnectionData from '../api/connectiondata'
   import databases from '../api/databases'
   import settings from '../api/settings'
+  import schema from '../api/schema'
   import mongo from '../assets/images/mongo.png'
   import rethink from '../assets/images/rethink.png'
   import elastic from '../assets/images/elasticsearch.png'
@@ -174,6 +175,39 @@
       }
     },
     methods: {
+      onSelect (node) {
+        // console.log(tname)
+        // this.setData(data.title, '/recordList/'+iObj.inst_id+'/'+tObj.t_name, mObj.db, iObj.inst_id, tObj.t_name, 'list')
+      },
+      loadData (item, callback) {
+        console.log('item', item)
+      },
+      async toggleExpand (node) {
+        if (node.hasOwnProperty('id') && node.expand) {
+          // console.log('toggleExpand', node)
+          var data = await schema.get(node.id).then(res => {
+            console.log('response', res)
+            return res.data
+          }).catch(err => {
+            console.log('Error', err)
+            return []
+          })
+          if (data.hasOwnProperty('iserror')) {
+            this.$Notice.error({duration: 3, title: 'Connection Error', desc: JSON.stringify(data.msg)})
+          } else {
+            var _mdata = _.map(data, (d) => {
+              return {title: d.name, id: node.id, selectedDb: node.selectedDb}
+            })
+            console.log('this.sidebarData', this.sidebarData)
+            var dbkey = _.findKey(this.sidebarData, {title: node.selectedDb})
+            var iKey = _.findKey(this.sidebarData[dbkey].children, {id: node.id})
+            // console.log(iKey)
+
+            this.sidebarData[dbkey].children[iKey].children = _mdata
+          }
+          console.log('schema api data', data)
+        }
+      },
       AddRecord (db, inst_id, tname) {
         // console.log(db, inst_id, tname)
         this.$router.push('/' + inst_id + '/' + tname + '/new')
@@ -285,215 +319,207 @@
                     ])
                 ])
             }
-            item.children = [{title: 'abc'}]
+            item.children = [{title: ''}]
           }
           makeobj.children = s[key]
           this.sidebarData.push(makeobj)
         }
-
-        // this.sidebarData = s
-        // console.log(s)
+        console.log('this.sidebarData', this.sidebarData)
       },
-      // handleOpen(key, keyPath) {
-      //   console.log(key, keyPath)
+      // async init () {
+      //   let self = this
+      //   var mdata = await ConnectionData.get().then(response => {
+      //     return response
+      //   }).catch(error => {
+      //     this.$Notice.error({
+      //       title: error,
+      //       desc: 'connection to the server timed out',
+      //       duration: 3
+      //     })
+      //     return []
+      //   })
+      //   for (let [cinx, connd] of mdata.data.entries()) {
+      //     for (let [iinx, insd] of connd.db_data.entries()) {
+      //       var res = await settings.getThis(insd.inst_id).then(res => {
+      //         return res
+      //       }).catch(err => {
+      //         return []
+      //       })
+      //       insd.cname = res.data.connection_name
+      //       if(res.data.upldIcn == '') {
+      //         insd.imgurl = res.data.selectedDb
+      //       } else {
+      //         insd.imgurl = res.data.upldIcn
+      //       }
+      //     }
+      //   }
+      //   // self.allConnData = mdata.data
+      //   // self.sideBarList = false
+      //   // console.log(mdata.data)
+      //   this.treeData = []
+      //   for(let [j, mObj] of mdata.data.entries()) {
+      //     for (let mKey in mObj) {
+      //       if (mKey == 'db') {
+      //         mObj.title = mObj.db
+      //         mObj.render = (h, { root, node, data }) => {
+      //                     var setIcon = ''
+      //                     if (data.imgurl == 'mongo') {
+      //                       setIcon = this.mongo
+      //                     } else if (data.imgurl == 'rethink') {
+      //                       setIcon = this.rethink
+      //                     } else if (data.imgurl == 'elastic') {
+      //                       setIcon = this.elastic
+      //                     } else if (data.imgurl == 'nedb') {
+      //                       setIcon = this.nedb
+      //                     } else if (data.imgurl == 'mysql') {
+      //                       setIcon = this.mysql
+      //                     }
+      //                       return h('span', {
+      //                           style: {
+      //                               // display: 'inline-block',
+      //                               width: '100%',
+      //                               color: '#eee',
+      //                               fontSize: '18px'
+      //                           }
+      //                       }, [
+      //                           h('span', [
+      //                               h('img', {
+      //                                   attrs: {
+      //                                       src: this[data.db]
+      //                                   },
+      //                                   style: {
+      //                                       marginRight: '8px',
+      //                                       marginLeft: '8px',
+      //                                       width: '20px',
+      //                                       height:'20px'
+      //                                   }
+      //                               }),
+      //                               h('span', {
+      //                                 class: {
+      //                                   'ivu-tree-title' :true
+      //                                 }
+      //                               }, data.title)
+      //                           ])
+      //                       ])
+      //                   }
+      //       }
+      //       if (mKey == 'db_data') {
+      //         mObj.children = mObj.db_data
+      //         for (let [jx, iObj] of mObj.db_data.entries()) {
+      //           for (let iKey in iObj) {
+      //             if (iKey == 'cname') {
+      //               iObj.title = iObj.cname
+      //               iObj.render = (h, { root, node, data }) => {
+      //                     var setIcon = ''
+      //                     if (data.imgurl == 'mongo') {
+      //                       setIcon = this.mongo
+      //                     } else if (data.imgurl == 'rethink') {
+      //                       setIcon = this.rethink
+      //                     } else if (data.imgurl == 'elastic') {
+      //                       setIcon = this.elastic
+      //                     } else if (data.imgurl == 'nedb') {
+      //                       setIcon = this.nedb
+      //                     } else if (data.imgurl == 'mysql') {
+      //                       setIcon = this.mysql
+      //                     } else {
+      //                       setIcon = data.imgurl
+      //                     }
+      //                       return h('span', {
+      //                           style: {
+      //                               // display: 'inline-block',
+      //                               width: '100%',
+      //                               color: '#eee',
+      //                               fontSize: '18px'
+      //                           }
+      //                       }, [
+      //                           h('span', [
+      //                               h('img', {
+      //                                   attrs: {
+      //                                       src: setIcon
+      //                                   },
+      //                                   style: {
+      //                                       marginRight: '8px',
+      //                                       marginLeft: '8px',
+      //                                       width: '20px',
+      //                                       height:'20px'
+      //                                   }
+      //                               }),
+      //                               h('span', {
+      //                                 class: {
+      //                                   'ivu-tree-title' :true
+      //                                 }
+      //                               }, data.title)
+      //                           ])
+      //                       ])
+      //                   }
+      //             }
+      //             if (iKey == 'inst_data') {
+      //               iObj.children = iObj.inst_data
+      //               for (let [jnx, tObj] of iObj.inst_data.entries()) {
+      //                 for (let tKey in tObj) {
+      //                   if (tKey == 't_name') {
+      //                     tObj.title = tObj.t_name
+      //                     tObj.render = (h, { root, node, data }) => {
+      //                       return [
+      //                         h('span', [
+      //                             h('Icon', {
+      //                                 props: {
+      //                                     type: 'ios-grid-view'
+      //                                 },
+      //                                 class: {
+      //                                   'icon-grid': true
+      //                                 }
+      //                             }),
+      //                             h('span', {
+      //                               class: {
+      //                                 'ivu-tree-title' :true
+      //                               },
+      //                               on: {
+      //                                 'click': () => {
+      //                                   this.setData(data.title, '/recordList/'+iObj.inst_id+'/'+tObj.t_name, mObj.db, iObj.inst_id, tObj.t_name, 'list')
+      //                                 }
+      //                               }
+      //                             }, data.title)
+      //                         ]),
+      //                         h('span', {
+      //                             class: {
+      //                               'ivu-tree-action': true
+      //                             }
+      //                         }, [
+      //                             h('Button', {
+      //                                 props: {
+      //                                   type: 'text',
+      //                                   icon: 'play'
+      //                                 },
+      //                                 style: {
+      //                                     cursor: 'pointer'
+      //                                 },
+      //                                 class: {
+      //                                   'play': true
+      //                                 },
+      //                                 on: {
+      //                                   click: () => {
+      //                                      this.AddRecord(mObj.db, iObj.inst_id, tObj.t_name)
+      //                                   }
+      //                                 }
+      //                             })
+      //                         ])
+      //                       ]
+      //                     }
+      //                   }
+      //                 }
+      //               }
+      //             }
+      //           }
+      //         }
+      //       }
+      //     }
+      //   }
+      //   this.treeData = mdata.data
       // },
-      // handleClose(key, keyPath) {
-      //   console.log(key, keyPath)
+      // handleCommand (name) {
+      //   this.orderby = name
       // },
-      async init () {
-        let self = this
-        var mdata = await ConnectionData.get().then(response => {
-          return response
-        }).catch(error => {
-          this.$Notice.error({
-            title: error,
-            desc: 'connection to the server timed out',
-            duration: 3
-          })
-          return []
-        })
-        for (let [cinx, connd] of mdata.data.entries()) {
-          for (let [iinx, insd] of connd.db_data.entries()) {
-            var res = await settings.getThis(insd.inst_id).then(res => {
-              return res
-            }).catch(err => {
-              return []
-            })
-            insd.cname = res.data.connection_name
-            if(res.data.upldIcn == '') {
-              insd.imgurl = res.data.selectedDb
-            } else {
-              insd.imgurl = res.data.upldIcn
-            }
-          }
-        }
-        // self.allConnData = mdata.data
-        // self.sideBarList = false
-        // console.log(mdata.data)
-        this.treeData = []
-        for(let [j, mObj] of mdata.data.entries()) {
-          for (let mKey in mObj) {
-            if (mKey == 'db') {
-              mObj.title = mObj.db
-              mObj.render = (h, { root, node, data }) => {
-                          var setIcon = ''
-                          if (data.imgurl == 'mongo') {
-                            setIcon = this.mongo
-                          } else if (data.imgurl == 'rethink') {
-                            setIcon = this.rethink
-                          } else if (data.imgurl == 'elastic') {
-                            setIcon = this.elastic
-                          } else if (data.imgurl == 'nedb') {
-                            setIcon = this.nedb
-                          } else if (data.imgurl == 'mysql') {
-                            setIcon = this.mysql
-                          }
-                            return h('span', {
-                                style: {
-                                    // display: 'inline-block',
-                                    width: '100%',
-                                    color: '#eee',
-                                    fontSize: '18px'
-                                }
-                            }, [
-                                h('span', [
-                                    h('img', {
-                                        attrs: {
-                                            src: this[data.db]
-                                        },
-                                        style: {
-                                            marginRight: '8px',
-                                            marginLeft: '8px',
-                                            width: '20px',
-                                            height:'20px'
-                                        }
-                                    }),
-                                    h('span', {
-                                      class: {
-                                        'ivu-tree-title' :true
-                                      }
-                                    }, data.title)
-                                ])
-                            ])
-                        }
-            }
-            if (mKey == 'db_data') {
-              mObj.children = mObj.db_data
-              for (let [jx, iObj] of mObj.db_data.entries()) {
-                for (let iKey in iObj) {
-                  if (iKey == 'cname') {
-                    iObj.title = iObj.cname
-                    iObj.render = (h, { root, node, data }) => {
-                          var setIcon = ''
-                          if (data.imgurl == 'mongo') {
-                            setIcon = this.mongo
-                          } else if (data.imgurl == 'rethink') {
-                            setIcon = this.rethink
-                          } else if (data.imgurl == 'elastic') {
-                            setIcon = this.elastic
-                          } else if (data.imgurl == 'nedb') {
-                            setIcon = this.nedb
-                          } else if (data.imgurl == 'mysql') {
-                            setIcon = this.mysql
-                          } else {
-                            setIcon = data.imgurl
-                          }
-                            return h('span', {
-                                style: {
-                                    // display: 'inline-block',
-                                    width: '100%',
-                                    color: '#eee',
-                                    fontSize: '18px'
-                                }
-                            }, [
-                                h('span', [
-                                    h('img', {
-                                        attrs: {
-                                            src: setIcon
-                                        },
-                                        style: {
-                                            marginRight: '8px',
-                                            marginLeft: '8px',
-                                            width: '20px',
-                                            height:'20px'
-                                        }
-                                    }),
-                                    h('span', {
-                                      class: {
-                                        'ivu-tree-title' :true
-                                      }
-                                    }, data.title)
-                                ])
-                            ])
-                        }
-                  }
-                  if (iKey == 'inst_data') {
-                    iObj.children = iObj.inst_data
-                    for (let [jnx, tObj] of iObj.inst_data.entries()) {
-                      for (let tKey in tObj) {
-                        if (tKey == 't_name') {
-                          tObj.title = tObj.t_name
-                          tObj.render = (h, { root, node, data }) => {
-                            return [
-                              h('span', [
-                                  h('Icon', {
-                                      props: {
-                                          type: 'ios-grid-view'
-                                      },
-                                      class: {
-                                        'icon-grid': true
-                                      }
-                                  }),
-                                  h('span', {
-                                    class: {
-                                      'ivu-tree-title' :true
-                                    },
-                                    on: {
-                                      'click': () => {
-                                        this.setData(data.title, '/recordList/'+iObj.inst_id+'/'+tObj.t_name, mObj.db, iObj.inst_id, tObj.t_name, 'list')
-                                      }
-                                    }
-                                  }, data.title)
-                              ]),
-                              h('span', {
-                                  class: {
-                                    'ivu-tree-action': true
-                                  }
-                              }, [
-                                  h('Button', {
-                                      props: {
-                                        type: 'text',
-                                        icon: 'play'
-                                      },
-                                      style: {
-                                          cursor: 'pointer'
-                                      },
-                                      class: {
-                                        'play': true
-                                      },
-                                      on: {
-                                        click: () => {
-                                           this.AddRecord(mObj.db, iObj.inst_id, tObj.t_name)
-                                        }
-                                      }
-                                  })
-                              ])
-                            ]
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-        this.treeData = mdata.data
-      },
-      handleCommand (name) {
-        this.orderby = name
-      },
       setData (name, url, db, inst_id, tname, type) {
         var id = db + inst_id + tname
         var obj = {name: name, url: url, id: id, type: type}

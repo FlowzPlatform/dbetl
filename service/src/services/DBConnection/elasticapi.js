@@ -19,68 +19,90 @@ var dclient = [];
 // client.indices.create({  
 //   index: db
 // })
-db1.elastic.dbinstance.forEach(function (instance, inx) {
-    if (instance.isenable) {
-      var connection = new elasticsearch.Client({
-        host: instance.host + ':' + instance.port,
-        log: 'error'
-          // hosts: [
-          //   'https://[username]:[password]@[localhost]:[9200]/',
-          //   'https://[username]:[password]@[localhost]:[9200]/'
-          // ]
-      });
-      // var db = ((instance.dbname == '') ? databasename : instance.dbname);
-      var db = instance.dbname;
-      connection.indices.create({
-        index: db
-      }, function (err, resp) {
-        if(resp) {
-           //console.log(JSON.stringify(resp, null, '\t'), resp.status);
-        }
-      })
-      client.push({ id: instance.id, conn: connection, dbname: db })
-    }
-    if (instance.isdefault) {
-      var connection = new elasticsearch.Client({
-        host: instance.host + ':' + instance.port,
-        log: 'error'
-          // hosts: [
-          //   'https://[username]:[password]@[localhost]:[9200]/',
-          //   'https://[username]:[password]@[localhost]:[9200]/'
-          // ]
-      });
-      // var db = ((instance.dbname == '') ? databasename : instance.dbname);
-      var db = instance.dbname;
-      connection.indices.create({
-        index: db
-      }, function (err, resp) {
-        if(resp) {
-           //console.log(JSON.stringify(resp, null, '\t'), resp.status);
-        }
-      })
-      dclient.push({ id: instance.id, conn: connection, dbname: db })
-    }
-  })
+// db1.elastic.dbinstance.forEach(function (instance, inx) {
+//     if (instance.isenable) {
+//       var connection = new elasticsearch.Client({
+//         host: instance.host + ':' + instance.port,
+//         log: 'error'
+//           // hosts: [
+//           //   'https://[username]:[password]@[localhost]:[9200]/',
+//           //   'https://[username]:[password]@[localhost]:[9200]/'
+//           // ]
+//       });
+//       // var db = ((instance.dbname == '') ? databasename : instance.dbname);
+//       var db = instance.dbname;
+//       connection.indices.create({
+//         index: db
+//       }, function (err, resp) {
+//         if(resp) {
+//            //console.log(JSON.stringify(resp, null, '\t'), resp.status);
+//         }
+//       })
+//       client.push({ id: instance.id, conn: connection, dbname: db })
+//     }
+//     if (instance.isdefault) {
+//       var connection = new elasticsearch.Client({
+//         host: instance.host + ':' + instance.port,
+//         log: 'error'
+//           // hosts: [
+//           //   'https://[username]:[password]@[localhost]:[9200]/',
+//           //   'https://[username]:[password]@[localhost]:[9200]/'
+//           // ]
+//       });
+//       // var db = ((instance.dbname == '') ? databasename : instance.dbname);
+//       var db = instance.dbname;
+//       connection.indices.create({
+//         index: db
+//       }, function (err, resp) {
+//         if(resp) {
+//            //console.log(JSON.stringify(resp, null, '\t'), resp.status);
+//         }
+//       })
+//       dclient.push({ id: instance.id, conn: connection, dbname: db })
+//     }
+//   })
 
-  // console.log('client',client)
-  // var check = client.indices.exists({
-  //     index: db
-  // })
-  // if(check){
-  //     console.log('!!!!!');
-  //     client.indices.create({
-  //         index: db
-  //     });
-  // }else{
-  //     client.indices.create({
-  //         index: db
-  //     });
-  // }
+var getConnection = async (function(data) {
+  var connection = new elasticsearch.Client({
+    host: data.host + ':' + data.port + '/' + data.dbname
+  });
+  return connection
+})
 
 module.exports = {
   choose: function () {
     console.log('===================ELASTIC_DB=================');
   },
+
+  getTables: async(function(data) {
+    var conn = await( getConnection(data).then(res => {
+      return res
+    }).catch(err => {
+      console.log('Error...........', err)
+      return {iserror: true, msg: err}
+    }))
+    if (conn.hasOwnProperty('iserror') && conn.iserror) {
+        return res
+      } else {
+        var result = await (
+          conn.search({
+            body: {
+              aggs: {
+                typesAgg: {
+                  terms: {
+                    field: '_type',
+                    size: 200
+                  }
+                }
+              },
+              size: 0
+            }
+          }))
+        return _.map(result.aggregations.typesAgg.buckets, (d)=> {
+          return { name: d.key}
+        })
+      }
+  }), 
 
   generateInstanceTable: async(function (ins_id, title){
     console.log('Elastic generate instance collection..........', ins_id, title);

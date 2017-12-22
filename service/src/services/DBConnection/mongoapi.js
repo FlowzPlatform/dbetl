@@ -6,33 +6,33 @@ let await = require('asyncawait/await');
 var endecrypt = require('../encryption/security')
 var db = [];
 var defaultDb = []
+var MongoClient = require('mongodb').MongoClient;
+// db1.mongo.dbinstance.forEach(function (instance, inx) {
+//   if (instance.isenable) {
+//     // console.log('instance', instance)
+//     var pass = endecrypt.decrypt(instance.password)
+//       // console.log(pass)
+//     var mongoDB = 'mongodb://' + instance.username + ':' + pass + '@' + instance.host + ':' + instance.port + '/' + instance.dbname;
+//     // var mongoDB = 'mongodb://'+instance.host+':'+instance.port+'/'+((instance.dbname == '') ? databasename : instance.dbname);
+//     console.log('database::::', mongoDB);
+//     var connection = mongoose.createConnection(mongoDB);
+//     connection.on('error', console.error.bind(console, 'MongoDB connection error:'));
 
-db1.mongo.dbinstance.forEach(function (instance, inx) {
-  if (instance.isenable) {
-    // console.log('instance', instance)
-    var pass = endecrypt.decrypt(instance.password)
-      // console.log(pass)
-    var mongoDB = 'mongodb://' + instance.username + ':' + pass + '@' + instance.host + ':' + instance.port + '/' + instance.dbname;
-    // var mongoDB = 'mongodb://'+instance.host+':'+instance.port+'/'+((instance.dbname == '') ? databasename : instance.dbname);
-    console.log('database::::', mongoDB);
-    var connection = mongoose.createConnection(mongoDB);
-    connection.on('error', console.error.bind(console, 'MongoDB connection error:'));
+//     db.push({ id: instance.id, conn: connection })
+//   }
+//   if (instance.isdefault) {
+//     // console.log('instance', instance)
+//     var pass = endecrypt.decrypt(instance.password)
+//       // console.log(pass)
+//     var mongoDB = 'mongodb://' + instance.username + ':' + pass + '@' + instance.host + ':' + instance.port + '/' + instance.dbname;
+//     // var mongoDB = 'mongodb://'+instance.host+':'+instance.port+'/'+((instance.dbname == '') ? databasename : instance.dbname);
+//     console.log('database::::', mongoDB);
+//     var connection = mongoose.createConnection(mongoDB);
+//     connection.on('error', console.error.bind(console, 'MongoDB connection error:'));
 
-    db.push({ id: instance.id, conn: connection })
-  }
-  if (instance.isdefault) {
-    // console.log('instance', instance)
-    var pass = endecrypt.decrypt(instance.password)
-      // console.log(pass)
-    var mongoDB = 'mongodb://' + instance.username + ':' + pass + '@' + instance.host + ':' + instance.port + '/' + instance.dbname;
-    // var mongoDB = 'mongodb://'+instance.host+':'+instance.port+'/'+((instance.dbname == '') ? databasename : instance.dbname);
-    console.log('database::::', mongoDB);
-    var connection = mongoose.createConnection(mongoDB);
-    connection.on('error', console.error.bind(console, 'MongoDB connection error:'));
-
-    defaultDb.push({ id: instance.id, conn: connection })
-  }
-})
+//     defaultDb.push({ id: instance.id, conn: connection })
+//   }
+// })
 
 // db1.mongo.username+':'+db1.mongo.password+'@'+
 // var mongoDB = 'mongodb://'+db1.mongo.host+':'+db1.mongo.port+'/'+((db1.mongo.dbname == '') ? databasename : db1.mongo.dbname);
@@ -54,11 +54,25 @@ db1.mongo.dbinstance.forEach(function (instance, inx) {
 // db.on('error', console.error.bind(console, 'MongoDB connection error:'));
 // console.log('Success!!!!!!!!!!!!! Mongo');
 
+var getConnection = async (function(data) {
+  // console.log(data)
+  var uri = 'mongodb://' + ((data.username != '' ? data.username + ':' + data.password + '@' : '')) + data.host + ':' + data.port + '/' + data.dbname; 
+  console.log(uri)
+  var _data = await (MongoClient.connect(uri).then(res=> {
+    return res
+  }).catch(err=> {
+    var obj = {iserror: true, msg: err} 
+    return obj
+  }))
+  return _data
+})
+
 module.exports = {
 
   choose: async(function () {
     console.log('===================MONGODB=================');
   }),
+
 
   generateInstanceTable: async(function (ins_id, title){
     console.log('Mongo generate instance collection..........', ins_id, title);
@@ -100,6 +114,24 @@ module.exports = {
         return arr
       }
     }
+  }),
+
+  getTables: async(function(data) {
+    var conn = await( getConnection(data).then(res => {
+      return res
+    }).catch(err => {
+      return {iserror: true, msg: err}
+    }))
+    if (conn.hasOwnProperty('iserror') && conn.iserror) {
+        return conn
+      } else {
+        var result = await(conn.listCollections().toArray())
+        // console.log(result)
+        return _.map(result, (d)=> {
+          return { name: d.name}
+        })
+      }
+    // return conn    
   }),
 
   getTableRecord: async(function(ins_id, tname, sl, el) {
