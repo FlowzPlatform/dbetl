@@ -14,11 +14,15 @@ jobs:
   include:
     - stage: Dbetl-Backend-Flowz
       script:
-      - docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
-      - docker build -t dbetl_backend_flowz:$TRAVIS_BRANCH ./service/
-      - docker images
-      - docker tag dbetl_backend_flowz:$TRAVIS_BRANCH $DOCKER_USERNAME/dbetl_backend_flowz:$TRAVIS_BRANCH
-      - docker push $DOCKER_USERNAME/dbetl_backend_flowz:$TRAVIS_BRANCH
+      - 'if [ ${TRAVIS_BRANCH} = "demo" ]; then
+            echo "not build dbetl_backend_flowz image";
+        else
+            docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD";
+            docker build -t dbetl_backend_flowz:$TRAVIS_BRANCH ./service/;
+            docker images;
+            docker tag dbetl_backend_flowz:$TRAVIS_BRANCH $DOCKER_USERNAME/dbetl_backend_flowz:$TRAVIS_BRANCH;
+            docker push $DOCKER_USERNAME/dbetl_backend_flowz:$TRAVIS_BRANCH;
+        fi'
     - stage: Dbetl-Frontend-Flowz
       script:
       - docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"

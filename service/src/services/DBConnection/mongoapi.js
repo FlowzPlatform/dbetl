@@ -57,7 +57,7 @@ var MongoClient = require('mongodb').MongoClient;
 var getConnection = async (function(data) {
   // console.log(data)
   var uri = 'mongodb://' + ((data.username != '' ? data.username + ':' + data.password + '@' : '')) + data.host + ':' + data.port + '/' + data.dbname; 
-  console.log(uri)
+  // console.log(uri)
   var _data = await (MongoClient.connect(uri).then(res=> {
     return res
   }).catch(err=> {
@@ -72,7 +72,90 @@ module.exports = {
   choose: async(function () {
     console.log('===================MONGODB=================');
   }),
+  
+  getTables: async(function(data) {
+    var conn = await( getConnection(data).then(res => {
+      return res
+    }).catch(err => {
+      return {iserror: true, msg: err}
+    }))
+    if (conn.hasOwnProperty('iserror') && conn.iserror) {
+      return conn
+    } else {
+      var result = await(conn.listCollections().toArray())
+      // console.log(result)
+      conn.close()
+      return _.map(result, (d)=> {
+        return { name: d.name}
+      })
+    }
+    // return conn    
+  }),
 
+  getSchemaRecord: async(function (data, tname) {
+    var conn = await( getConnection(data).then(res => {
+      return res
+    }).catch(err => {
+      return {iserror: true, msg: err}
+    }))
+    if (conn.hasOwnProperty('iserror') && conn.iserror) {
+      return conn
+    } else {
+      var result = await(conn.collection(tname).find().toArray())
+      conn.close()
+      return result
+    }
+  }),
+
+  postSchemaRecord: async(function (data, rdata) {
+    var conn = await( getConnection(data).then(res => {
+      return res
+    }).catch(err => {
+      return {iserror: true, msg: err}
+    }))
+    if (conn.hasOwnProperty('iserror') && conn.iserror) {
+      return conn
+    } else {
+      // var id = new mongoose.Types.ObjectId(rdata.rid);
+      var result = await(conn.collection(rdata.tname).insert(rdata.data))
+      conn.close()
+      return result.ops[0]._id
+    }
+  }),
+
+  putSchemaRecord: async(function (data, rdata) {
+    var conn = await( getConnection(data).then(res => {
+      return res
+    }).catch(err => {
+      return {iserror: true, msg: err}
+    }))
+    if (conn.hasOwnProperty('iserror') && conn.iserror) {
+      return conn
+    } else {
+      var id = new mongoose.Types.ObjectId(rdata.rid);
+      delete rdata.data.id
+      delete rdata.data._id
+      var result = await(conn.collection(rdata.tname).updateOne({ _id: id }, { $set: rdata.data }))
+      conn.close()
+      return result
+    }
+  }),
+
+  deleteSchemaRecord: async(function (data, rdata) {
+    var conn = await( getConnection(data).then(res => {
+      return res
+    }).catch(err => {
+      return {iserror: true, msg: err}
+    }))
+    if (conn.hasOwnProperty('iserror') && conn.iserror) {
+      return conn
+    } else {
+      var id = new mongoose.Types.ObjectId(rdata.rid);
+      var result = await(conn.collection(rdata.tname).deleteOne({ _id: id }))
+      conn.close()
+      return result
+    }
+  }),
 
   generateInstanceTable: async(function (ins_id, title){
     console.log('Mongo generate instance collection..........', ins_id, title);
@@ -116,23 +199,6 @@ module.exports = {
     }
   }),
 
-  getTables: async(function(data) {
-    var conn = await( getConnection(data).then(res => {
-      return res
-    }).catch(err => {
-      return {iserror: true, msg: err}
-    }))
-    if (conn.hasOwnProperty('iserror') && conn.iserror) {
-        return conn
-      } else {
-        var result = await(conn.listCollections().toArray())
-        // console.log(result)
-        return _.map(result, (d)=> {
-          return { name: d.name}
-        })
-      }
-    // return conn    
-  }),
 
   getTableRecord: async(function(ins_id, tname, sl, el) {
     console.log(ins_id, tname, sl, el)
