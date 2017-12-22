@@ -24,9 +24,9 @@
           </Col>
         </Col>
       </Row>
-
-      <Row style="padding-left: 15px;max-height:1000px; overflow-y: auto">  
-        <Tree :data="sidebarData" :load-data="loadData" @on-select-change="onSelect" @on-toggle-expand="toggleExpand"></Tree>
+      
+      <Row style="padding-left: 15px;max-height:1000px; overflow-y: auto">
+        <Tree :data="sidebarData" :load-data="loadData" @on-select-change="onSelect"></Tree>
       </Row>
     </div>
   </div>
@@ -97,41 +97,34 @@
         // this.setData(data.title, '/recordList/'+iObj.inst_id+'/'+tObj.t_name, mObj.db, iObj.inst_id, tObj.t_name, 'list')
       },
       loadData (item, callback) {
-        console.log('item', item)
-      },
-      async toggleExpand (node) {
-        if (node.hasOwnProperty('id') && node.expand) {
-          // console.log('toggleExpand', node)
-          var data = await schema.get(node.id).then(res => {
-            console.log('response', res)
-            return res.data
-          }).catch(err => {
-            console.log('Error', err)
-            return []
-          })
-          if (data.hasOwnProperty('iserror')) {
-            this.$Notice.error({duration: 3, title: 'Connection Error', desc: JSON.stringify(data.msg)})
-          } else {
-            var _mdata = _.map(data, (d) => {
-              return {title: d.name, id: node.id, selectedDb: node.selectedDb}
+        schema.get(item.id).then(response => {
+          console.log('response.iserror', response)
+          if (response.data.iserror) {
+            this.$Notice.error({
+              duration: 3,
+              title: 'Connection Error',
+              desc: 'This database not connect. Please check first database.'
             })
-            console.log('this.sidebarData', this.sidebarData)
-            var dbkey = _.findKey(this.sidebarData, {title: node.selectedDb})
-            var iKey = _.findKey(this.sidebarData[dbkey].children, {id: node.id})
-            // console.log(iKey)
-
-            this.sidebarData[dbkey].children[iKey].children = _mdata
+            callback([])
+          } else {
+            let treeData = _.map(response.data, m => {
+              return {
+                title: m.name,
+                id: item.id,
+                selectedDb: item.selectedDb
+              }
+            })
+            callback(treeData)
           }
-          console.log('schema api data', data)
-        }
+        })
       },
       async init () {
-        var mdata = await databasesModel.get().then(res => {
+        var connections = await databasesModel.get().then(res => {
           return res
         }).catch(e => {
           return []
         })
-        var fdata = _.chain(mdata).filter({isenable: true}).groupBy('selectedDb').map((m, key) => {
+        this.sidebarData = _.chain(connections).filter({isenable: true}).groupBy('selectedDb').map((m, key) => {
           return {
             title: key,
             render: (h, { root, node, data }) => {
@@ -163,10 +156,9 @@
               ])
             },
             children: _.map(m, childM => {
-              return {
+              return _.assign(childM, {
                 title: childM.connection_name,
-                imgurl: childM.imgurl,
-                selectedDb: childM.selectedDb,
+                loading: false,
                 render: (h, { root, node, data }) => {
                   return h('span', {
                     style: {
@@ -194,94 +186,12 @@
                       }, data.title)
                     ])
                   ])
-                }
-              }
+                },
+                children: []
+              })
             })
           }
         }).value()
-        this.sidebarData = fdata
-        // for (let key in fdata) {
-        //   var makeobj = {}
-        //   makeobj.title = key
-        //   makeobj.render = (h, { root, node, data }) => {
-        //     return h('span', {
-        //       style: {
-        //         width: '100%',
-        //         color: '#eee',
-        //         fontSize: '18px'
-        //       }
-        //     }, [
-        //       h('span', [
-        //         h('img', {
-        //           attrs: {
-        //             src: this[data.title]
-        //           },
-        //           style: {
-        //             marginRight: '8px',
-        //             marginLeft: '8px',
-        //             width: '20px',
-        //             height: '20px'
-        //           }
-        //         }),
-        //         h('span', {
-        //           class: {
-        //             'ivu-tree-title': true
-        //           }
-        //         }, data.title)
-        //       ])
-        //     ])
-        //   }
-        //   for (let item of fdata[key].entries()) {
-        //     item.title = item.connection_name
-        //     item.imgurl = item.selectedDb
-        //     item.render = (h, { root, node, data }) => {
-        //       var setIcon = ''
-        //       if (data.imgurl === 'mongo') {
-        //         setIcon = this.mongo
-        //       } else if (data.imgurl === 'rethink') {
-        //         setIcon = this.rethink
-        //       } else if (data.imgurl === 'elastic') {
-        //         setIcon = this.elastic
-        //       } else if (data.imgurl === 'nedb') {
-        //         setIcon = this.nedb
-        //       } else if (data.imgurl === 'mysql') {
-        //         setIcon = this.mysql
-        //       } else {
-        //         setIcon = data.imgurl
-        //       }
-        //       return h('span', {
-        //         style: {
-        //           width: '100%',
-        //           color: '#eee',
-        //           fontSize: '18px'
-        //         }
-        //       }, [
-        //         h('span', [
-        //           h('img', {
-        //             attrs: {
-        //               src: setIcon
-        //             },
-        //             style: {
-        //               marginRight: '8px',
-        //               marginLeft: '8px',
-        //               width: '20px',
-        //               height: '20px'
-        //             }
-        //           }),
-        //           h('span', {
-        //             class: {
-        //               'ivu-tree-title': true
-        //             }
-        //           }, data.title)
-        //         ])
-        //       ])
-        //     }
-        //     item.children = [{title: ''}]
-        //   }
-        //   makeobj.children = fdata[key]
-        //   this.sidebarData.push(makeobj)
-        // }
-        console.log('this.sidebarData', this.sidebarData)
       },
       setData (name, url, db, instId, tname, type) {
         var id = db + instId + tname
