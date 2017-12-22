@@ -19,8 +19,8 @@
 
 <script>
 import vueJsonEditor from 'vue-json-editor'
-import ConnectionData from '../api/connectiondata'
-import settings from '../api/settings'
+import schemaModel from '../api/schema'
+import databasesModel from '../api/databases'
 
 export default {
   name: 'createRecord',
@@ -49,11 +49,11 @@ export default {
         if (!Array.isArray(this.jsoneditordata)) {
           var obj = {}
           obj.data = this.jsoneditordata
-          obj.inst_id = this.$route.params.id
+          obj.id = this.$route.params.id
           obj.tname = this.$route.params.tname
           // console.log(this.$route.params.id, this.$route.params.tname)
-          ConnectionData.post(obj).then(res => {
-            // console.log(res.data)
+          schemaModel.post(obj).then(res => {
+            console.log(res)
             this.$Notice.success({duration: 3, title: 'Created Successfully', desc: ''})
             this.$router.push('/recordList/' + this.$route.params.id + '/' + this.$route.params.tname)
           }).catch(err => {
@@ -72,9 +72,9 @@ export default {
     },
     init () {
       var self = this
-      settings.getThis(self.$route.params.id).then(res => {
-        var sDb = res.data.selectedDb
-        self.crumbData.cname = res.data.connection_name
+      databasesModel.get(self.$route.params.id).then(res => {
+        var sDb = res.selectedDb
+        self.crumbData.cname = res.connection_name
         self.crumbData.db = sDb
         self.crumbData.tname = self.$route.params.tname
         // console.log(this.crumbData)

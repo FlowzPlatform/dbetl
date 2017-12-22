@@ -7,7 +7,9 @@ module.exports = {
     get: [
        hook => beforeGet(hook)
     ],
-    create: [],
+    create: [
+       hook => beforeCreate(hook)
+    ],
     update: [
       hook => beforeGet(hook)
     ],
@@ -49,6 +51,25 @@ var beforeGet = (hook) => {
     if (response.data.length === 1) {
       // console.log(response)
       hook.params.data = response.data[0]
+    } else {
+      console.log(response)
+      throw new errors.BadRequest();
+    }
+    return hook;
+  });
+};
+
+var beforeCreate = (hook) => {
+  // console.log(hook.data)
+  hook.params.query.userId = hook.params.user._id;
+  const query = Object.assign({
+    id: hook.data.id
+  }, { userId: hook.params.user._id});
+  // console.log(hook.params.query)
+  return hook.app.service('databases').find({ query }).then(response => {
+    if (response.data.length === 1) {
+      // console.log(response)
+      hook.params.conndata = response.data[0]
     } else {
       console.log(response)
       throw new errors.BadRequest();

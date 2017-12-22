@@ -15,6 +15,7 @@
         </Col>
         <Col span="3">
           Total: &nbsp;<b>{{tableData.length}}</b>        
+          <Button size="small" icon="plus" type="primary" style="float:right" @click="addRecord">Add</Button>
         </Col>
       </Row>
       <Row>
@@ -136,6 +137,9 @@ export default {
     }
   },
   methods: {
+    addRecord () {
+      this.$router.push('/' + this.$route.params.id + '/' + this.$route.params.tname + '/new')
+    },
     changePage (pageno) {
       // console.log('pageno', pageno)
       this.cpage = pageno
