@@ -2,11 +2,23 @@ import api from '../../api'
 let model = 'schema'
 
 export default {
-  get: (id, params) => {
+  get: (id, schemaname) => {
     if (id === undefined) {
-      return api.request('get', '/' + model)
+      return api.request('get', '/' + model).then(res => {
+        return res.data.data
+      })
     } else {
-      return api.request('get', '/' + model + '/' + id)
+      if (schemaname === undefined) {
+        console.log('schemaname if', schemaname)
+        return api.request('get', '/' + model + '/' + id).then(res => {
+          return res.data
+        })
+      } else {
+        console.log('schemaname else', schemaname)
+        return api.request('get', '/' + model + '/' + id + '?schemaname=' + schemaname).then(res => {
+          return res.data
+        })
+      }
     }
   }
   // getByNameId: (dbname, dbid) => {
