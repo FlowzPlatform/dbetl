@@ -5,8 +5,8 @@ let await = require('asyncawait/await');
 var endecrypt = require('../encryption/security')
 var _ = require('lodash')
   // var databasename = 'schema_builder';
-var client = [];
-var dclient = [];
+// var client = [];
+// var dclient = [];
 // var client = new elasticsearch.Client( {  
 //     host: db1.elastic.host+':'+db1.elastic.port,
 //     log: 'error'
@@ -62,9 +62,16 @@ var dclient = [];
 //     }
 //   })
 
-var getConnection = async (function(data) {
+var getListConnection = async (function(data) {
   var connection = new elasticsearch.Client({
     host: data.host + ':' + data.port + '/' + data.dbname
+  });
+  return connection
+})
+
+var getConnection = async (function(data) {
+  var connection = new elasticsearch.Client({
+    host: data.host + ':' + data.port 
   });
   return connection
 })
@@ -75,7 +82,7 @@ module.exports = {
   },
 
   getTables: async(function(data) {
-    var conn = await( getConnection(data).then(res => {
+    var conn = await( getListConnection(data).then(res => {
       return res
     }).catch(err => {
       console.log('Error...........', err)
@@ -98,11 +105,45 @@ module.exports = {
               size: 0
             }
           }))
+        conn.close()
         return _.map(result.aggregations.typesAgg.buckets, (d)=> {
           return { name: d.key}
         })
       }
   }), 
+
+  getSchemaRecord: async(function (data, tname) {
+    var conn = await( getConnection(data).then(res => {
+      return res
+    }).catch(err => {
+      return {iserror: true, msg: err}
+    }))
+    if (conn.hasOwnProperty('iserror') && conn.iserror) {
+      return conn
+    } else {
+      // console.log('conn', conn)
+      var result = await(conn.search({
+        index: data.dbname,
+        type: tname,
+        body: {
+            query: {
+                match_all: { }
+            },
+        }
+      }).then(res => {
+        conn.close()
+        return _.map(res.hits.hits, (d) => {
+          var obj = d._source
+          obj._id = d._id
+          return obj
+        })
+        // return res
+      }).catch(err => {
+        return {iserror: true, msg: err}
+      }))
+      return result
+    }
+  }),
 
   generateInstanceTable: async(function (ins_id, title){
     console.log('Elastic generate instance collection..........', ins_id, title);
