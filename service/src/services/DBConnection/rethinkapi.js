@@ -89,12 +89,32 @@ module.exports = {
       } else {
         var result = await(conn.db(data.dbname).tableList())
         // console.log(result)
+        conn.getPoolMaster().drain()
         return _.map(result, (d)=> {
           // console.log(d)
           return { name: d}
         })
       }
     // return conn    
+  }),
+
+  getSchemaRecord: async(function (data, tname) {
+    var conn = await( getConnection(data).then(res => {
+      return res
+    }).catch(err => {
+      return {iserror: true, msg: err}
+    }))
+    if (conn.hasOwnProperty('iserror') && conn.iserror) {
+      return conn
+    } else {
+      var result = await(conn.table(tname).run().then(res => {
+        conn.getPoolMaster().drain()
+        return res
+      }).catch(err => {
+        return {iserror: true, msg: err}
+      }))
+      return result
+    }
   }),
 
   generateInstanceTable: async(function (data){

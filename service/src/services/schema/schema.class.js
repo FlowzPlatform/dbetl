@@ -41,16 +41,27 @@ class Service {
 
 var getFunction = async(function(id, params) {
   var api = require(cpath + params.data.selectedDb + 'api')
-  // console.log(conn)
-  var data = await (api.getTables(params.data).then(res => {
-    console.log('response', res)
-    return res
-  }).catch(err => {
-    console.log('error', err)
-    return {iserror: true, msg: err}
-  }))
-  // console.log('getFunction', data)
-  return data
+  if (params.query.schemaname != undefined) {
+    var data = await (api.getSchemaRecord(params.data, params.query.schemaname).then(res => {
+      // console.log('response', res)
+      return res
+    }).catch(err => {
+      console.log('error', err)
+      return {iserror: true, msg: err}
+    }))
+    // console.log('getFunction', data)
+    return data
+  } else {
+    var data = await (api.getTables(params.data).then(res => {
+      // console.log('response', res)
+      return res
+    }).catch(err => {
+      console.log('error', err)
+      return {iserror: true, msg: err}
+    }))
+    // console.log('getFunction', data)
+    return data
+  }
 })
 
 
