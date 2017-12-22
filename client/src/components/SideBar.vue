@@ -32,7 +32,7 @@
   </div>
 </template>
 <script>
-  import databases from '../api/databases'
+  import databasesModel from '../api/databases'
   import schema from '../api/schema'
   import mongo from '../assets/images/mongo.png'
   import rethink from '../assets/images/rethink.png'
@@ -58,19 +58,12 @@
           type: 'ghost',
           size: 'small'
         }
-        // deleteSchemaValue: 'softdel'
       }
     },
     created () {
-      // for connectiondata api 'init'
-      // this.init()
-      // for databases api
-      this.startMethod()
-      this.$store.dispatch('getSchema')
-      this.$store.dispatch('getSettings')
+      this.init()
     },
     computed: {
-      // },
       stylesPin () {
         let style = {}
         if (this.$store.state.sidenavpin) {
@@ -132,87 +125,16 @@
           console.log('schema api data', data)
         }
       },
-      AddRecord (db, instId, tname) {
-        this.$router.push('/' + instId + '/' + tname + '/new')
-      },
-      getIndex (a, b, c) {
-        if (a !== undefined) {
-          if (b !== undefined) {
-            if (c !== undefined) {
-              a = a.toString()
-              b = b.toString()
-              c = c.toString()
-              return a + '-' + b + '-' + c
-            }
-            a = a.toString()
-            b = b.toString()
-            return a + '-' + b
-          }
-          a = a.toString()
-          return a
-        }
-      },
-      async startMethod () {
-        var mdata = await databases.get().then(res => {
-          return res.data.data
+      async init () {
+        var mdata = await databasesModel.get().then(res => {
+          return res
         }).catch(e => {
           return []
         })
-        // console.log('mdata', mdata)
-        var fdata = _.filter(mdata, {isenable: true})
-        var s = _.groupBy(fdata, (d) => {
-          return d.selectedDb
-        })
-        this.sidebarData = []
-        for (let key in s) {
-          var makeobj = {}
-          makeobj.title = key
-          makeobj.render = (h, { root, node, data }) => {
-            return h('span', {
-              style: {
-                width: '100%',
-                color: '#eee',
-                fontSize: '18px'
-              }
-            }, [
-              h('span', [
-                h('img', {
-                  attrs: {
-                    src: this[data.title]
-                  },
-                  style: {
-                    marginRight: '8px',
-                    marginLeft: '8px',
-                    width: '20px',
-                    height: '20px'
-                  }
-                }),
-                h('span', {
-                  class: {
-                    'ivu-tree-title': true
-                  }
-                }, data.title)
-              ])
-            ])
-          }
-          for (let item of s[key].entries()) {
-            item.title = item.connection_name
-            item.imgurl = item.selectedDb
-            item.render = (h, { root, node, data }) => {
-              var setIcon = ''
-              if (data.imgurl === 'mongo') {
-                setIcon = this.mongo
-              } else if (data.imgurl === 'rethink') {
-                setIcon = this.rethink
-              } else if (data.imgurl === 'elastic') {
-                setIcon = this.elastic
-              } else if (data.imgurl === 'nedb') {
-                setIcon = this.nedb
-              } else if (data.imgurl === 'mysql') {
-                setIcon = this.mysql
-              } else {
-                setIcon = data.imgurl
-              }
+        var fdata = _.chain(mdata).filter({isenable: true}).groupBy('selectedDb').map((m, key) => {
+          return {
+            title: key,
+            render: (h, { root, node, data }) => {
               return h('span', {
                 style: {
                   width: '100%',
@@ -223,7 +145,7 @@
                 h('span', [
                   h('img', {
                     attrs: {
-                      src: setIcon
+                      src: this[data.title]
                     },
                     style: {
                       marginRight: '8px',
@@ -239,12 +161,126 @@
                   }, data.title)
                 ])
               ])
-            }
-            item.children = [{title: ''}]
+            },
+            children: _.map(m, childM => {
+              return {
+                title: childM.connection_name,
+                imgurl: childM.imgurl,
+                selectedDb: childM.selectedDb,
+                render: (h, { root, node, data }) => {
+                  return h('span', {
+                    style: {
+                      width: '100%',
+                      color: '#eee',
+                      fontSize: '18px'
+                    }
+                  }, [
+                    h('span', [
+                      h('img', {
+                        attrs: {
+                          src: data.imgurl ? data.imgurl : this[data.selectedDb]
+                        },
+                        style: {
+                          marginRight: '8px',
+                          marginLeft: '8px',
+                          width: '20px',
+                          height: '20px'
+                        }
+                      }),
+                      h('span', {
+                        class: {
+                          'ivu-tree-title': true
+                        }
+                      }, data.title)
+                    ])
+                  ])
+                }
+              }
+            })
           }
-          makeobj.children = s[key]
-          this.sidebarData.push(makeobj)
-        }
+        }).value()
+        this.sidebarData = fdata
+        // for (let key in fdata) {
+        //   var makeobj = {}
+        //   makeobj.title = key
+        //   makeobj.render = (h, { root, node, data }) => {
+        //     return h('span', {
+        //       style: {
+        //         width: '100%',
+        //         color: '#eee',
+        //         fontSize: '18px'
+        //       }
+        //     }, [
+        //       h('span', [
+        //         h('img', {
+        //           attrs: {
+        //             src: this[data.title]
+        //           },
+        //           style: {
+        //             marginRight: '8px',
+        //             marginLeft: '8px',
+        //             width: '20px',
+        //             height: '20px'
+        //           }
+        //         }),
+        //         h('span', {
+        //           class: {
+        //             'ivu-tree-title': true
+        //           }
+        //         }, data.title)
+        //       ])
+        //     ])
+        //   }
+        //   for (let item of fdata[key].entries()) {
+        //     item.title = item.connection_name
+        //     item.imgurl = item.selectedDb
+        //     item.render = (h, { root, node, data }) => {
+        //       var setIcon = ''
+        //       if (data.imgurl === 'mongo') {
+        //         setIcon = this.mongo
+        //       } else if (data.imgurl === 'rethink') {
+        //         setIcon = this.rethink
+        //       } else if (data.imgurl === 'elastic') {
+        //         setIcon = this.elastic
+        //       } else if (data.imgurl === 'nedb') {
+        //         setIcon = this.nedb
+        //       } else if (data.imgurl === 'mysql') {
+        //         setIcon = this.mysql
+        //       } else {
+        //         setIcon = data.imgurl
+        //       }
+        //       return h('span', {
+        //         style: {
+        //           width: '100%',
+        //           color: '#eee',
+        //           fontSize: '18px'
+        //         }
+        //       }, [
+        //         h('span', [
+        //           h('img', {
+        //             attrs: {
+        //               src: setIcon
+        //             },
+        //             style: {
+        //               marginRight: '8px',
+        //               marginLeft: '8px',
+        //               width: '20px',
+        //               height: '20px'
+        //             }
+        //           }),
+        //           h('span', {
+        //             class: {
+        //               'ivu-tree-title': true
+        //             }
+        //           }, data.title)
+        //         ])
+        //       ])
+        //     }
+        //     item.children = [{title: ''}]
+        //   }
+        //   makeobj.children = fdata[key]
+        //   this.sidebarData.push(makeobj)
+        // }
         console.log('this.sidebarData', this.sidebarData)
       },
       setData (name, url, db, instId, tname, type) {
