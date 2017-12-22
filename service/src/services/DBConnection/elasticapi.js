@@ -85,7 +85,7 @@ module.exports = {
     var conn = await( getListConnection(data).then(res => {
       return res
     }).catch(err => {
-      console.log('Error...........', err)
+      // console.log('Error...........', err)
       return {iserror: true, msg: err}
     }))
     if (conn.hasOwnProperty('iserror') && conn.iserror) {
@@ -138,6 +138,57 @@ module.exports = {
           return obj
         })
         // return res
+      }).catch(err => {
+        return {iserror: true, msg: err}
+      }))
+      return result
+    }
+  }),
+
+  putSchemaRecord: async(function (data, rdata) {
+    var conn = await( getConnection(data).then(res => {
+      return res
+    }).catch(err => {
+      return {iserror: true, msg: err}
+    }))
+    if (conn.hasOwnProperty('iserror') && conn.iserror) {
+      return conn
+    } else {
+      var id = rdata.rid;
+      delete rdata.data.id
+      delete rdata.data._id
+      var result = await(conn.index({
+          index: data.dbname,
+          type: rdata.tname,
+          id: id,
+          body: rdata.data
+        }).then(res => {
+        conn.close()
+        return res
+      }).catch(err => {
+        return {iserror: true, msg: err}
+      }))
+      return result
+    }
+  }),
+
+  deleteSchemaRecord: async(function (data, rdata) {
+    var conn = await( getConnection(data).then(res => {
+      return res
+    }).catch(err => {
+      return {iserror: true, msg: err}
+    }))
+    if (conn.hasOwnProperty('iserror') && conn.iserror) {
+      return conn
+    } else {
+      var id = rdata.rid;
+      var result = await(conn.delete({
+          index: data.dbname,
+          type: rdata.tname,
+          id: id,
+        }).then(res => {
+        conn.close()
+        return res
       }).catch(err => {
         return {iserror: true, msg: err}
       }))

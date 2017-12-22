@@ -1,4 +1,5 @@
 /* eslint-disable no-unused-vars */
+let errors = require('@feathersjs/errors');
 let async = require('asyncawait/async');
 let await = require('asyncawait/await');
 var _ = require('lodash');
@@ -13,12 +14,8 @@ class Service {
     return Promise.resolve([])
   }
   get(id, params) {
-    console.log('get schema..', id)
+    console.log('get schema..')
     var data = getFunction(id, params)
-    // var api = require(cpath + params.data.selectedDb + 'api')
-    // // console.log(conn)
-    // var data = api.getTables(params.data)
-    // // console.log(data)
     return Promise.resolve(data)
   }
   create(data, params) {
@@ -27,7 +24,8 @@ class Service {
   }
   update(id, data, params) {
     console.log('update schema..')
-    return Promise.resolve(id)
+    var data = updateFunction(id, params, data)
+    return Promise.resolve(data)
   }
   patch(id, data, params) {
     console.log('patch schema..')
@@ -35,7 +33,8 @@ class Service {
   }
   remove(id, params) {
     console.log('remove schema..')
-    return Promise.resolve(id)
+    var data = removeFunction(id, params)
+    return Promise.resolve(data)
   }
 }
 
@@ -64,6 +63,36 @@ var getFunction = async(function(id, params) {
   }
 })
 
+var updateFunction = async(function(id, params, data) {
+  var api = require(cpath + params.data.selectedDb + 'api')
+  if (params.query.schemaname != undefined && params.query.rid != undefined) {
+    var cdata = {
+      id: id,
+      tname: params.query.schemaname,
+      rid: params.query.rid,
+      data: data
+    }
+    var data = await (api.putSchemaRecord(params.data, cdata))
+    return data
+  } else {
+    throw new errors.BadRequest()
+  }
+})
+
+var removeFunction = async(function(id, params) {
+  var api = require(cpath + params.data.selectedDb + 'api')
+  if (params.query.schemaname != undefined && params.query.rid != undefined) {
+    var cdata = {
+      id: id,
+      tname: params.query.schemaname,
+      rid: params.query.rid
+    }
+    var data = await (api.deleteSchemaRecord(params.data, cdata))
+    return data
+  } else {
+    throw new errors.BadRequest()
+  }
+})
 
 
 module.exports = function(options) {

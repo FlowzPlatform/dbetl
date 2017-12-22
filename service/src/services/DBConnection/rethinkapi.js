@@ -117,6 +117,46 @@ module.exports = {
     }
   }),
 
+  putSchemaRecord: async(function (data, rdata) {
+    var conn = await( getConnection(data).then(res => {
+      return res
+    }).catch(err => {
+      return {iserror: true, msg: err}
+    }))
+    if (conn.hasOwnProperty('iserror') && conn.iserror) {
+      return conn
+    } else {
+      var id = rdata.rid;
+      var result = await(conn.table(rdata.tname).get(id).replace(rdata.data).run().then(res => {
+        conn.getPoolMaster().drain()
+        return res
+      }).catch(err => {
+        return {iserror: true, msg: err}
+      }))
+      return result
+    }
+  }),
+
+  deleteSchemaRecord: async(function (data, rdata) {
+    var conn = await( getConnection(data).then(res => {
+      return res
+    }).catch(err => {
+      return {iserror: true, msg: err}
+    }))
+    if (conn.hasOwnProperty('iserror') && conn.iserror) {
+      return conn
+    } else {
+      var id = rdata.rid;
+      var result = await(conn.table(rdata.tname).get(id).delete().run().then(res => {
+        conn.getPoolMaster().drain()
+        return res
+      }).catch(err => {
+        return {iserror: true, msg: err}
+      }))
+      return result
+    }
+  }),
+
   generateInstanceTable: async(function (data){
     // console.log('Rethink generate instance collection..........', ins_id, title);
     var title = data.title

@@ -8,9 +8,13 @@ module.exports = {
        hook => beforeGet(hook)
     ],
     create: [],
-    update: [],
+    update: [
+      hook => beforeGet(hook)
+    ],
     patch: [],
-    remove: []
+    remove: [
+      hook => beforeGet(hook)
+    ]
   },
 
   after: {

@@ -181,7 +181,7 @@ export default {
     setTableData () {
       var self = this
       schemaModel.get(self.$route.params.id, self.$route.params.tname).then(response => {
-        console.log('self.tableData', response)
+        // console.log('self.tableData', response)
         self.tableData = response
         // self.tcount = response.data.total
         for (var i = 0; i < self.tableData.length; i++) {
@@ -212,31 +212,33 @@ export default {
     //   this.jsoneditordata = value
     // },
     updatedvalue (index) {
-      var obj = {}
       if (this.tableData[index].hasOwnProperty('_id')) {
         this.viewData[index].data['_id'] = this.tableData[index]._id
       }
       if (this.tableData[index].hasOwnProperty('id')) {
         this.viewData[index].data['id'] = this.tableData[index].id
       }
-      obj.inst_id = this.$route.params.id
-      obj.tname = this.$route.params.tname
-      obj.data = this.viewData[index].data
+      // obj.inst_id = this.$route.params.id
+      // obj.tname = this.$route.params.tname
+      // obj.data = this.viewData[index].data
+      var instid = this.$route.params.id
+      var tname = this.$route.params.tname
+      var mdata = this.viewData[index].data
       var isequal = _.isEqual(this.viewData[index].data, this.tableData[index])
       // console.log('final value', this.jsoneditordata, this.tableData[this.openTrasformEditorIndex], ss)
       if (!isequal) {
         var mid
-        if (obj.data.hasOwnProperty('id')) {
-          mid = obj.data.id
+        if (mdata.hasOwnProperty('id')) {
+          mid = mdata.id
         }
-        if (obj.data.hasOwnProperty('_id')) {
-          mid = obj.data._id
+        if (mdata.hasOwnProperty('_id')) {
+          mid = mdata._id
         }
         if (mid !== undefined) {
-          schemaModel.put(mid, obj).then(response => {
-            // console.log('re', response.data)
-            this.tableData[index] = obj.data
-            var s = _.cloneDeep(obj.data)
+          schemaModel.put(instid, tname, mid, mdata).then(response => {
+            console.log('res', response)
+            this.tableData[index] = mdata
+            var s = _.cloneDeep(mdata)
             delete s._id
             delete s.id
             this.viewData[index].data = s
@@ -271,7 +273,7 @@ export default {
           title: 'Confirm',
           content: '<p>Are you sure you want to delete?</p>',
           onOk: () => {
-            schemaModel.deleteThis(id, instId, tname)
+            schemaModel.delete(instId, tname, id)
               .then(response => {
                 this.tableData.splice(index, 1)
                 this.viewData.splice(index, 1)

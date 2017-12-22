@@ -9,18 +9,16 @@ export default {
       })
     } else {
       if (schemaname === undefined) {
-        console.log('schemaname if', schemaname)
         return api.request('get', '/' + model + '/' + id).then(res => {
           return res.data
         })
       } else {
-        console.log('schemaname else', schemaname)
         return api.request('get', '/' + model + '/' + id + '?schemaname=' + schemaname).then(res => {
           return res.data
         })
       }
     }
-  }
+  },
   // getByNameId: (dbname, dbid) => {
   //   return api.request('get', '/' + model + '?dbname=' + dbname + '&dbid=' + dbid)
   // },
@@ -31,7 +29,14 @@ export default {
   // post: (data) => {
   //   return api.request('post', '/' + model, data)
   // },
-  // put: (id, data) => {
-  //   return api.request('put', '/' + model + '/' + id, data)
-  // }
+  put: (id, schemaname, rid, data) => {
+    return api.request('put', '/' + model + '/' + id + '?schemaname=' + schemaname + '&&rid=' + rid, data).then(res => {
+      return res.data
+    })
+  },
+  delete: (id, schemaname, rid) => {
+    return api.request('delete', '/' + model + '/' + id + '?schemaname=' + schemaname + '&&rid=' + rid).then(res => {
+      return res.data
+    })
+  }
 }
