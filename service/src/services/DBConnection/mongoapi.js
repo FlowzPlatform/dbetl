@@ -107,6 +107,22 @@ module.exports = {
     }
   }),
 
+  postSchemaRecord: async(function (data, rdata) {
+    var conn = await( getConnection(data).then(res => {
+      return res
+    }).catch(err => {
+      return {iserror: true, msg: err}
+    }))
+    if (conn.hasOwnProperty('iserror') && conn.iserror) {
+      return conn
+    } else {
+      // var id = new mongoose.Types.ObjectId(rdata.rid);
+      var result = await(conn.collection(rdata.tname).insert(rdata.data))
+      conn.close()
+      return result.ops[0]._id
+    }
+  }),
+
   putSchemaRecord: async(function (data, rdata) {
     var conn = await( getConnection(data).then(res => {
       return res

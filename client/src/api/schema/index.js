@@ -26,9 +26,11 @@ export default {
   // getThis: (id) => {
   //   return api.request('get', '/' + model + '/' + id)
   // },
-  // post: (data) => {
-  //   return api.request('post', '/' + model, data)
-  // },
+  post: (data) => {
+    return api.request('post', '/' + model + '?schemaname=' + data.tname, data).then(res => {
+      return res.data
+    })
+  },
   put: (id, schemaname, rid, data) => {
     return api.request('put', '/' + model + '/' + id + '?schemaname=' + schemaname + '&&rid=' + rid, data).then(res => {
       return res.data

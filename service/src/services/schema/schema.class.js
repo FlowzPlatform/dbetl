@@ -20,6 +20,7 @@ class Service {
   }
   create(data, params) {
     console.log('create schema..')
+    var data = createFunction(data, params)
     return Promise.resolve(data)
   }
   update(id, data, params) {
@@ -94,6 +95,21 @@ var removeFunction = async(function(id, params) {
   }
 })
 
+var createFunction = async(function(data, params) {
+  // console.log('>>>>>>>>>>>', params.conndata.selectedDb)
+  var api = require(cpath + params.conndata.selectedDb + 'api')
+  if (params.query.schemaname != undefined) {
+    var cdata = {
+      id: data.id,
+      tname: params.query.schemaname,
+      data: data.data
+    }
+    var data = await (api.postSchemaRecord(params.conndata, cdata))
+    return data
+  } else {
+    throw new errors.BadRequest()
+  }
+})
 
 module.exports = function(options) {
   return new Service(options);

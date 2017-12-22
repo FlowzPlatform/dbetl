@@ -145,6 +145,29 @@ module.exports = {
     }
   }),
 
+  postSchemaRecord: async(function (data, rdata) {
+    var conn = await( getConnection(data).then(res => {
+      return res
+    }).catch(err => {
+      return {iserror: true, msg: err}
+    }))
+    if (conn.hasOwnProperty('iserror') && conn.iserror) {
+      return conn
+    } else {
+      var result = await(conn.index({
+          index: data.dbname,
+          type: rdata.tname,
+          body: rdata.data
+        }).then(res => {
+        conn.close()
+        return res
+      }).catch(err => {
+        return {iserror: true, msg: err}
+      }))
+      return result._id
+    }
+  }),
+
   putSchemaRecord: async(function (data, rdata) {
     var conn = await( getConnection(data).then(res => {
       return res
