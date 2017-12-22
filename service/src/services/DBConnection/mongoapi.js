@@ -57,7 +57,7 @@ var MongoClient = require('mongodb').MongoClient;
 var getConnection = async (function(data) {
   // console.log(data)
   var uri = 'mongodb://' + ((data.username != '' ? data.username + ':' + data.password + '@' : '')) + data.host + ':' + data.port + '/' + data.dbname; 
-  console.log(uri)
+  // console.log(uri)
   var _data = await (MongoClient.connect(uri).then(res=> {
     return res
   }).catch(err=> {
@@ -102,6 +102,40 @@ module.exports = {
       return conn
     } else {
       var result = await(conn.collection(tname).find().toArray())
+      conn.close()
+      return result
+    }
+  }),
+
+  putSchemaRecord: async(function (data, rdata) {
+    var conn = await( getConnection(data).then(res => {
+      return res
+    }).catch(err => {
+      return {iserror: true, msg: err}
+    }))
+    if (conn.hasOwnProperty('iserror') && conn.iserror) {
+      return conn
+    } else {
+      var id = new mongoose.Types.ObjectId(rdata.rid);
+      delete rdata.data.id
+      delete rdata.data._id
+      var result = await(conn.collection(rdata.tname).updateOne({ _id: id }, { $set: rdata.data }))
+      conn.close()
+      return result
+    }
+  }),
+
+  deleteSchemaRecord: async(function (data, rdata) {
+    var conn = await( getConnection(data).then(res => {
+      return res
+    }).catch(err => {
+      return {iserror: true, msg: err}
+    }))
+    if (conn.hasOwnProperty('iserror') && conn.iserror) {
+      return conn
+    } else {
+      var id = new mongoose.Types.ObjectId(rdata.rid);
+      var result = await(conn.collection(rdata.tname).deleteOne({ _id: id }))
       conn.close()
       return result
     }
