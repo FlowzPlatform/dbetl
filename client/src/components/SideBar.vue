@@ -26,7 +26,8 @@
       </Row>
       
       <Row style="padding-left: 15px;max-height:1000px; overflow-y: auto">
-        <Tree :data="sidebarData" :load-data="loadData" @on-select-change="onSelect"></Tree>
+        <Spin v-if="isSet" size="large" style="align:center"></Spin>
+        <Tree v-else :data="sidebarData" :load-data="loadData" @on-select-change="onSelect"></Tree>
       </Row>
     </div>
   </div>
@@ -43,10 +44,7 @@
   export default {
     data () {
       return {
-        orderby: 'asc',
-        groupby: true,
-        sideBarList: true,
-        allConnData: [],
+        isSet: true,
         sidebarData: [],
         mongo,
         rethink,
@@ -76,30 +74,30 @@
       }
     },
     feathers: {
-      'settings': {
+      'databases': {
         updated (data) {
           // console.log('connectiondata updated..', data)
-          // this.init()
+          this.init()
         },
         created (data) {
           // console.log('connectiondata created..', data)
-          // this.init()
+          this.init()
         },
         removed (data) {
           // console.log('connectiondata removed..', data)
-          // this.init()
+          this.init()
         }
       }
     },
     methods: {
       onSelect (node) {
-        // console.log(tname)
-        // this.setData(data.title, '/recordList/'+iObj.inst_id+'/'+tObj.t_name, mObj.db, iObj.inst_id, tObj.t_name, 'list')
+        // console.log(node)
+        this.setData(node[0])
       },
       loadData (item, callback) {
         schema.get(item.id).then(response => {
           console.log('response.iserror', response)
-          if (response.data.iserror) {
+          if (response.iserror) {
             this.$Notice.error({
               duration: 3,
               title: 'Connection Error',
@@ -107,7 +105,7 @@
             })
             callback([])
           } else {
-            let treeData = _.map(response.data, m => {
+            let treeData = _.map(response, m => {
               return {
                 title: m.name,
                 id: item.id,
@@ -192,23 +190,25 @@
             })
           }
         }).value()
+        this.isSet = false
       },
-      setData (name, url, db, instId, tname, type) {
-        var id = db + instId + tname
-        var obj = {name: name, url: url, id: id, type: type}
+      setData (obj) {
+        var url = '/recordList/' + obj.id + '/' + obj.title
+        var id = obj.selectedDb + obj.id + obj.title
+        var sobj = {name: obj.title, url: url, id: obj.title, type: 'list'}
         var self = this
         var flag = 0
         // console.log('obj', obj)
         // console.log(this.$store.state.tabdata.length)
         this.$store.state.tabdata.forEach(function (result, i) {
-          if (result.id === id && result.type === type) {
+          if (result.id === id && result.type === 'list') {
             flag = 1
             self.$store.state.activetab = i
             self.$router.push(result.url)
           }
         })
         if (flag === 0) {
-          this.$store.dispatch('getTabdata', obj)
+          this.$store.dispatch('getTabdata', sobj)
           this.$store.state.activetab = this.$store.state.tabdata.length - 1
           this.$router.push(url)
         }
@@ -339,5 +339,18 @@
     font-size: 18px;
     padding-top: 3px;
   }
-
+  .ivu-spin-dot {
+    position: relative;
+    display: block;
+    border-radius: 50%;
+    background-color: #fff;
+    margin: 20px 0px 0px 150px;
+    animation: ani-spin-bounce 1s 0s ease-in-out infinite;
+  }
+  .ivu-tree-empty {
+    color: #eee;
+    font-size: 16px;
+    text-align: center;
+    margin-top: 10px;
+  }
 </style>

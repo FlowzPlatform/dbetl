@@ -14,7 +14,7 @@
           </Breadcrumb>
         </Col>
         <Col span="3">
-          Total: &nbsp;<b>{{tcount}}</b>        
+          Total: &nbsp;<b>{{tableData.length}}</b>        
         </Col>
       </Row>
       <Row>
@@ -103,8 +103,10 @@
 </template>
 
 <script>
-import ConnectionData from '../api/connectiondata'
-import settings from '../api/settings'
+// import ConnectionData from '../api/connectiondata'
+import databasesModel from '../api/databases'
+import schemaModel from '../api/schema'
+// import settings from '../api/settings'
 import Tab from './Tab'
 import vueJsonEditor from 'vue-json-editor'
 
@@ -165,8 +167,8 @@ export default {
     },
     async setCrumbData () {
       var self = this
-      var _res = await settings.getThis(self.$route.params.id).then(res => {
-        return res.data
+      var _res = await databasesModel.get(self.$route.params.id).then(res => {
+        return res
       }).catch(error => {
         console.log('Network Error', error)
       })
@@ -178,10 +180,10 @@ export default {
     },
     setTableData () {
       var self = this
-      ConnectionData.getRecords(self.$route.params.id, self.$route.params.tname, self.sl, self.el).then(response => {
-        self.tableData = response.data.data
-        // console.log('self.tableData', self.tableData)
-        self.tcount = response.data.total
+      schemaModel.get(self.$route.params.id, self.$route.params.tname).then(response => {
+        console.log('self.tableData', response)
+        self.tableData = response
+        // self.tcount = response.data.total
         for (var i = 0; i < self.tableData.length; i++) {
           var obj = _.cloneDeep(self.tableData[i])
           delete obj.id
@@ -193,7 +195,7 @@ export default {
         this.$Notice.error({
           title: error,
           desc: 'Network Error',
-          duration: 0
+          duration: 3
         })
         self.setData = true
       })
@@ -231,8 +233,8 @@ export default {
           mid = obj.data._id
         }
         if (mid !== undefined) {
-          ConnectionData.put(mid, obj).then(response => {
-            // console.log('response', response.data)
+          schemaModel.put(mid, obj).then(response => {
+            // console.log('re', response.data)
             this.tableData[index] = obj.data
             var s = _.cloneDeep(obj.data)
             delete s._id
@@ -269,7 +271,7 @@ export default {
           title: 'Confirm',
           content: '<p>Are you sure you want to delete?</p>',
           onOk: () => {
-            ConnectionData.deleteThis(id, instId, tname)
+            schemaModel.deleteThis(id, instId, tname)
               .then(response => {
                 this.tableData.splice(index, 1)
                 this.viewData.splice(index, 1)
@@ -312,7 +314,7 @@ export default {
     }
   },
   feathers: {
-    'connectiondata': {
+    'schema': {
       updated (data) {
         // console.log('connectiondata updated..', data)
         // this.setData = false
