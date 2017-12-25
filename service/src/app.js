@@ -34,7 +34,7 @@ app.configure(hooks());
 app.configure(rethinkdb);
 app.configure(rest());
 // app.configure(socketio());
-app.configure(socketio(4034, {
+app.configure(socketio(3034, {
   wsEngine: 'uws',
   origin: '*.flowz.com:*'
 }));
