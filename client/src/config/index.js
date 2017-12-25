@@ -19,7 +19,7 @@ var temp = {
 if (process.env.NODE_ENV !== 'development') {
   temp = {
     serverURI: 'http://api.flowz.com/dbetl', // 'http://api.flowz.com/dbetl', // ws.flowz.com:4034
-    socketURI: 'http://ws.flowz.com:4034',
+    socketURI: 'http://ws.flowz.com:3034',
     fixedLayout: false,
     hideLogoOnMobile: false,
     microURI: 'http://auth.flowz.com/api',
