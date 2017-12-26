@@ -441,10 +441,11 @@
 </template>
 
 <script>
-/*eslint-disable*/
+/* eslint no-new: 'error' */
+/* eslint no-extend-native: ["error", { "exceptions": ["String"] }] */
+
 const $ = require('jquery')
 var Schema = require('simpleschema')
-let axios = require("axios")
 import Papa from 'papaparse'
 import api from '../api'
 import schema from '../api/schema'
@@ -461,12 +462,12 @@ import config from '@/config'
 import _ from 'underscore'
 import expandRow from './table-expand.vue'
 import Emitter from '@/mixins/emitter'
-import moment from "moment";
-import VueMomentJS from "vue-momentjs";
+import moment from 'moment'
+// import VueMomentJS from 'vue-momentjs'
 import Multiselect from 'vue-multiselect'
-import io from 'socket.io-client';
-import feathers from 'feathers/client';
-import socketio from 'feathers-socketio/client';
+import io from 'socket.io-client'
+import feathers from 'feathers/client'
+import socketio from 'feathers-socketio/client'
 
 let socket
 if (process.env.NODE_ENV !== 'development') {
@@ -474,94 +475,70 @@ if (process.env.NODE_ENV !== 'development') {
 } else {
   socket = io(config.socketURI)
 }
-// const socket = io(config.serverURI);
-const app = feathers()
-  .configure(socketio(socket));
-moment().format();
-// const socket = io(config.serverURI);
-// const app = feathers()
-//   .configure(socketio(socket));
-// moment().format();
+const app = feathers().configure(socketio(socket)) // eslint-disable-line
+moment().format()
 
-let res;
-let finalModifiedDataArray = [];
-let id;
+let res
+let finalModifiedDataArray = []
+let id
 let logs = []
-let baseUrl = config.serverURI
 let savedObj
 let errors
 let err
-let del_err
-let save_err
-socket.on('response',function(res){
-  console.log("++++++++++",res)
-  if(res.errors == 0){
+let delErr
+let saveErr
+socket.on('response', (res) => {
+  if (res.errors === 0) {
     errors = res.errors
-    api.request('patch', '/import-tracker/'+id,savedObj).then(function(res){
-      console.log("response",res.data)
+    api.request('patch', '/import-tracker/' + id, savedObj).then(res => {
+      console.log('response', res.data)
     })
     .catch(error => {
-      console.log(error);
+      console.log(error)
     })
   }
 })
-socket.on('res',function(res){
-
-  if(res.stderr == "" || (JSON.parse(res.stdout)).errors == false){
+socket.on('res', (res) => {
+  if (res.stderr === '' || (JSON.parse(res.stdout)).errors === false) {
     err = res.stderr
-    console.log("+++++++++++++++",res.stdout.search("errors"))
-    if(res.stdout.search("errors") != -1){
+    if (res.stdout.search('errors') !== -1) {
       err = (JSON.parse(res.stdout)).errors
     }
-    console.log("iiiiiiiiiiiiii",err)
-    console.log("logs.....",logs)
-    logs.push({date:Date(),status:"import_staging_completed"})
+    logs.push({date: Date(), status: 'import_staging_completed'})
     var obj = {
       status: 'import_staging_completed',
       modified: Date(),
-      log:logs
+      log: logs
     }
-    api.request('patch', '/import-tracker/'+id, obj).then(function(res){
-      console.log("response",res.data)
-      console.log("++++++++++++")
+    api.request('patch', '/import-tracker/' + id, obj).then(res => {
+      console.log('response', res.data)
     })
     .catch(error => {
-      console.log(error);
+      console.log(error)
     })
-
   }
-});
-socket.on('error',function(_res){
-  console.log("error.....",_res)
-  save_err = _res
-  // self.loadingData = false
-  // self.$Notice.error({title:"Error!",desc: "Error in saving CSV...!  Kindly check your data"})
 })
-socket.on('delete',function(res){
-  console.log('delete',res)
-  if(res.ok == 1 || res.errors == 0 || res == "Deleted"){
-    del_err = res
-    logs.push({date:Date(),status:"import_rolled_back"})
+socket.on('error', (_res) => {
+  console.log('error.....', _res)
+  saveErr = _res
+})
+socket.on('delete', (res) => {
+  if (res.ok === 1 || res.errors === 0 || res === 'Deleted') {
+    delErr = res
+    logs.push({date: Date(), status: 'import_rolled_back'})
     var obj = {
       status: 'import_staging_running',
       modified: Date(),
-      log:logs
+      log: logs
     }
-    api.request('patch', '/import-tracker/'+id, obj).then(function(res){
-      console.log("response",res.data)
-      // self.importButton = true
-      // // self.disabled = true
-      // self.disableImport = false
-      // self.completed = false
+    api.request('patch', '/import-tracker/' + id, obj).then(res => {
+      console.log('response', res.data)
     })
     .catch(error => {
-      console.log(error);
+      console.log(error)
     })
   }
-
 })
-
-
 export default {
   name: 'Settings',
   mixins: [Emitter],
@@ -578,35 +555,34 @@ export default {
     },
     obj: Object
   },
-  data() {
+  data () {
     const validatePort = (rule, value, callback) => {
       if (value === '') {
-        callback(new Error('Please enter port number'));
+        callback(new Error('Please enter port number'))
       } else {
         if ((this.frmSettings.selectedDb === 'rethink' && value === '9200') || (this.frmSettings.selectedDb === 'rethink' && value === '27017') || (this.frmSettings.selectedDb === 'rethink' && value === '8080') || (this.frmSettings.selectedDb ===
             'mongo' && value === '9200' || this.frmSettings.selectedDb ===
             'mongo' && value === '28015')) {
-          callback(new Error('Please enter valid port'));
+          callback(new Error('Please enter valid port'))
         } else {
-          callback();
+          callback()
         }
       }
-    };
-    const validateConn_name = async(rule, value, callback) => {
+    }
+    const validateConnName = async(rule, value, callback) => {
       var res = await this.validateName(value, this.frmSettings.selectedDb)
-      // console.log('res..// ', res)
       if (res === 'yes') {
         callback(new Error('Already Exist....'))
       } else {
-        callback();
+        callback()
       }
-    };
+    }
     return {
       checkdefault: false,
       check_conn: false,
       conn_icon: 'load-a',
       displaymessage: false,
-      value: "",
+      value: '',
       options: [],
       validateButton: false,
       // parsedata: [],
@@ -618,12 +594,12 @@ export default {
       currentStep: 0,
       check: this.checked,
       expand: false,
-      moment : moment,
+      moment: moment,
       disabled: false,
-      disableImport : false,
+      disableImport: false,
       headerDetails: true,
       previewdetails: true,
-      completed : false,
+      completed: false,
       transformData: '',
       transformMethod: '',
       modelIndex: '',
@@ -643,7 +619,7 @@ export default {
       },
       frmSettings: {
         isenable: true,
-        connection_name: 'connection_'+ moment().unix(),
+        connection_name: 'connection_' + moment().unix(),
         host: 'localhost',
         port: '',
         dbname: 'defaultdb',
@@ -670,13 +646,13 @@ export default {
           message: 'Please enter connection name',
           trigger: 'blur'
         },
-        { validator: validateConn_name, trigger: 'blur' }
+        { validator: validateConnName, trigger: 'blur' }
         ],
         host: [{
           required: true,
           message: 'Please enter host name',
           trigger: 'blur'
-        }, ],
+        }],
         port: [
         // {
         //   required: true,
@@ -694,7 +670,7 @@ export default {
           required: true,
           message: 'Please Select optio',
           trigger: 'blur'
-        }, ],
+        }]
       },
       mongo,
       rethink,
@@ -746,45 +722,44 @@ export default {
     }
   },
   methods: {
-    setTransForm : function() {
+    setTransForm: function () {
       this.transformData = this.modelData
-      if(this.csvData[this.modelIndex].transformMethod) {
+      if (this.csvData[this.modelIndex].transformMethod) {
         this.dataMethod = this.csvData[this.modelIndex].transformMethod
         this.transformData = this.modelData + '.' + this.dataMethod
       }
     },
-    modelshow:  function (item,index) {
+    modelshow: function (item, index) {
       this.model = true
       this.modelData = 'return row["' + item + '"]'
       this.modelIndex = index
       this.dataMethod = ''
       this.setTransForm()
     },
-    transform: function(event) {
-      var targetEl = event.currentTarget;
-      if(targetEl.getAttribute('data-method')){
+    transform: function (event) {
+      var targetEl = event.currentTarget
+      if (targetEl.getAttribute('data-method')) {
         this.dataMethod = targetEl.getAttribute('data-method')
-        if(this.dataMethod){
+        if (this.dataMethod) {
           this.transformData = this.modelData + '.' + this.dataMethod
         }
       }
       return this.transformData
     },
-    removeTransform: function (item,index) {
+    removeTransform: function (item, index) {
       this.modelData = 'return row["' + item + '"]'
       this.csvData[index].transformMethod = ''
       this.setTransForm()
       this.handleModalOk()
     },
-    checkdefaultfun: async function() {
+    checkdefaultfun: async function () {
       // console.log('................')
       var _res = await api.request('get', '/settings')
-      var dbins_l = 0
-      for(let db in _res.data) {
-        dbins_l += _res.data[db].dbinstance.length
+      var dbinsl = 0
+      for (let db in _res.data) {
+        dbinsl += _res.data[db].dbinstance.length
       }
-      // console.log(dbins_l)
-      if(dbins_l === 0) {
+      if (dbinsl === 0) {
         // return false
         this.checkdefault = true
         this.frmSettings.isdefault = true
@@ -794,18 +769,16 @@ export default {
       this.headerDetails = true
     },
     showPreviewDetails () {
-        this.previewdetails = true
+      this.previewdetails = true
     },
     hideHeaderDetails () {
       this.headerDetails = false
     },
     hidePreviewDetails () {
-        this.previewdetails = false
+      this.previewdetails = false
     },
-    validateName: async function(value, db) {
-      // console.log('value', value, db)
+    validateName: async function (value, db) {
       var _res = await api.request('get', '/settings?dbname=' + db)
-      // console.log('_res/// ', _res.data)
       var flag = false
       for (let i = 0; i < _res.data.length; i++) {
         if (_res.data[i].connection_name === value) {
@@ -818,19 +791,18 @@ export default {
         return 'yes'
       }
     },
-    uploadCsv() {
+    uploadCsv () {
       let self = this
-      // console.log("uploadCsv called....")
-      $(document).ready(function() {
-        $('#upldCSV').change(function() {
+      $(document).ready(function () {
+        $('#upldCSV').change(function () {
           // console.log("called")
-          let fileChooser = document.getElementById('upldCSV');
-          let file = fileChooser.files[0];
+          let fileChooser = document.getElementById('upldCSV')
+          let file = fileChooser.files[0]
 
           Papa.parse(file, {
             header: true,
-            encoding: "UTF-8",
-            complete: function(results, file) {
+            encoding: 'UTF-8',
+            complete: function (results, file) {
               console.log(results.data)
               // console.log("Parsing complete:", results.data, file);
               results.data.optType = [{
@@ -853,20 +825,15 @@ export default {
                 label: 'Date'
               }]
 
-
-              self.frmSettings.upldCSV = results.data;
-              self.uploadedCSVData = results.data;
-              // console.log("--------------------->", self.frmSettings.upldCSV, self.frmSettings.upldCSV)
-              self.headers = Object.keys(self.frmSettings.upldCSV[0]);
-              // console.log("*************",self.headers)
-              for(var i=0;i<self.headers.length;i++){
-                self.complexSchema[self.headers[i]] = {"type":"string"}
+              self.frmSettings.upldCSV = results.data
+              self.uploadedCSVData = results.data
+              self.headers = Object.keys(self.frmSettings.upldCSV[0])
+              for (var i = 0; i < self.headers.length; i++) {
+                self.complexSchema[self.headers[i]] = {'type': 'string'}
               }
-              // console.log("self.complexSchema................",self.complexSchema)
-              self.options = self.headers;
+              self.options = self.headers
               self.displaymessage = true
               self.validateButton = true
-              console.log("self.options ", self.options);
               _.forEach(self.headers, (f) => {
                 self.csvData.push({
                   id: f,
@@ -885,31 +852,30 @@ export default {
                   transformMethod: ''
                 })
               })
-              logs.push({date:Date(),status:"upload_completed"})
+              logs.push({date: Date(), status: 'upload_completed'})
               var obj = {
                 status: 'upload_completed',
                 modified: Date(),
-                log:logs
+                log: logs
               }
-              api.request('patch', '/import-tracker/'+id, obj).then(function(res){
-                console.log("response",res.data)
+              api.request('patch', '/import-tracker/' + id, obj).then(res => {
+                console.log('response', res.data)
               })
               .catch(error => {
-                console.log(error);
+                console.log(error)
               })
             },
-            error: function(error, file) {
-              console.log("Error", error);
+            error: (error, file) => {
+              console.log('Error', error)
             }
-          });
-        });
-      });
+          })
+        })
+      })
     },
-
-    customLabel(option) {
+    customLabel (option) {
       return `${option}`
     },
-    getSchemaAll: function(value) {
+    getSchemaAll: function (value) {
       // // alert(value)
       // if (value === 'rbtDB') {
       //     schema.get()
@@ -922,601 +888,523 @@ export default {
       //         })
       // }
     },
-    type(index) {
-      var arr = [];
-
-      console.log("iiiiiiiiiiiiiiiiiii",this.csvData[index].type)
-      // console.log("dsav",this.csvData.length)
-      // _.forEach(this.csvData, function(value){
-      //   console.log("hiiiii",value)
-      //   arr.push(type=value.type)
-      // })
-      // this.model1 = this.csvData[index].type
+    type () {       // type (index) {
       this.validateButton = true
       this.loadingData = false
-      this.errmsg = [];
-      this.data1 = [];
+      this.errmsg = []
+      this.data1 = []
       let headerSchema = {}
-
       for (var [index, item] of this.headers.entries()) {
         var self = this
-        let emailValidatorFunc = function(obj, value, fieldName) {
-          let re = /\S+@\S+\.\S+/;
-          if (value != undefined) {
-            if (re.test(value) != true) return 'invalid email address';
-            return;
+        let emailValidatorFunc = function (obj, value, fieldName) {
+          let re = /\S+@\S+\.\S+/
+          if (value !== undefined) {
+            return (re.test(value) !== true) ? 'invalid email address' : ''
           }
-        };
-        let dateValidatorFunc = function(obj, value, fieldName) {
-          let date = moment(value);
-          let isValid = date.isValid();
-          if (isValid != true) return 'invalid date. please provide date in y-m-d or d-m-y format';
+        }
+        let dateValidatorFunc = function (obj, value, fieldName) {
+          let date = moment(value)
+          let isValid = date.isValid()
+          if (isValid !== true) return 'invalid date. please provide date in y-m-d or d-m-y format'
           date._d = moment(new Date(date._d)).format('DD/MM/YYYY')
-          return;
+          return
         }
 
-        let phoneValidatorFunc = function(obj, value, fieldName) {
-          let re = /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/im;
-          // console.log(value);
-          if (value != undefined) {
-            if (re.test(value) != true) return 'invalid phone number';
-            return;
+        let phoneValidatorFunc = function (obj, value, fieldName) {
+          let re = /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/im // eslint-disable-line
+          if (value !== undefined) {
+            return (re.test(value) !== true) ? 'invalid phone number' : ''
           }
         }
-        let getFunctionText = function(obj, value, fieldName) {
+        let getFunctionText = function (obj, value, fieldName) {
           var func1 = allowedValueValidatorFunc(obj, value, fieldName)
           var func2 = regExValidatorFunc(obj, value, fieldName)
-          if (func1 != undefined) {
+          if (func1 !== undefined) {
             return func1
-          } else if (func2 != undefined) {
+          } else if (func2 !== undefined) {
             return func2
           } else {
-            return;
+            return
           }
         }
-        let getFunctionEmail = function(obj, value, fieldName) {
+        let getFunctionEmail = function (obj, value, fieldName) {
           var func1 = emailValidatorFunc(obj, value, fieldName)
           var func2 = allowedValueValidatorFunc(obj, value, fieldName)
-          if (func1 != undefined) {
+          if (func1 !== undefined) {
             return func1
-          } else if (func2 != undefined) {
+          } else if (func2 !== undefined) {
             return func2
           } else {
-            return;
+            return
           }
         }
-        let getFunctionNumber = function(obj, value, fieldName) {
+        let getFunctionNumber = function (obj, value, fieldName) {
           var func1 = allowedValueValidatorFunc(obj, value, fieldName)
           var func2 = regExValidatorFunc(obj, value, fieldName)
-          if (func1 != undefined) {
+          if (func1 !== undefined) {
             return func1
-          } else if (func2 != undefined) {
+          } else if (func2 !== undefined) {
             return func2
           } else {
-            return;
+            return
           }
         }
-        let getFunctionPhone = function(obj, value, fieldName) {
+        let getFunctionPhone = function (obj, value, fieldName) {
           var func1 = allowedValueValidatorFunc(obj, value, fieldName)
           var func2 = regExValidatorFunc(obj, value, fieldName)
           var func3 = phoneValidatorFunc(obj, value, fieldName)
-          if (func1 != undefined) {
+          if (func1 !== undefined) {
             return func1
-          } else if (func2 != undefined) {
+          } else if (func2 !== undefined) {
             return func2
-          } else if (func3 != undefined) {
+          } else if (func3 !== undefined) {
             return func3
           } else {
-            return;
+            return
           }
         }
-        let getFunctionDate = function(obj, value, fieldName) {
+        let getFunctionDate = function (obj, value, fieldName) {
           var func1 = allowedValueValidatorFunc(obj, value, fieldName)
           var func2 = regExValidatorFunc(obj, value, fieldName)
           var func3 = dateValidatorFunc(obj, value, fieldName)
-          if (func1 != undefined) {
+          if (func1 !== undefined) {
             return func1
-          } else if (func2 != undefined) {
+          } else if (func2 !== undefined) {
             return func2
-          } else if (func3 != undefined) {
+          } else if (func3 !== undefined) {
             return func3
           } else {
-            return;
+            return
           }
         }
-        let allowedValueValidatorFunc = function(obj, value, fieldName) {
+        let allowedValueValidatorFunc = function (obj, value, fieldName) {
           // console.log("@@@@@@@@@@@@@@@",fieldName)
-          var i;
-          _.forEach(self.headers, function(value, key) {
-            if (fieldName == value) {
-              i = key;
+          var i
+          _.forEach(self.headers, function (value, key) {
+            if (fieldName === value) {
+              i = key
             }
           })
-          console.log("aaaaaaaaaaaaaaaaaa", self.csvData[i].allowedValue)
           if (self.csvData[i].allowedValue.length > 0) {
-            if (value != undefined) {
+            if (value !== undefined) {
               let check = _.includes(self.csvData[i].allowedValue, value)
-              if (!check) return 'invalid allowedValue';
-              return;
+              return (!check) ? 'invalid allowedValue' : ''
             }
           }
-        };
+        }
 
-        let regExValidatorFunc = function(obj, value, fieldName) {
-          console.log("rrrrrrrrrrrrrrr")
-          var i;
-          _.forEach(self.headers, function(value, key) {
-            if (fieldName == value) {
-              i = key;
+        let regExValidatorFunc = function (obj, value, fieldName) {
+          var i
+          _.forEach(self.headers, function (value, key) {
+            if (fieldName === value) {
+              i = key
             }
           })
           if (self.csvData[i].regEx !== '') {
-            if (value != undefined) {
+            if (value !== undefined) {
               let pttrn = new RegExp(self.csvData[i].regEx)
-              if (pttrn.test(value) == false) return 'not match with regEx value'
-              return;
+              if (pttrn.test(value) === false) return 'not match with regEx value'
+              return
             }
           }
-        };
+        }
 
-        if (this.csvData[index].optional == true) {
-          if (this.csvData[index].type == 'text') {
+        if (this.csvData[index].optional === true) {
+          if (this.csvData[index].type === 'text') {
             headerSchema[item] = {
               type: 'string'
-            };
-          } else if (this.csvData[index].type == 'email') {
-            //headerSchema[item] = {type:'string',regEx:/^[a-z0-9_.]+[@][a-z]+[.][a-z][a-z]+$/};
+            }
+          } else if (this.csvData[index].type === 'email') {
             headerSchema[item] = {
               type: 'string',
               validator: emailValidatorFunc
-            };
-          } else if (this.csvData[index].type == 'number') {
+            }
+          } else if (this.csvData[index].type === 'number') {
             headerSchema[item] = {
               type: 'number'
-            };
-          } else if (this.csvData[index].type == 'boolean') {
+            }
+          } else if (this.csvData[index].type === 'boolean') {
             headerSchema[item] = {
               type: 'boolean'
-            };
-          } else if (this.csvData[index].type == 'phone') {
+            }
+          } else if (this.csvData[index].type === 'phone') {
             headerSchema[item] = {
               type: 'string',
               validator: phoneValidatorFunc
-            };
-          } else if (this.csvData[index].type == 'date') {
+            }
+          } else if (this.csvData[index].type === 'date') {
             headerSchema[item] = {
               type: 'string',
               validator: dateValidatorFunc
-            };
+            }
           }
-        } else if (this.csvData[index].optional == false) {
-          if (this.csvData[index].type == 'text') {
+        } else if (this.csvData[index].optional === false) {
+          if (this.csvData[index].type === 'text') {
             headerSchema[item] = {
               type: 'string',
               max: this.csvData[index].max,
               validator: getFunctionText
-            };
-          } else if (this.csvData[index].type == 'email') {
+            }
+          } else if (this.csvData[index].type === 'email') {
             headerSchema[item] = {
               type: 'string',
               validator: getFunctionEmail
-            };
-          } else if (this.csvData[index].type == 'number') {
+            }
+          } else if (this.csvData[index].type === 'number') {
             headerSchema[item] = {
               type: 'string',
               max: this.csvData[index].max,
               min: this.csvData[index].min,
               validator: getFunctionNumber
-            };
-          } else if (this.csvData[index].type == 'boolean') {
+            }
+          } else if (this.csvData[index].type === 'boolean') {
             headerSchema[item] = {
               type: 'boolean'
-            };
-          } else if (this.csvData[index].type == 'phone') {
+            }
+          } else if (this.csvData[index].type === 'phone') {
             headerSchema[item] = {
               type: 'string',
               validator: getFunctionPhone
-            };
-          } else if (this.csvData[index].type == 'date') {
+            }
+          } else if (this.csvData[index].type === 'date') {
             headerSchema[item] = {
               type: 'string',
               validator: getFunctionDate
-            };
+            }
           }
         }
-
       }
       this.complexSchema = headerSchema
-      console.log("++++++++++",this.complexSchema,this.headers )
     },
-    insertCsvData(data) {
+    insertCsvData (data) {
       var self = this
       self.loadingData = true
-      logs.push({date:Date(),status:'validation_running'})
+      logs.push({date: Date(), status: 'validation_running'})
       var obj = {
         status: 'validation_running',
         log: logs
       }
-      api.request('patch', '/import-tracker/'+id, obj).then(function(res){
-        console.log("response",res.data)
+      api.request('patch', '/import-tracker/' + id, obj).then(res => {
+        console.log('response', res.data)
       })
       .catch(error => {
-        console.log(error);
+        console.log(error)
       })
-
-      setTimeout(function() {
+      setTimeout(function () {
         // alert(this.validatingData)
         var schema = new Schema(self.complexSchema)
 
         // var data1 = []
         var errcols = []
 
-        self.userUploadedDataArray = data;
-        // console.log(">>>> this.complexSchema " , self.complexSchema);
+        self.userUploadedDataArray = data
+        // var schema = new Schema(self.complexSchema)
 
-        var schema = new Schema(self.complexSchema)
-        // console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>.data ' , data);
-        // console.log(">>>>>>>>>>>>>>> userUploadedDataArray" , this.userUploadedDataArray);
-        // console.log("new headers ", this.headers);
-        // modify headers as per the changes
-        // asign new data to the data object
-
-
-        _.forEach(data, function(value, key) {
-          schema.validate(value, function(err, newP, errors) {
+        _.forEach(data, function (value, key) {
+          schema.validate(value, function (err, newP, errors) {
             if (err) {
-              throw err;
+              throw err
             } else {
               if (errors.length) {
-                // console.log("Validation errors!");
-                // console.log("error at : "+ JSON.stringify(errors) + " on row "+ key);
+                // console.log("Validation errors!")
+                // console.log("error at : "+ JSON.stringify(errors) + " on row "+ key)
                 // errrows.push(key)
-                if (!_.isEqual(Object.values(value),[""]))
-                {
+                if (!_.isEqual(Object.values(value), [''])) {
                   self.data1.push(Object.values(value))
-                  // console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@",self.data1)
-
-                  // self.errmsg.push("error at : "+ JSON.stringify(errors) + " on row "+ key)
-                  // console.log("*****************errmsg",self.errmsg);
-                  let old_headers = _.keys(self.frmSettings.upldCSV[0]);
+                  let oldHeaders = _.keys(self.frmSettings.upldCSV[0])
                   _.forEach(errors, (item) => {
-
-                    // console.log("}}}}}}}}}}}}}}}}}",new headers)
                     errcols.push({
-                      cols: _.indexOf(old_headers, item.field),
+                      cols: _.indexOf(oldHeaders, item.field),
                       rows: key
                     })
-                    // console.log("}}}}}}}}}}}}}}}}}",item.field)
-                    // console.log("@@@@@@@@@@@@@@@@@@",item.message)
-                    self.errmsg.push("* " + item.message + " at column: " + item.field)
-                    // console.log("!!!!!!!!!!!!!!!!!!",self.errmsg)
-                    // console.log("123456",errcols)
+                    self.errmsg.push('* ' + item.message + ' at column: ' + item.field)
                   })
                   self.showHandson = true
                 }
               } else {
-                console.log("row " + key + " successfully parsed");
-                // console.log( newP );
+                console.log('row ' + key + ' successfully parsed')
               }
             }
-          });
+          })
         })
-        console.log(data.length,self.data1)
         self.loadingData = false
         self.validateButton = false
-        // .log("@@@@@@@@@@@@",self.data1)
-        if (self.data1.length == 0) {
-          document.getElementById("example1").style.display = "none";
+        if (self.data1.length === 0) {
+          document.getElementById('example1').style.display = 'none'
           self.errmsg = []
-          self.$Message.success('validation successfully complited');
+          self.$Message.success('validation successfully complited')
           self.headerDetails = false
           self.saveButton = true
-          logs.push({date:Date(),status:'validation_completed'})
+          logs.push({date: Date(), status: 'validation_completed'})
           var obj = {
             status: 'validation_completed',
             modified: Date(),
-            log:logs
+            log: logs
           }
-          api.request('patch', '/import-tracker/'+id, obj).then(function(res){
-            console.log("response",res.data)
+          api.request('patch', '/import-tracker/' + id, obj).then(res => {
+            console.log('response', res.data)
           })
           .catch(error => {
-            console.log(error);
+            console.log(error)
           })
         } else {
-          // self.$Message.error('validation error');
+          // self.$Message.error('validation error')
         }
         self.showerrmsg(errcols)
-        document.getElementById("hot-display-license-info").style.display = "none";
+        document.getElementById('hot-display-license-info').style.display = 'none'
       }, 1000)
     },
-    showerrmsg(errcols) {
+    showerrmsg (errcols) {
       var headers = []
-      var
-        example1 = document.getElementById('example1'),
-        hot;
-      _.forEach(this.csvData, function(value) {
+      var example1 = document.getElementById('example1')
+      _.forEach(this.csvData, (value) => {
         headers.push(value.header)
       })
-      hot = new Handsontable(example1, {
+      new Handsontable(example1, { // eslint-disable-line
         data: [this.data1[0]],
         // rowHeaders: true,
         colHeaders: headers,
         // rowHeaders: true,
         height: 60,
-        cells: function(row, col) {
-          var cellProp = {};
-          _.forEach([errcols[0]], function(value, key) {
+        cells: (row, col) => {
+          var cellProp = {}
+          _.forEach([errcols[0]], (value, key) => {
             if (col === value.cols && row === key) {
-              cellProp.className = 'error';
+              cellProp.className = 'error'
             }
-          });
-          return cellProp;
+          })
+          return cellProp
         }
-      });
+      })
     },
-    modifyData() {
-
+    modifyData () {
       let schema = new Schema(this.complexSchema)
-      let colHeaders = this.headers;
-      let hotSettingsData = this.data1;
-      let showHandson = this.showHandson;
-      let errMsgArray = this.errmsg;
-      let userUploadedDataArr = this.userUploadedDataArray;
-      let newHotSettingsData = [];
+      let colHeaders = this.headers
+      let hotSettingsData = this.data1
+      let showHandson = this.showHandson // eslint-disable-line
+      let errMsgArray = this.errmsg
+      let userUploadedDataArr = this.userUploadedDataArray
+      let newHotSettingsData = []
 
-      errMsgArray = [];
-      var errcols = [];
-      var self = this;
-      // console.log("valueToBeValidat hotSettingsData " , hotSettingsData);
-      // console.log("valueToBeValidat colHeaders " , colHeaders);
-      _.forEach(hotSettingsData, function(value, key) {
+      errMsgArray = []
+      var errcols = []
+      var self = this
+      // console.log("valueToBeValidat hotSettingsData " , hotSettingsData)
+      // console.log("valueToBeValidat colHeaders " , colHeaders)
+      _.forEach(hotSettingsData, (value, key) => {
         let valueToBeValidated = _.object(colHeaders, value)
-        schema.validate(valueToBeValidated, function(err, newP, errors) {
+        schema.validate(valueToBeValidated, (err, newP, errors) => {
           if (err) {} else {
             if (errors.length) {
-              // console.log("Validation errors!");
-              // console.log("error at : "+ JSON.stringify(errors) + " on row "+ key);
+              // console.log("Validation errors!")
+              // console.log("error at : "+ JSON.stringify(errors) + " on row "+ key)
               newHotSettingsData.push(Object.values(value))
-              // console.log("newHotSettingsData ",newHotSettingsData);
-              self.data1 = newHotSettingsData;
+              // console.log("newHotSettingsData ",newHotSettingsData)
+              self.data1 = newHotSettingsData
               _.forEach(errors, (item) => {
                 errcols.push({
                   cols: _.indexOf(self.headers, item.field),
                   rows: key
                 })
-                errMsgArray.push("* " + item.message + " at column: " + item.field)
+                errMsgArray.push('* ' + item.message + ' at column: ' + item.field)
                 // errMsgArray.push("error at field:"+item.field+ "  message:"+item.message)
               })
-              self.errmsg = errMsgArray;
+              self.errmsg = errMsgArray
               // errMsgArray.push("error at : "+ JSON.stringify(errors) + " on row "+ key)
-
               showHandson = true
             } else {
-              // console.log("modified data " , newP);
+              // console.log("modified data " , newP)
               // console.log("userUploadedDataArray ", userUploadedDataArr)
-              finalModifiedDataArray.push(newP);
+              finalModifiedDataArray.push(newP)
               // console.log("11111111111",finalModifiedDataArray)
-              res = userUploadedDataArr.map(obj => finalModifiedDataArray.find(o => o._id === obj._id) || obj);
-              // console.log("FINAL MODIFIED ARRAY AFTER CORRECTION ", res);
-              userUploadedDataArr = res;
+              res = userUploadedDataArr.map(obj => finalModifiedDataArray.find(o => o._id === obj._id) || obj)
+              // console.log("FINAL MODIFIED ARRAY AFTER CORRECTION ", res)
+              userUploadedDataArr = res
             }
           }
-        });
+        })
       })
-      // console.log("@@@@@@res " , res);
-      if (res != undefined) {
-        this.frmSettings.upldCSV = res;
+      // console.log("@@@@@@res " , res)
+      if (res !== undefined) {
+        this.frmSettings.upldCSV = res
       }
 
-      this.data = newHotSettingsData;
-      if (this.data.length == 0) {
+      this.data = newHotSettingsData
+      if (this.data.length === 0) {
         self.errmsg = []
-        $('table.htCore').each(function() {
+        $('table.htCore').each(function () {
           this.remove()
         })
-        document.getElementsByClassName("ht_master handsontable")[0].remove();
-        document.getElementById("example1").style.display = "none";
-        // document.getElementById("hot-display-license-info").style.display = "none";
+        document.getElementsByClassName('ht_master handsontable')[0].remove()
+        document.getElementById('example1').style.display = 'none'
+        // document.getElementById("hot-display-license-info").style.display = "none"
         this.saveButton = true
         // alert("proceed")
-        this.showHandson = false;
-        this.$Message.success('validation successfully completed');
-        this.headerDetails = false;
-        logs.push({date:Date(),status:'validation_completed'})
+        this.showHandson = false
+        this.$Message.success('validation successfully completed')
+        this.headerDetails = false
+        logs.push({date: Date(), status: 'validation_completed'})
         var obj = {
           status: 'validation_completed',
           modified: Date(),
-          log:logs
+          log: logs
         }
-        api.request('patch', '/import-tracker/'+id, obj).then(function(res){
-          console.log("response",res.data)
+        api.request('patch', '/import-tracker/' + id, obj).then(function (res) {
+          console.log('response', res.data)
         })
         .catch(error => {
-          console.log(error);
+          console.log(error)
         })
       } else {
         // $('.ht_clone_top handsontable').remove()
-        $('table.htCore').each(function() {
+        $('table.htCore').each(function () {
           this.remove()
         })
-        document.getElementsByClassName("ht_master handsontable")[0].remove();
+        document.getElementsByClassName('ht_master handsontable')[0].remove()
         self.showerrmsg(errcols)
-        // self.$Message.error('validation error');
+        // self.$Message.error('validation error')
       }
-      document.getElementById("hot-display-license-info").style.display = "none";
+      document.getElementById('hot-display-license-info').style.display = 'none'
     },
-    saveData(step) {
-      this.$Loading.start();
-      var self = this;
+    saveData (step) {
+      this.$Loading.start()
+      var self = this
       self.loadingData = true
-      setTimeout(function() {
-        self.$Loading.finish();
+      setTimeout(function () {
+        self.$Loading.finish()
       }, 3000)
-      var self = this;
-      // console.log(self.frmSettings.upldCSV)
-      // console.log("schema ", this.complexSchema)
-      for(var i=0;i<self.frmSettings.upldCSV.length;i++){
+      for (var i = 0; i < self.frmSettings.upldCSV.length; i++) {
         self.frmSettings.upldCSV[i].importTracker_id = id
       }
 
-      socket.emit('stream', self.frmSettings.upldCSV, (error,data) => {
-        if(error){
+      socket.emit('stream', self.frmSettings.upldCSV, (error, data) => {
+        if (error) {
           console.log(error)
-          self.$Notice.error({title:"Error!",desc: "Error in saving CSV...!"})
+          self.$Notice.error({title: 'Error!', desc: 'Error in saving CSV...!'})
         }
-      });
-      logs.push({date: Date(),status:'import_staging_running'})
+      })
+      logs.push({date: Date(), status: 'import_staging_running'})
       savedObj = {
         csvDetails: {
-          no_of_records:self.frmSettings.upldCSV.length
+          no_of_records: self.frmSettings.upldCSV.length
         },
-        status: "import_staging_running",
+        status: 'import_staging_running',
         modified: Date(),
-        log:logs
+        log: logs
       }
 
-      setTimeout(function() {
-        console.log("errors",errors)
-        if(errors == 0){
+      setTimeout(function () {
+        if (errors === 0) {
           self.loadingData = false
           self.saveButton = false
           self.currentStep = step
-        }
-        else if(save_err != ""){
-            self.loadingData = false
-            $Notice.error({title:"Error!",desc: "Error in saving CSV...!  Kindly check your data"})
-        }
-        else {
+        } else if (saveErr !== '') {
           self.loadingData = false
-          $Notice.error({title:"Error!",desc: "Error in saving CSV...!  Kindly check your data"})
+          self.$Notice.error({title: 'Error!', desc: 'Error in saving CSV...!  Kindly check your data'})
+        } else {
+          self.loadingData = false
+          self.$Notice.error({title: 'Error!', desc: 'Error in saving CSV...!  Kindly check your data'})
         }
-      },3000)
-
+      }, 3000)
     },
-    undo(data){
-      // alert("1")
+    undo (data) {
       var self = this
-      // console.log(data)
-      data["deletedFlag"] = true
-      // console.log("id.......",id)
-      if(this.$route.params.id != undefined){
+      data['deletedFlag'] = true
+      if (this.$route.params.id !== undefined) {
         id = this.$route.params.id
-        socket.emit('import-tracker::find',{ id: id} ,(error, data1) => {
-        data = data1[0]
-        data["deletedFlag"] = true
-        logs = data1[0].log
+        socket.emit('import-tracker::find', {id: id}, (error, data1) => {
+          console.log('error', error)
+          data = data1[0]
+          data['deletedFlag'] = true
+          logs = data1[0].log
 
-         socket.emit('import',data,(error,data) => {
-          // console.log("dattaaaa...",data)
-          if(error){
-            console.log(error)
-            this.$Notice.error({title: "Error!",desc:"Error in importing data to realDb...!"})
-          }
-        })
-
-        setTimeout(function() {
-          // console.log("del_err",del_err)
-        if(del_err.ok == 1 || del_err.errors == 0 || del_err == "Deleted"){
+          socket.emit('import', data, (err, data) => {
+            // console.log("dattaaaa...",data)
+            if (err) {
+              console.log(err)
+              this.$Notice.error({title: 'Error!', desc: 'Error in importing data to realDb...!'})
+            }
+          })
+          setTimeout(function () {
+            if (delErr.ok === 1 || delErr.errors === 0 || delErr === 'Deleted') {
               self.importButton = true
               self.disableImport = false
               self.completed = false
-        }
-        else {
-            self.$Notice.error({title: "Error!",desc:"Error in deleting the records!"})
-        }
-      },1000)
-
-      })
-      }
-      else {
-        socket.emit('import',data,(error,data) => {
-          if(error){
+            } else {
+              self.$Notice.error({title: 'Error!', desc: 'Error in deleting the records!'})
+            }
+          }, 1000)
+        })
+      } else {
+        socket.emit('import', data, (error, data) => {
+          if (error) {
             console.log(error)
-            this.$Notice.error({title: "Error!",desc:"Error in importing data to realDb...!"})
+            this.$Notice.error({title: 'Error!', desc: 'Error in importing data to realDb...!'})
           }
         })
 
-        setTimeout(function() {
-          console.log("del_err",del_err)
-        if(del_err.ok == 1 || del_err.errors == 0 || del_err == "Deleted"){
-              self.importButton = true
-              self.disableImport = false
-              self.completed = false
-        }
-        else {
-            self.$Notice.error({title: "Error!",desc:"Error in deleting the records!"})
-        }
-      },1000)
+        setTimeout(function () {
+          if (delErr.ok === 1 || delErr.errors === 0 || delErr === 'Deleted') {
+            self.importButton = true
+            self.disableImport = false
+            self.completed = false
+          } else {
+            self.$Notice.error({title: 'Error!', desc: 'Error in deleting the records!'})
+          }
+        }, 1000)
       }
-
     },
-
-    importData(data){
+    importData (data) {
       var self = this
-      if(data == undefined || (data.upldCSV == undefined || data.upldCSV.length == 0) && this.$route.params.id != undefined){
+      if (data === undefined || (data.upldCSV === undefined || data.upldCSV.length === 0) && this.$route.params.id !== undefined) {
         id = this.$route.params.id
-        socket.emit('import-tracker::find',{ id: id} ,(error, data3) => {
-        data = data3[0]
-        logs = data3[0].log
-        self.importButton = false
-        data["deletedFlag"] = false
-        console.log(data)
-
-        socket.emit('customer-uploaded-data::find',{importTracker_id:id},(error,csvdata)=>{
-          data["upldCSV"] = csvdata
-          socket.emit('import',data,(error,data) => {
-            if(error){
-              console.log(error)
-              self.$Notice.error({title: "Error!",desc:"Error in importing data to realDb...!"})
-            }
-          });
-
-          setTimeout(function() {
-            console.log("err",err)
-            if(err == "" || err == false){
-              console.log("errr.....",err)
-              self.disabled = true
-               self.disableImport = true
-               self.completed = true
-            }
-              else {
-                self.$Notice.error({title: "Error!",desc:"Error in importing data to realDb...!"})
+        socket.emit('import-tracker::find', {id: id}, (err, data3) => {
+          data = data3[0]
+          logs = data3[0].log
+          self.importButton = false
+          data['deletedFlag'] = false
+          socket.emit('customer-uploaded-data::find', {importTracker_id: id}, (error, csvdata) => {
+            console.log(error)
+            data['upldCSV'] = csvdata
+            socket.emit('import', data, (error, data) => {
+              if (error) {
+                console.log(error)
+                self.$Notice.error({title: 'Error!', desc: 'Error in importing data to realDb...!'})
               }
-          },1000)
-
-
-      })
-    })
-      }
-     else {
-      self.importButton = false
-      data["deletedFlag"] = false
-      // console.log("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ else",data.log)
-        socket.emit('import',data,(error,data) => {
-          if(error){
+            })
+            setTimeout(function () {
+              if (err === '' || err === false) {
+                self.disabled = true
+                self.disableImport = true
+                self.completed = true
+              } else {
+                self.$Notice.error({title: 'Error!', desc: 'Error in importing data to realDb...!'})
+              }
+            }, 1000)
+          })
+        })
+      } else {
+        self.importButton = false
+        data['deletedFlag'] = false
+        socket.emit('import', data, (error, data) => {
+          if (error) {
             console.log(error)
-            self.$Notice.error({title: "Error!",desc:"Error in importing data to realDb...!"})
+            self.$Notice.error({title: 'Error!', desc: 'Error in importing data to realDb...!'})
           }
-        });
-
-        setTimeout(function() {
-          console.log("err",err)
-          if(err == "" || err == false){
-            console.log("errr.....",err)
+        })
+        setTimeout(function () {
+          console.log('err', err)
+          if (err === '' || err === false) {
             self.disabled = true
-             self.disableImport = true
-             self.completed = true
+            self.disableImport = true
+            self.completed = true
+          } else {
+            self.$Notice.error({title: 'Error!', desc: 'Error in importing data to realDb...!'})
           }
-            else {
-              self.$Notice.error({title: "Error!",desc:"Error in importing data to realDb...!"})
-            }
-        },1000)
-
+        }, 1000)
       }
-
     },
-    getsettingsAll: function(value) {
+    getsettingsAll: function (value) {
       this.tabsData = {
         mongoCols: [],
         mongoDt: [],
@@ -1533,7 +1421,7 @@ export default {
         .then(response => {
           this.allSetting = response.data.data
           _.forEach(this.allSetting, (dbInst, db) => {
-            if (dbInst.dbinstance.length != 0) {
+            if (dbInst.dbinstance.length !== 0) {
               this.tabsData[db + 'Cols'].push({
                 type: 'expand',
                 width: 50,
@@ -1562,10 +1450,10 @@ export default {
                     },
                     on: {
                       'on-change': (value) => {
-                        if (value == true) {
+                        if (value === true) {
                           this.check = value
-                          // console.log("this.selectSchema",this.selectSchema);
-                          // this.frmSettings.push(this.selectSchema);
+                          // console.log("this.selectSchema",this.selectSchema)
+                          // this.frmSettings.push(this.selectSchema)
                         } else {
                           this.check = value
                         }
@@ -1601,16 +1489,12 @@ export default {
           })
         })
         .catch(error => {
-          console.log(error);
+          console.log(error)
         })
-
     },
-    importdata: function() {
-      //console.log('GiveMeData', this)
+    importdata: function () {
       this.frmSettings.schemaData = []
-
-      if (this.expandValue == false) {
-        console.log('false')
+      if (this.expandValue === false) {
         _.forEach(this.allSetting, (dbInst, db) => {
           for (var index in this.tabsData[db + 'Dt']) {
             schema.getByNameId(db, this.tabsData[db + 'Dt'][index].id).then(response => {
@@ -1623,7 +1507,6 @@ export default {
               })
               this.frmSettings.schemaData.push(this.schemaAllData)
             })
-
           }
         })
       } else {
@@ -1631,19 +1514,15 @@ export default {
         this.broadcast('table-expand', 'giveMeData', this)
       }
     },
-    acceptData: function(data) {
-      console.log('accept data call')
-      console.log('data', data.data)
+    acceptData: function (data) {
       var sdata = data.data
       this.frmSettings.schemaData.push(sdata)
     },
-    getTableAll: function() {
-
+    getTableAll: function () {
     },
-    createJob: function(data){
-      // console.log(data.selectedDb,data.connection_name,data.host,data.port,data.username)
+    createJob: function (data) {
       var obj = {
-        source: "rethinkdb",
+        source: 'rethinkdb',
         destination: data.selectedDb,
         connection_name: data.connection_name,
         host: data.host,
@@ -1656,116 +1535,96 @@ export default {
           UploadStatus: 'upload_pending'
         }
       }
-      api.request('post', '/import-tracker', obj).then(function(res){
-        // console.log("response",res.data)
+      api.request('post', '/import-tracker', obj).then(res => {
         id = res.data.id
       })
     },
-    goToStep: function(step, name, data) {
+    goToStep: function (step, name, data) {
       var self = this
       logs = []
       this.$refs[name].validate((valid) => {
         if (valid) {
-            this.check_conn = true
-            this.conn_icon = 'load-a'
-            api.request('get', '/Settings?dbname=' + data.selectedDb).then(function(_res) {
-              var flag = false
-              var c_name = ''
-              _.map(_res.data, function(instance) {
-                if(instance.host == data.host && instance.port == data.port && instance.dbname == data.dbname){
-                    flag = true
-                    c_name = instance.connection_name
-                }
-              })
-              // console.log('flag = ', flag, c_name)
-              if (!flag){
-                // api.request('post', '/settings?check=' + data.selectedDb, data)
-                //   .then(response => {
-                    // console.log('CheckConnection', response.data)
-                    // if(response.data.result){
-                        self.conn_icon = 'checkmark'
-                        self.currentStep = step;
-                        console.log(data.selectedDb,data.connection_name,data.host,data.port,data.username)
-                        logs.push({date:Date(),status: 'upload_pending'})
-                        var obj = {
-                          source: "rethinkdb",
-                          destination: data.selectedDb,
-                          connection_name: data.connection_name,
-                          database_name : data.dbname,
-                          host: data.host,
-                          port: data.port,
-                          username: data.username,
-                          status: 'upload_pending',
-                          created: Date(),
-                          log: logs
-                        }
-                        api.request('post', '/import-tracker', obj).then(function(res){
-                          console.log("response",res.data)
-                          id = res.data.id
-                        })
-                        .catch(error => {
-                          console.log(error);
-                          self.$Notice.error({title: 'Error!',desc: 'Error in importing...!'})
-                        })
-                    // } else {
-                    //     self.conn_icon = 'close'
-                    //     self.$Notice.error({title: 'Connection Not Establish...!', desc: 'Please Check Your Database..'})
-                    // }
-                  // })
-                  // .catch(error => {
-                  //   console.log(error)
-                  //   self.$Notice.error({title: 'Error!', desc: 'Connection Error...'})
-                  // })
-              } else {
-                self.conn_icon = 'close'
-                self.$Notice.error({title: 'Connection already Exist!', desc: 'with connection name :: ' + c_name})
+          this.check_conn = true
+          this.conn_icon = 'load-a'
+          api.request('get', '/Settings?dbname=' + data.selectedDb).then(_res => {
+            var flag = false
+            var cName = ''
+            _.map(_res.data, function (instance) {
+              if (instance.host === data.host && instance.port === data.port && instance.dbname === data.dbname) {
+                flag = true
+                cName = instance.connection_name
               }
-
             })
+            if (!flag) {
+              self.conn_icon = 'checkmark'
+              self.currentStep = step
+              logs.push({date: Date(), status: 'upload_pending'})
+              var obj = {
+                source: 'rethinkdb',
+                destination: data.selectedDb,
+                connection_name: data.connection_name,
+                database_name: data.dbname,
+                host: data.host,
+                port: data.port,
+                username: data.username,
+                status: 'upload_pending',
+                created: Date(),
+                log: logs
+              }
+              api.request('post', '/import-tracker', obj).then(res => {
+                id = res.data.id
+              })
+              .catch(error => {
+                console.log(error)
+                self.$Notice.error({title: 'Error!', desc: 'Error in importing...!'})
+              })
+            } else {
+              self.conn_icon = 'close'
+              self.$Notice.error({title: 'Connection already Exist!', desc: 'with connection name :: ' + cName})
+            }
+          })
         }
       })
     },
-    clearIcon(value) {
-        this.frmSettings.upldIcn = ''
-        // alert(value)
-        if (value === 'mongo') {
-          this.frmSettings.port = '27017'
-        } else if (value === 'rethink') {
-          this.frmSettings.port = '28015'
-        } else if (value === 'elastic') {
-          this.frmSettings.port = '9200'
-        } else if (value === 'nedb') {
-          this.frmSettings.port = '8080'
-        } else if (value === 'mysql') {
-          this.frmSettings.port = '3306'
-        }
+    clearIcon (value) {
+      this.frmSettings.upldIcn = ''
+      if (value === 'mongo') {
+        this.frmSettings.port = '27017'
+      } else if (value === 'rethink') {
+        this.frmSettings.port = '28015'
+      } else if (value === 'elastic') {
+        this.frmSettings.port = '9200'
+      } else if (value === 'nedb') {
+        this.frmSettings.port = '8080'
+      } else if (value === 'mysql') {
+        this.frmSettings.port = '3306'
+      }
     },
-    handleModalOk() {
-      let methodName  = this.transformData.split('.')
-        this.dataMethod = methodName[1]
-        if(this.dataMethod){
-          this.csvData[this.modelIndex].transform = this.transformData
-          this.csvData[this.modelIndex].transformMethod = this.dataMethod
-        }
-        else {
-          this.csvData[this.modelIndex].transform = this.transformData
-          this.csvData[this.modelIndex].transformMethod = ''
-        }
-        var self = this
-        self.frmSettings.upldCSV = _.map(self.uploadedCSVData, function(row, rinx) {
-          return  _.reduce(row, function(result, value, key){
-           let inx = _.find(self.csvData, (f) => { return (f.id == key) })
-           if(inx.transform != ''){
-              var s = new Function("row", inx.transform).call(this, row)
-              result[key] = s
-           } else {
-             result[key] = value
-           }
-           return result
-         }, {})
+    handleModalOk () {
+      let methodName = this.transformData.split('.')
+      this.dataMethod = methodName[1]
+      if (this.dataMethod) {
+        this.csvData[this.modelIndex].transform = this.transformData
+        this.csvData[this.modelIndex].transformMethod = this.dataMethod
+      } else {
+        this.csvData[this.modelIndex].transform = this.transformData
+        this.csvData[this.modelIndex].transformMethod = ''
+      }
+      var self = this
+      self.frmSettings.upldCSV = _.map(self.uploadedCSVData, function (row, rinx) {
+        return _.reduce(row, function (result, value, key) {
+          let inx = _.find(self.csvData, (f) => { return (f.id === key) })
+          if (inx.transform !== '') {
+            var s = new Function('row', inx.transform).call(this, row) // eslint-disable-line
+            result[key] = s
+          } else {
+            result[key] = value
+          }
+          return result
+        }, {})
       })
     },
-    enable(value) {
+    enable (value) {
       this.tabsData = {
         mongoCols: [],
         mongoDt: [],
@@ -1778,9 +1637,7 @@ export default {
       }
       _.forEach(this.allSchema, (obj) => {
         _.forEach(this.frmSettings.Database, (db) => {
-          // obj.database[0] == db
-          // alert(db)
-          if (obj.database[0] == db) {
+          if (obj.database[0] === db) {
             this.tabsData[db + 'Dt'].push(obj)
             _.forEach(obj, (v, k) => {
               this.tabsData[db + 'Cols'].push({
@@ -1794,14 +1651,7 @@ export default {
       })
       console.log('this.tabsData', this.tabsData)
     },
-
-    dbcall() {
-      if (document.getElementById('mongo').checked) {
-        return result.mongo
-      }
-    },
-    getPostObj(mObj) {
-      // console.log('Calling.........................', mObj)
+    getPostObj (mObj) {
       var obj = {}
       _.forEach(mObj, (v, k) => {
         if (k === 'isenable' || k === 'connection_name' || k === 'host' || k === 'port' || k === 'dbname' || k === 'username' || k === 'password' || k === 'upldIcn' || k === 'notes' || k === 'isdefault' || k === 'selectedDb') {
@@ -1810,37 +1660,35 @@ export default {
       })
       return obj
     },
-    handleSubmit(name) {
+    handleSubmit (name) {
       this.$refs[name].validate((valid) => {
         if (valid) {
-          let guid = (this.S4() + this.S4() + "-" + this.S4() + "-4" + this.S4().substr(0, 3) + "-" + this.S4() + "-" + this.S4() + this.S4() + this.S4()).toLowerCase();
-          let obj = this.getPostObj(this.frmSettings);
-          obj.id = guid;
+          let guid = (this.S4() + this.S4() + '-' + this.S4() + '-4' + this.S4().substr(0, 3) + '-' + this.S4() + '-' + this.S4() + this.S4() + this.S4()).toLowerCase()
+          let obj = this.getPostObj(this.frmSettings)
+          obj.id = guid
           // api.request('post', '/databases', obj)
           // api.request('post', '/databases', obj)
           databases.post(obj)
             .then(response => {
               console.log('response....', response)
-              // this.$Message.success('Success');
-              if (response.data == 'Exist') {
+              // this.$Message.success('Success')
+              if (response.data === 'Exist') {
                 this.$Notice.error({
                   duration: 5,
                   title: 'Alredy Exist!!',
                   desc: 'Connection Alredy exist...'
                 })
-
               } else {
                 this.$Notice.success({
                   duration: 3,
                   title: 'Success!!',
                   desc: 'Connection Created...'
                 })
-                this.$router.push('/db');
-
+                this.$router.push('/db')
               }
             })
             .catch(error => {
-              // this.$Message.error('Error!!');
+              // this.$Message.error('Error!!')
               this.$Notice.error({
                 duration: 3,
                 title: 'Error!!'
@@ -1849,7 +1697,7 @@ export default {
               this.loading = false
             })
         } else {
-          // this.$Message.error('Error!');
+          // this.$Message.error('Error!')
           this.$Notice.error({
             duration: 2,
             title: 'Error!!',
@@ -1858,10 +1706,10 @@ export default {
         }
       })
     },
-    S4() {
-      return (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1);
+    S4 () {
+      return (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1)
     },
-    activatedProperty(index, property) {
+    activatedProperty (index, property) {
       let typePropertys = {
         'text': ['max', 'allowedValue', 'defaultValue', 'placeholder', 'regEx', 'dependentOn', 'optional'],
         'email': ['allowedValue', 'defaultValue', 'placeholder', 'dependentOn', 'optional'],
@@ -1878,157 +1726,136 @@ export default {
         return typePropertys[this.csvData[index].type].indexOf(property) >= 0
       }
     },
-    handleSchemaChange(value) {
-      console.log('test', value)
+    handleSchemaChange (value) {
       this.tabsData.mongoDt[value.index].checked = value.value
-      console.log('this.tabsData.mongoDt', this.tabsData.mongoDt)
     },
-    getData(value){
-      console.log("dataa cameeeeeeeeeeeeeeee...",value)
-    },
-    expands(data) {
+    expands (data) {
       this.expandValue = data
     }
   },
-  mounted() {
+  mounted () {
+    var self = this
     this.checkdefaultfun()
-    // console.log(this.$route.params.id)
-    if(errors == 0){
-          self.loadingData = false
-          self.saveButton = false
-          self.currentStep = step
+    if (errors === 0) {
+      self.loadingData = false
+      self.saveButton = false
+      self.currentStep = 1
     }
-    if(this.$route.params.id == undefined){
-    this.frmSettings.selectedDb = this.$route.params.db;
-    this.$on('schemaData', this.acceptData)
-    this.$on('expandTrue', this.expands)
-
-    var self = this;
-
-    $(document).ready(function() {
-      $('#upldIcn').change(function() {
-        let bucket = new AWS.S3({
-          params: {
-            Bucket: 'airflowbucket1/obexpense/expenses'
-          }
-        });
-        let fileChooser = document.getElementById('upldIcn');
-        let file = fileChooser.files[0];
-
-        if (file) {
-          self.loading = true;
-          var params = {
-            Key: file.name,
-            ContentType: file.type,
-            Body: file
-          };
-          bucket.upload(params).on('httpUploadProgress', function(evt) {
-            console.log("Uploaded :: " + parseInt((evt.loaded * 100) / evt.total) + '%');
-          }).send(function(err, data) {
-            if (err) {
-              alert(err);
+    if (this.$route.params.id === undefined) {
+      this.frmSettings.selectedDb = this.$route.params.db
+      this.$on('schemaData', this.acceptData)
+      this.$on('expandTrue', this.expands)
+      $(document).ready(function () {
+        $('#upldIcn').change(function () {
+          let bucket = new AWS.S3({ // eslint-disable-line
+            params: {
+              Bucket: 'airflowbucket1/obexpense/expenses'
             }
-            self.frmSettings.upldIcn = data.Location;
-            self.loading = false;
           })
+          let fileChooser = document.getElementById('upldIcn')
+          let file = fileChooser.files[0]
+
+          if (file) {
+            self.loading = true
+            var params = {
+              Key: file.name,
+              ContentType: file.type,
+              Body: file
+            }
+            bucket.upload(params).on('httpUploadProgress', function (evt) {
+              console.log('Uploaded :: ' + parseInt((evt.loaded * 100) / evt.total) + '%')
+            }).send(function (err, data) {
+              if (err) {
+                alert(err)
+              }
+              self.frmSettings.upldIcn = data.Location
+              self.loading = false
+            })
+          }
+        })
+      })
+    } else {
+      socket.emit('import-tracker::find', {id: this.$route.params.id}, (e, data) => {
+        if (data.length !== 0) {
+          var step = 2
+          this.currentStep = step
+          if (data[0].status === 'import_staging_completed') {
+            this.completed = true
+            this.importButton = false
+            this.disableImport = true
+          } else if (data[0].status === 'import_staging_running') {
+          }
         }
-      });
-    });
-  }
-  else {
-
-    socket.emit('import-tracker::find',{id:this.$route.params.id} ,(error, data) => {
-    console.log('dataaaaa......', data);
-    if (data.length != 0){
-    var step = 2
-    this.currentStep = step
-    if(data[0].status == "import_staging_completed"){
-      console.log("**********************")
-      this.completed = true
-      this.importButton = false
-      this.disableImport = true
+      })
     }
-    else if(data[0].status == "import_staging_running"){
-      console.log("&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
-      // this.importData()
-      // this.importButton = false
-      // this.completed = false
-      // this.disableImport = true
-    }
-  }
-  })
-  }
-},
-  created() {
-    this.$on('on-schema-change', this.handleSchemaChange);
-    // this.$on('data',this.getData)
-
+  },
+  created () {
+    this.$on('on-schema-change', this.handleSchemaChange)
   }
 }
-
-String.prototype.capitalize = function() {
-  return this.charAt(0).toUpperCase() + this.slice(1);
+String.prototype.capitalize = function () {
+  return this.charAt(0).toUpperCase() + this.slice(1)
 }
-String.prototype.stripHTMLTags = function() {
-    return this.replace(/<[^>]*>/g, '');
+String.prototype.stripHTMLTags = function () {
+  return this.replace(/<[^>]*>/g, '')
 }
-String.prototype.stripSpecialCharacter = function() {
-    return this.replace(/[\/\\#,+()$~%'":*<>{}]/g, '');
+String.prototype.stripSpecialCharacter = function () {
+  return this.replace(/[\/\\#,+()$~%'":*<>{}]/g, '') // eslint-disable-line
 }
-String.prototype.toDecimal = function(precision) {
-    return parseFloat(this).toFixed(precision);
+String.prototype.toDecimal = function (precision) {
+  return parseFloat(this).toFixed(precision)
 }
-String.prototype.toInteger = function() {
-    return parseInt(this);
+String.prototype.toInteger = function () {
+  return parseInt(this)
 }
-String.prototype.concate = function(str) {
-    return this.concat(str);
+String.prototype.concate = function (str) {
+  return this.concat(str)
 }
 String.prototype.formatDate = function (format) {
-  var date = new Date(this),
-      day = date.getDate(),
-      month = date.getMonth() + 1,
-      year = date.getFullYear(),
-      hours = date.getHours(),
-      minutes = date.getMinutes(),
-      seconds = date.getSeconds();
+  var date = new Date(this)
+  var day = date.getDate()
+  var month = date.getMonth() + 1
+  var year = date.getFullYear()
+  var hours = date.getHours()
+  var minutes = date.getMinutes()
+  var seconds = date.getSeconds()
   if (!format) {
-      format = "MM/dd/yyyy";
+    format = 'MM/dd/yyyy'
   }
-  format = format.replace("MM", month.toString().replace(/^(\d)$/, '0$1'));
-  if (format.indexOf("yyyy") > -1) {
-      format = format.replace("yyyy", year.toString());
-  } else if (format.indexOf("yy") > -1) {
-      format = format.replace("yy", year.toString().substr(2, 2));
+  format = format.replace('MM', month.toString().replace(/^(\d)$/, '0$1'))
+  if (format.indexOf('yyyy') > -1) {
+    format = format.replace('yyyy', year.toString())
+  } else if (format.indexOf('yy') > -1) {
+    format = format.replace('yy', year.toString().substr(2, 2))
   }
-  format = format.replace("dd", day.toString().replace(/^(\d)$/, '0$1'));
-  if (format.indexOf("t") > -1) {
-      if (hours > 11) {
-          format = format.replace("t", "pm");
-      } else {
-          format = format.replace("t", "am");
-      }
+  format = format.replace('dd', day.toString().replace(/^(\d)$/, '0$1'))
+  if (format.indexOf('t') > -1) {
+    if (hours > 11) {
+      format = format.replace('t', 'pm')
+    } else {
+      format = format.replace('t', 'am')
+    }
   }
-  if (format.indexOf("HH") > -1) {
-      format = format.replace("HH", hours.toString().replace(/^(\d)$/, '0$1'));
+  if (format.indexOf('HH') > -1) {
+    format = format.replace('HH', hours.toString().replace(/^(\d)$/, '0$1'))
   }
-  if (format.indexOf("hh") > -1) {
-      if (hours > 12) {
-          hours -= 12;
-      }
-      if (hours === 0) {
-          hours = 12;
-      }
-      format = format.replace("hh", hours.toString().replace(/^(\d)$/, '0$1'));
+  if (format.indexOf('hh') > -1) {
+    if (hours > 12) {
+      hours -= 12
+    }
+    if (hours === 0) {
+      hours = 12
+    }
+    format = format.replace('hh', hours.toString().replace(/^(\d)$/, '0$1'))
   }
-  if (format.indexOf("mm") > -1) {
-      format = format.replace("mm", minutes.toString().replace(/^(\d)$/, '0$1'));
+  if (format.indexOf('mm') > -1) {
+    format = format.replace('mm', minutes.toString().replace(/^(\d)$/, '0$1'))
   }
-  if (format.indexOf("ss") > -1) {
-      format = format.replace("ss", seconds.toString().replace(/^(\d)$/, '0$1'));
+  if (format.indexOf('ss') > -1) {
+    format = format.replace('ss', seconds.toString().replace(/^(\d)$/, '0$1'))
   }
-  return format;
-};
+  return format
+}
 </script>
 
 <style>
