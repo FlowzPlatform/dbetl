@@ -71,6 +71,10 @@ var router = new VueRouter({
     return savedPosition || { x: 0, y: 0 }
   }
 })
+
+import Vuebar from 'vuebar'
+Vue.use(Vuebar)
+
 import axios from 'axios'
 import psl from 'psl'
 // Some middleware to help us ensure the user is authenticated.

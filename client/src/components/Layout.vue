@@ -1,7 +1,7 @@
 <template>
   <div>
     <Row  v-if="$store.state.sidenavtoggle">
-    <Split style="height: 950px;" :gutterSize="3">
+    <Split style="height: 100vh;" :gutterSize="3">
         <SplitArea :size="20"  >
             <f-sidebar></f-sidebar>
         </SplitArea>

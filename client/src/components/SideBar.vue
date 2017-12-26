@@ -25,9 +25,12 @@
         </Col>
       </Row>
       
-      <Row style="padding-left: 15px;max-height:1000px; overflow-y: auto">
-        <Spin v-if="isSet" size="large" style="align:center"></Spin>
-        <Tree v-else :data="sidebarData" :load-data="loadData" @on-select-change="onSelect"></Tree>
+      <Row v-bar style="padding-left: 15px;height:calc(100vh - 60px);">
+          <div>
+            <Spin v-if="isSet" size="large" style="align:center"></Spin> 
+            <Tree v-else :data="sidebarData" :load-data="loadData" @on-select-change="onSelect"></Tree>
+          </div>
+        
       </Row>
     </div>
   </div>
@@ -130,7 +133,8 @@
                 style: {
                   width: '100%',
                   color: '#eee',
-                  fontSize: '18px'
+                  fontSize: '13px',
+                  verticalAlign: 'super'
                 }
               }, [
                 h('span', [
@@ -139,10 +143,10 @@
                       src: this[data.title]
                     },
                     style: {
-                      marginRight: '8px',
-                      marginLeft: '8px',
-                      width: '20px',
-                      height: '20px'
+                      marginRight: '4px',
+                      marginLeft: '4px',
+                      width: '16px',
+                      height: '16px'
                     }
                   }),
                   h('span', {
@@ -162,7 +166,8 @@
                     style: {
                       width: '100%',
                       color: '#eee',
-                      fontSize: '18px'
+                      fontSize: '13px',
+                      verticalAlign: 'super'
                     }
                   }, [
                     h('span', [
@@ -171,10 +176,10 @@
                           src: data.imgurl ? data.imgurl : this[data.selectedDb]
                         },
                         style: {
-                          marginRight: '8px',
-                          marginLeft: '8px',
-                          width: '20px',
-                          height: '20px'
+                          marginRight: '4px',
+                          marginLeft: '4px',
+                          width: '16px',
+                          height: '16px'
                         }
                       }),
                       h('span', {
@@ -221,6 +226,13 @@
   /*.menu-item {
     background-color: #2b4c77;
   }*/
+.vuebar-element {
+  height: 250px;
+  width: 100%;
+  max-width: 500px;
+  background: #dfe9fe;
+}
+
   .ficon {
     font-size: 16px;
   }
@@ -302,7 +314,8 @@
   }
   .ivu-tree-title {
     color: #eee;
-    font-size: 18px; 
+    font-size: 13px; 
+    vertical-align: middle;
   }
   .ivu-tree-title:hover {
     color: #ffd04b;
@@ -353,4 +366,50 @@
     text-align: center;
     margin-top: 10px;
   }
+  
+.vb > .vb-dragger {
+    z-index: 5;
+    width: 12px;
+    right: 0;
+}
+
+.vb > .vb-dragger > .vb-dragger-styler {
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    -webkit-transform: rotate3d(0,0,0,0);
+    transform: rotate3d(0,0,0,0);
+    -webkit-transition:
+        background-color 100ms ease-out,
+        margin 100ms ease-out,
+        height 100ms ease-out;
+    transition:
+        background-color 100ms ease-out,
+        margin 100ms ease-out,
+        height 100ms ease-out;
+    background-color: rgba(48, 121, 244,.1);
+    margin: 5px 5px 5px 0;
+    border-radius: 20px;
+    height: calc(100% - 10px);
+    display: block;
+}
+
+.vb.vb-scrolling-phantom > .vb-dragger > .vb-dragger-styler {
+    background-color: rgba(48, 121, 244,.3);
+}
+
+.vb > .vb-dragger:hover > .vb-dragger-styler {
+    background-color: rgba(48, 121, 244,.5);
+    margin: 0px;
+    height: 100%;
+}
+
+.vb.vb-dragging > .vb-dragger > .vb-dragger-styler {
+    background-color: rgba(48, 121, 244,.5);
+    margin: 0px;
+    height: 100%;
+}
+
+.vb.vb-dragging-phantom > .vb-dragger > .vb-dragger-styler {
+    background-color: rgba(48, 121, 244,.5);
+}
 </style>
