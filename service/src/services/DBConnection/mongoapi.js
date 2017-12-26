@@ -92,6 +92,52 @@ module.exports = {
     // return conn    
   }),
 
+  getTablewithColumns: async(function(data) {
+    var conn = await( getConnection(data).then(res => {
+      return res
+    }).catch(err => {
+      return {iserror: true, msg: err}
+    }))
+    if (conn.hasOwnProperty('iserror') && conn.iserror) {
+      return {iserror: true, msg: err}
+    } else {
+      // console.log(conn)
+      var result = await(conn.listCollections().toArray())
+      var resp = []
+      for (let [inx, obj] of result.entries()) {
+        var cols = []
+        var s = await (conn.collection(obj.name).find().limit(1).toArray())
+        if (s != undefined && s.length > 0) {
+          // console.log('>>>>>>>>>>>>>', s[0])
+          for (let k in s[0]) {
+            cols.push({ name: k })
+          }  
+        }
+        resp.push({name: obj.name, columns: cols})
+      }
+      // console.log(result)
+      conn.close()
+      return resp
+      // return _.map(result, (d)=> {
+      //   return { name: d.name, columns: cols}
+      // })
+    }
+  }),
+
+  checkConnection: async(function(data) {
+    var conn = await( getConnection(data).then(res => {
+      return res
+    }).catch(err => {
+      return {iserror: true, msg: err}
+    }))
+    if (conn.hasOwnProperty('iserror') && conn.iserror) {
+      return conn
+    } else {
+      conn.close()
+      return {result: true}
+    }
+  }),
+
   getSchemaRecord: async(function (data, tname) {
     var conn = await( getConnection(data).then(res => {
       return res

@@ -134,6 +134,10 @@
         </Col>
     </Row>
     <div v-if='s_collection.length > 0'>
+      <div v-if="isSet">
+        <Spin size="large" style="margin-left:550px"></Spin>
+      </div>
+      <div v-else>
         <div class="ivu-table-wrapper">
             <div class="ivu-table ivu-table-small">
                 <div class="ivu-table-header">
@@ -238,7 +242,7 @@
                                                 </thead>
                                                 <tbody class="ivu-table-tbody">
                                                     <template v-for="(mitem, i) in s_collection[index].columns">
-                                                        <tr class="ivu-table-row">
+                                                        <tr v-if="tableData[index].colsData.length > 0" class="ivu-table-row">
                                                             <td class="" style="padding-left:20px">
                                                                 <Checkbox v-model="tableData[index].colsData[i].isField"  @on-change="handleFieldChange"></Checkbox>
                                                             </td>
@@ -296,6 +300,7 @@
             <Button type="primary" @click="handleImport('')" style="margin-left: 8px">Import</Button>
             <!-- <Button type="primary" @click="clearImport('')" style="margin-left: 8px">Clear</Button> -->
         </div>
+      </div>
     </div>
     <!-- <hr><hr><hr><hr> -->
     <!-- {{sdatabase}} -->
@@ -309,11 +314,13 @@
 <script>
 import _ from 'lodash'
 import api from '../api'
-import modelSettings from '@/api/settings'
-// import modelSchema from '@/api/schema'
+// import modelSettings from '@/api/settings'
+import modelDatabases from '@/api/databases'
+import modelSchema from '@/api/schema'
 export default {
   data () {
     return {
+      isSet: true,
       selectAllTable: true,
       CascaderData: [],
       sdatabase: ['rethink'],
@@ -454,7 +461,7 @@ export default {
     },
     init () {
       var self = this
-      modelSettings.getDb(this.$route.params.id).then(response => {
+      modelDatabases.get(this.$route.params.id).then(response => {
         self.target = response // _.merge(self.target, response)
         self.importedData.source = self.source
         self.importedData.target = self.target
@@ -512,11 +519,11 @@ export default {
         if (valid) {
           this.check_conn = true
           this.conn_icon = 'load-a'
-          this.s_collection = await modelSettings.checkConnection(this.source).then(response => {
-            console.log('response', response.data)
-            if (response.result) {
+          this.s_collection = await modelSchema.postData(this.source).then(response => {
+            // console.log('response s_collection', response)
+            if (response) {
               this.sourceDisable = true
-              return response.data
+              return response
             } else {
               this.conn_icon = 'close'
               this.$Notice.error({
@@ -536,10 +543,14 @@ export default {
           // console.log('this.s_collection', this.s_collection.length)
           if (this.s_collection.length > 0) {
             this.conn_icon = 'checkmark'
-            this.t_collection = await modelSettings.checkConnection(this.target).then(response => {
-              if (response.result) {
-                return response.data
+            this.t_collection = await modelSchema.postData(this.target).then(response => {
+              // console.log('this.target', JSON.stringify(this.target))
+              // console.log('t_collection', response)
+              this.isSet = false
+              if (response) {
+                return response
               } else {
+                this.isSet = false
                 this.$Notice.error({
                   title: 'Connection Not Establish...!',
                   desc: 'Please Check Your Database..'
@@ -551,7 +562,7 @@ export default {
       })
     },
     handleImport () {
-      var mData = this.tableData
+      var mData = _.cloneDeep(this.tableData)
       this.importedData.mapdata = _.reject(mData, { 'isSelect': false })
       if (this.importedData.mapdata.length === 0) {
         this.$Message.error('Please Select Table')
@@ -562,6 +573,7 @@ export default {
           }
         })
         console.log('this.importedData', this.importedData)
+        this.importedData.userId = this.$store.state.user._id
         api.request('post', '/import-to-external-db', this.importedData).then((res) => {
           this.$Notice.success({title: 'Imported!', desc: ''})
           this.$router.push('/instancejoblist/' + this.$route.params.id)
@@ -578,14 +590,15 @@ export default {
     setSourceData (value) {
       // console.log(value)
       if (value.length > 1) {
-        api.request('get', '/settings/' + value[1]).then(res => {
-          // console.log('response.....', res.data)
-          this.source.selectedDb = res.data.selectedDb
-          this.source.dbname = res.data.dbname
-          this.source.host = res.data.host
-          this.source.port = res.data.port
-          this.source.username = res.data.username
-          this.source.password = res.data.password
+        // api.request('get', '/settings/' + value[1]).then(res => {
+        modelDatabases.get(value[1]).then(res => {
+          // console.log('response.....', res)
+          this.source.selectedDb = res.selectedDb
+          this.source.dbname = res.dbname
+          this.source.host = res.host
+          this.source.port = res.port
+          this.source.username = res.username
+          this.source.password = res.password
           this.setForInternal = true
         })
         .catch(err => {
@@ -623,16 +636,17 @@ export default {
         this.CascaderData.push({label: dbObj.label, value: dbObj.value})
       }
     })
-    api.request('get', '/settings')
+    // api.request('get', '/settings')
+    modelDatabases.get()
       .then(response => {
-        var result = response.data
-        for (var db in result) {
+        var res = _.groupBy(response, 'selectedDb')
+        for (var db in res) {
           // if (db !== 'nedb') {
           var obj = {}
           obj.value = db
           obj.label = db
           obj.children = []
-          result[db].dbinstance.forEach(function (instance, i) {
+          res[db].forEach(function (instance, i) {
             if (instance.isenable) {
               obj.children.push({label: instance.connection_name, value: instance.id})
             }
