@@ -100,7 +100,7 @@
       },
       loadData (item, callback) {
         schema.get(item.id).then(response => {
-          console.log('response.iserror', response)
+          // console.log('response.iserror', response)
           if (response.iserror) {
             this.$Notice.error({
               duration: 3,
@@ -353,7 +353,7 @@
     position: relative;
     display: block;
     border-radius: 50%;
-    background-color: #fff;
+    /*background-color: #fff;*/
     margin: 20px 0px 0px 150px;
     animation: ani-spin-bounce 1s 0s ease-in-out infinite;
   }

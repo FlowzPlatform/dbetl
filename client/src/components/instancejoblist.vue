@@ -23,8 +23,10 @@
 </template>
 
 <script>
-import api from '../api'
-import settings from '../api/settings'
+// import api from '../api'
+// import settings from '../api/settings'
+import modelDatabases from '../api/databases'
+import modelimportToExternalDb from '../api/import-to-external-db'
 import expandRow from './JobList_expandRow.vue'
 const _ = require('lodash')
 let moment = require('moment')
@@ -122,16 +124,16 @@ export default {
       var res = []
       // alert(self.$route.params.id)
       if (self.$route.params.id !== undefined) {
-        settings.getThis(self.$route.params.id).then(__res => {
-          self.crumbData.db = __res.data.selectedDb
-          self.crumbData.cname = __res.data.connection_name
-          self.crumbData.dbname = __res.data.dbname
+        modelDatabases.get(self.$route.params.id).then(__res => {
+          self.crumbData.db = __res.selectedDb
+          self.crumbData.cname = __res.connection_name
+          self.crumbData.dbname = __res.dbname
         }).catch(err => {
           console.log('Error...', err)
         })
-        api.request('get', '/import-to-external-db').then(response => {
+        modelimportToExternalDb.get().then(response => {
           // console.log('response', response.data.data)
-          _.forEach(response.data.data, (obj) => {
+          _.forEach(response, (obj) => {
             if (obj.hasOwnProperty('data')) {
               if (obj.data.target.id === self.$route.params.id) {
                 // console.log('...', obj)

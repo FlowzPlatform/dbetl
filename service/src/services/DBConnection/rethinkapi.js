@@ -72,6 +72,23 @@ var getConnection = async (function(data) {
   return connection
 })
 
+var trygetConnection = async (function(data) {
+  var connection = require('rethinkdbdash')({
+    username: data.username,
+    password: data.password,
+    port: data.port,
+    host: data.host,
+    db: data.dbname
+  }).connect({
+    username: data.username,
+    password: data.password,
+    port: data.port,
+    host: data.host,
+    db: data.dbname
+  });
+  return connection
+})
+
 module.exports = {
   choose: async(function () {
     console.log('===================RETHINKDB=================');
@@ -98,6 +115,33 @@ module.exports = {
     // return conn    
   }),
 
+  getTablewithColumns: async(function(data) {
+    var conn = await( getConnection(data).then(res => {
+      return res
+    }).catch(err => {
+      return {iserror: true, msg: err}
+    }))
+    if (conn.hasOwnProperty('iserror') && conn.iserror) {
+      return {iserror: true, msg: err}
+    } else {
+      var result = await(conn.db(data.dbname).tableList())
+      var resp = []
+      for (let [inx, obj] of result.entries()) {
+        var cols = []
+        var s = await (conn.db(data.dbname).table(obj).slice(0, 1).run())
+        if (s != undefined && s.length > 0) {
+          for (let k in s[0]) {
+            cols.push({ name: k })
+          }  
+        }
+        resp.push({name: obj, columns: cols})
+      }
+      // console.log(result)
+      conn.getPoolMaster().drain()
+      return resp
+    }
+  }),
+
   getSchemaRecord: async(function (data, tname) {
     var conn = await( getConnection(data).then(res => {
       return res
@@ -114,6 +158,23 @@ module.exports = {
         return {iserror: true, msg: err}
       }))
       return result
+    }
+  }),
+
+  checkConnection: async(function(data) {
+    var conn = await( trygetConnection(data).then(res => {
+      // console.log('conn >>>>>>>>>>>>>', res)
+      return res
+    }).catch(err => {
+      // console.log('Error >>>>>>>>>>>>>>>>>>', err)
+      // conn.getPoolMaster().drain()
+      return {iserror: true, msg: err}
+    }))
+    if (conn.hasOwnProperty('iserror') && conn.iserror) {
+      return conn
+    } else {
+      conn.getPoolMaster().drain()
+      return {result: true}
     }
   }),
 

@@ -1,10 +1,11 @@
 const Queue = require('rethinkdb-job-queue')
 // const func = require('./function')
-const app = require('config')
+const app = require('./config')
+// console.log('config::::', app, '>>>>>>>>>>>')
 var axios = require('axios');
 let async = require('asyncawait/async');
 let await = require('asyncawait/await');
-const cxnOptions = app.get('rethinkdb')
+const cxnOptions = app.rethinkdb
 var pino = require('pino');
 var mongodb = require('mongodb');
 var elasticsearch = require('elasticsearch');
@@ -19,7 +20,7 @@ var mysql = require('mysql');
 var _ = require('lodash')
 
 console.log('importToExternal Worker Started.....')
-const qOptions = app.get('qOptions')
+const qOptions = app.qOptions
 const q = new Queue(cxnOptions, qOptions)
 
 var createConn = async (function(data, mapdata) {
@@ -139,15 +140,15 @@ var createConn = async (function(data, mapdata) {
 	}
 })
 
-var getSchemaidByName = async (function(url, name) {
-	var _resi = await (axios.get(url +'/schema'))
-	var schema = _resi.data
-	for(let [i, obj] of schema.entries()) {
-		if(obj.title == name) {
-			return obj._id
-		}
-	}
-})
+// var getSchemaidByName = async (function(url, name) {
+// 	var _resi = await (axios.get(url +'/schema'))
+// 	var schema = _resi.data
+// 	for(let [i, obj] of schema.entries()) {
+// 		if(obj.title == name) {
+// 			return obj._id
+// 		}
+// 	}
+// })
 
 var updateSchema = async( function(data,table_name,databse_name,conn) {
 	var tableFields='';
@@ -501,6 +502,7 @@ q.process(async(job, next) => {
 			console.log('-----------------------||  Done  ||------------------------')
 		return next(null, 'success')
 	} catch (err) {
+		console.log('Error >>>>>>', err)
 		pino().error(new Error('... error in process'))
 		return next(new Error('error'))
 	}
