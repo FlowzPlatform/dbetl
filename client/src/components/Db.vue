@@ -819,76 +819,40 @@ export default {
     },
     testConnection (db, index) {
       var tdata = this[db + 'Dt'][index]
-      // console.log('testConnection', tdata)
-      schemaModel.checkConn(tdata).then(res => {
-        // console.log('testConnection', res)
-        if (res.hasOwnProperty('iserror') && res.iserror) {
+      databasesModel.get(tdata.id).then(res => {
+        schemaModel.checkConn(res).then(res => {
+          // console.log('testConnection', res)
+          if (res.hasOwnProperty('iserror') && res.iserror) {
+            this.$Notice.error({
+              duration: 3,
+              title: 'Error!!',
+              desc: ''
+            })
+          } else {
+            if (res.result) {
+              this.$Notice.success({
+                duration: 3,
+                title: 'Success!!',
+                desc: 'Successfully Connected to database..'
+              })
+            }
+          }
+        }).catch(err => {
+          console.log(err)
           this.$Notice.error({
             duration: 3,
             title: 'Error!!',
-            desc: ''
+            desc: 'Not Connected to Database, Please Check Connection'
           })
-        } else {
-          if (res.result) {
-            this.$Notice.success({
-              duration: 3,
-              title: 'Success!!',
-              desc: 'Successfully Connected to database..'
-            })
-          }
-        }
-      }).catch(err => {
-        console.log(err)
+        })
+      }).catch(error => {
+        console.log(error)
         this.$Notice.error({
           duration: 3,
-          title: 'Error!!',
-          desc: 'Not Connected to Database, Please Check Connection'
+          title: 'Network Error!!',
+          desc: ''
         })
       })
-      // api.request('post', '/settings?checkconn=' + db, tdata)
-      //   .then(res => {
-      //     // console.log('testConnection response', res.data)
-      //     if (res.data.hasOwnProperty('result')) {
-      //       var title = ''
-      //       var content = '<p>Content of dialog</p><p>Content of dialog</p>'
-      //       var mtype = ''
-      //       if (res.data.result) {
-      //         title = 'Sucess!!'
-      //         mtype = 'success'
-      //         content = '<b>Successfully Connected to Database</b>'
-      //       } else {
-      //         title = 'Error!!'
-      //         mtype = 'error'
-      //         if (db === 'mongo') {
-      //           content = res.data.error.message
-      //         } else if (db === 'rethink') {
-      //           content = res.data.error.msg
-      //         } else if (db === 'elastic') {
-      //           content = res.data.error.message
-      //         } else {
-      //           content = JSON.stringify(res.data.error)
-      //         }
-      //       }
-      //       this.$Modal[mtype]({
-      //         title: title,
-      //         content: content,
-      //         width: 500
-      //       })
-      //     } else {
-      //       this.$Notice.error({
-      //         duration: 10,
-      //         title: 'Error!!',
-      //         desc: ''
-      //       })
-      //     }
-      //   })
-      //   .catch(err => {
-      //     this.$Notice.error({
-      //       duration: 10,
-      //       title: 'Error!!',
-      //       desc: err.message
-      //     })
-      //   })
     }
   },
   mounted () {
