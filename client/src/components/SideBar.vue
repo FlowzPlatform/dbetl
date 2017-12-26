@@ -1,7 +1,7 @@
 <template>
   <div style="width: inherit;">
     <div  style="background: rgb(54, 62, 79); height: 100%; position: fixed;width: inherit;">
-    <!--  -->
+    <!--  
       <Row style="padding: 16.3px 10px;border-bottom: 1px solid #15171b;">
         <Col :span="20" :offset="2">
           <Col :span="3">
@@ -24,13 +24,14 @@
           </Col>
         </Col>
       </Row>
-      
-      <Row v-bar style="padding-left: 15px;height:calc(100vh - 60px);">
+      -->
+      <Row v-bar class="vuebar-element">
           <div>
-            <Spin v-if="isSet" size="large" style="align:center"></Spin> 
-            <Tree v-else :data="sidebarData" :load-data="loadData" @on-select-change="onSelect"></Tree>
+            <div style="padding:0px 15px 0px 15px;">
+              <Spin v-if="isSet" size="large" style="align:center"></Spin> 
+              <Tree v-else :data="sidebarData" :load-data="loadData" @on-select-change="onSelect" style="overflow: hidden;"></Tree>
+            </div>
           </div>
-        
       </Row>
     </div>
   </div>
@@ -227,12 +228,8 @@
     background-color: #2b4c77;
   }*/
 .vuebar-element {
-  height: 250px;
-  width: 100%;
-  max-width: 500px;
-  background: #dfe9fe;
+  height:calc(100vh - 60px);
 }
-
   .ficon {
     font-size: 16px;
   }

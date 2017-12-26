@@ -1,34 +1,20 @@
 <template>
   <div>
-    <Row  v-if="$store.state.sidenavtoggle">
-    <Split style="height: 100vh;" :gutterSize="3">
-        <SplitArea :size="20"  >
-            <f-sidebar></f-sidebar>
-        </SplitArea>
-        <SplitArea :size="80">
-            <f-header></f-header>
-            <div class="f-layout-content" @click="HandleSideNavToggel">
-              <div class="f-layout-content-main">
-                <router-view></router-view>
+    <Row>
+      <f-header></f-header>
+      <Split style="height:calc(100vh - 60px)" :gutterSize="3">
+          <SplitArea :size="20">
+              <f-sidebar></f-sidebar>
+          </SplitArea>
+          <SplitArea :size="80">
+              <div class="f-layout-content" @click="HandleSideNavToggel">
+                <div class="f-layout-content-main">
+                  <router-view></router-view>
+                </div>
               </div>
-            </div>
-            <f-footer></f-footer>
-        </SplitArea>
-    </Split>
-    </Row>
-    <Row v-else>
-     <!--  <i-col  :span="5" :style="styles">
-        <f-sidebar></f-sidebar>
-      </i-col> -->
-      <i-col :span="24" style="">
-        <f-header></f-header>
-        <div class="f-layout-content" >
-          <div class="f-layout-content-main">
-            <router-view></router-view>
-          </div>
-        </div>
-        <f-footer></f-footer>
-      </i-col>
+              <f-footer></f-footer>
+          </SplitArea>
+      </Split>
     </Row>
   </div>
 </template>
