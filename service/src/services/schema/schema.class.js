@@ -89,23 +89,50 @@ var removeFunction = async(function(id, params) {
       rid: params.query.rid
     }
     var data = await (api.deleteSchemaRecord(params.data, cdata))
-    return data
+    if(data.hasOwnProperty('iserror')) {
+      throw new errors.BadRequest(data)  
+    } else {
+      return data
+    }
   } else {
     throw new errors.BadRequest()
   }
 })
 
 var createFunction = async(function(data, params) {
-  // console.log('>>>>>>>>>>>', params.conndata.selectedDb)
-  var api = require(cpath + params.conndata.selectedDb + 'api')
-  if (params.query.schemaname != undefined) {
-    var cdata = {
-      id: data.id,
-      tname: params.query.schemaname,
-      data: data.data
-    }
-    var data = await (api.postSchemaRecord(params.conndata, cdata))
+  // console.log('>>>>>>>>>>>', params.query.check)
+  if (params.query.check != undefined && params.query.check == 'true') {
+    // check the connection that already connected or not
+    var api = require(cpath + data.selectedDb + 'api')
+    var data = await (api.getTablewithColumns(data).then(res => {
+      return res
+    }).catch(err => {
+      return err
+    }))
     return data
+  } else if (params.query.checkconn != undefined && params.query.checkconn == 'true') {
+    // check the connection that already connected or not and if connected that get tabledata with columns
+    var api = require(cpath + data.selectedDb + 'api')
+    var data = await (api.checkConnection(data).then(res => {
+      return res
+    }).catch(err => {
+      return {iserror: true, msg: err}
+    }))
+    return data
+  } else if (params.conndata != undefined) {
+    // for new connection request
+    var api = require(cpath + params.conndata.selectedDb + 'api')
+    if (params.query.schemaname != undefined) {
+      var cdata = {
+        id: data.id,
+        tname: params.query.schemaname,
+        data: data.data
+      }
+      var data = await (api.postSchemaRecord(params.conndata, cdata))
+      return data
+    } else {
+      throw new errors.BadRequest()
+    }
   } else {
     throw new errors.BadRequest()
   }

@@ -2,11 +2,16 @@
   <div class="createRecord">
   	<div style="padding:20px">
       <Row style="padding-bottom:10px">
-        <Breadcrumb  separator="<b class='demo-breadcrumb-separator'>/</b>">
-          <BreadcrumbItem>{{crumbData.db}}</BreadcrumbItem>
-          <BreadcrumbItem>{{crumbData.cname}}</BreadcrumbItem>
-          <BreadcrumbItem>{{crumbData.tname}}</BreadcrumbItem>
-        </Breadcrumb>
+        <Col span="22">
+          <Breadcrumb  separator="<b class='demo-breadcrumb-separator'>/</b>">
+            <BreadcrumbItem>{{crumbData.db}}</BreadcrumbItem>
+            <BreadcrumbItem>{{crumbData.cname}}</BreadcrumbItem>
+            <BreadcrumbItem>{{crumbData.tname}}</BreadcrumbItem>
+          </Breadcrumb>
+        </Col>
+        <Col span="2" >
+          <Button style="float:right" type="primary" shape="circle" size="small" @click="goBackHandle()" icon="chevron-left">Back</Button>
+        </Col>
       </Row>
   		<vue-json-editor v-model="jsoneditordata" :showBtns="false" @json-change="onJsonChange"></vue-json-editor>
       <div style="padding:10px">
@@ -40,6 +45,9 @@ export default {
     }
   },
   methods: {
+    goBackHandle () {
+      this.$router.go(-1)
+    },
     onJsonChange () {
       // console.log(this.jsoneditordata)
     },
