@@ -137,7 +137,7 @@
       <div v-if="isSet">
         <Spin size="large" style="margin-left:550px"></Spin>
       </div>
-      <div v-else>
+      <div v-else-if="issConnect && istConnect">
         <div class="ivu-table-wrapper">
             <div class="ivu-table ivu-table-small">
                 <div class="ivu-table-header">
@@ -301,6 +301,7 @@
             <!-- <Button type="primary" @click="clearImport('')" style="margin-left: 8px">Clear</Button> -->
         </div>
       </div>
+      <div v-else></div>
     </div>
     <!-- <hr><hr><hr><hr> -->
     <!-- {{sdatabase}} -->
@@ -321,6 +322,8 @@ export default {
   data () {
     return {
       isSet: true,
+      issConnect: false,
+      istConnect: false,
       selectAllTable: true,
       CascaderData: [],
       sdatabase: ['rethink'],
@@ -519,44 +522,48 @@ export default {
         if (valid) {
           this.check_conn = true
           this.conn_icon = 'load-a'
+          var sCheck = false
           this.s_collection = await modelSchema.postData(this.source).then(response => {
-            // console.log('response s_collection', response)
-            if (response) {
-              this.sourceDisable = true
-              return response
-            } else {
-              this.conn_icon = 'close'
-              this.$Notice.error({
-                title: 'Connection Not Establish...!',
-                desc: 'Please Check Your Database..'
-              })
-              return []
-            }
+            this.issConnect = true
+            sCheck = true
+            this.sourceDisable = true
+            return response
+            // }
           }).catch(error => {
-            this.$Notice.error({title: 'Error!', desc: error})
+            console.log('error', error)
+            this.issConnect = false
+            this.sourceDisable = false
+            this.conn_icon = 'close'
+            this.$Notice.error({title: 'Error!', desc: 'Please Check Your Source Database..'})
             return []
           })
-          for (let i = 0; i < this.s_collection.length; i++) {
-            this.tableData.push({isSelect: true, isFieldSelect: true, source: this.s_collection[i].name, target: this.s_collection[i].name, colsData: []})
-            this.disableCheck.push({check: false})
-          }
-          // console.log('this.s_collection', this.s_collection.length)
-          if (this.s_collection.length > 0) {
-            this.conn_icon = 'checkmark'
-            this.t_collection = await modelSchema.postData(this.target).then(response => {
-              // console.log('this.target', JSON.stringify(this.target))
-              // console.log('t_collection', response)
-              this.isSet = false
-              if (response) {
-                return response
-              } else {
+          if (sCheck) {
+            for (let i = 0; i < this.s_collection.length; i++) {
+              this.tableData.push({isSelect: true, isFieldSelect: true, source: this.s_collection[i].name, target: this.s_collection[i].name, colsData: []})
+              this.disableCheck.push({check: false})
+            }
+            // console.log('this.s_collection', this.s_collection.length)
+            if (this.s_collection.length > 0) {
+              this.conn_icon = 'checkmark'
+              this.t_collection = await modelSchema.postData(this.target).then(response => {
+                // console.log('this.target', JSON.stringify(this.target))
                 this.isSet = false
+                // console.log('t_collection', response)
+                this.istConnect = true
+                return response
+              }).catch(err => {
+                console.log('>>>>', err)
+                this.isSet = false
+                this.sourceDisable = false
+                this.conn_icon = 'close'
+                this.istConnect = false
                 this.$Notice.error({
                   title: 'Connection Not Establish...!',
-                  desc: 'Please Check Your Database..'
+                  desc: 'Please Check Your Target Database..'
                 })
-              }
-            })
+                return []
+              })
+            }
           }
         }
       })

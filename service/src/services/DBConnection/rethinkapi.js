@@ -122,7 +122,7 @@ module.exports = {
       return {iserror: true, msg: err}
     }))
     if (conn.hasOwnProperty('iserror') && conn.iserror) {
-      return {iserror: true, msg: err}
+      return conn
     } else {
       var result = await(conn.db(data.dbname).tableList())
       var resp = []

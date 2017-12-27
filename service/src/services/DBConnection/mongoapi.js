@@ -99,7 +99,7 @@ module.exports = {
       return {iserror: true, msg: err}
     }))
     if (conn.hasOwnProperty('iserror') && conn.iserror) {
-      return {iserror: true, msg: err}
+      return conn
     } else {
       // console.log(conn)
       var result = await(conn.listCollections().toArray())
