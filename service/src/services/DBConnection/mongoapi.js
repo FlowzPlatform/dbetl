@@ -178,7 +178,12 @@ module.exports = {
     if (conn.hasOwnProperty('iserror') && conn.iserror) {
       return conn
     } else {
-      var id = new mongoose.Types.ObjectId(rdata.rid);
+      var id = ''
+      try {
+        id = new mongoose.Types.ObjectId(rdata.rid);
+      } catch (err) {
+        id = rdata.id
+      }
       delete rdata.data.id
       delete rdata.data._id
       var result = await(conn.collection(rdata.tname).updateOne({ _id: id }, { $set: rdata.data }))
@@ -196,7 +201,12 @@ module.exports = {
     if (conn.hasOwnProperty('iserror') && conn.iserror) {
       return conn
     } else {
-      var id = new mongoose.Types.ObjectId(rdata.rid);
+      var id = ''
+      try {
+        id = new mongoose.Types.ObjectId(rdata.rid);
+      } catch (err) {
+        id = rdata.id
+      }
       var result = await(conn.collection(rdata.tname).deleteOne({ _id: id }))
       conn.close()
       return result
