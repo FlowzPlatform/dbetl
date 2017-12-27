@@ -9,7 +9,9 @@ const _ = require('lodash')
 module.exports = {
   before: {
     all: [],
-    find: [],
+    find: [
+      hook => beforeFind(hook)
+    ],
     get: [],
     create: [
       hook => beforeCreate(hook)
@@ -44,18 +46,28 @@ function beforeCreate(hook) {
   const qOptions = {
     name: app.get('importToExternal')
   }
-  console.log('qOptions', qOptions)
+  // console.log('qOptions', qOptions)
   const q = new Queue(cxnOptions, qOptions)
   var jobOptions = {}
   jobOptions.data = {}
     // jobOptions.data.fId = id
   jobOptions.data = hook.data
     // jobOptions.app = app
+  jobOptions.userId = hook.data.userId
   jobOptions.configData = { host: app.get('host'), port: app.get('port') }
-  console.log('hook.data', hook.data)
+  // console.log('hook.data', hook.data)
   jobOptions.timeout = app.get('qJobTimeout')
   jobOptions.retryMax = app.get('qJobRetryMax')
   const job = q.createJob(jobOptions)
   q.addJob(job).then((savedJobs) => {}).catch(err => console.error(err))
   hook.result = { "data": hook.data, code: 200 }
 }
+
+
+let beforeFind = (hook) => {
+  // console.log('hook', hook)
+  if (hook.params.user) {
+    hook.params.query.userId = hook.params.user._id;
+  }
+};
+

@@ -31,6 +31,16 @@ export default {
       return res.data
     })
   },
+  postData: (data) => {
+    return api.request('post', '/' + model + '?check=true', data).then(res => {
+      return res.data
+    })
+  },
+  checkConn: (data) => {
+    return api.request('post', '/' + model + '?checkconn=true', data).then(res => {
+      return res.data
+    })
+  },
   put: (id, schemaname, rid, data) => {
     return api.request('put', '/' + model + '/' + id + '?schemaname=' + schemaname + '&&rid=' + rid, data).then(res => {
       return res.data

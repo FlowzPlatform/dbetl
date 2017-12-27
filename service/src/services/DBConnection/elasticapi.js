@@ -76,6 +76,16 @@ var getConnection = async (function(data) {
   return connection
 })
 
+var trygetConnection = async (function(data) {
+  var connection = new elasticsearch.Client({
+    host: data.host + ':' + data.port + '/' + data.dbname
+  }).ping({
+    requestTimeout: 1000
+  });
+  return connection
+})
+
+
 module.exports = {
   choose: function () {
     console.log('===================ELASTIC_DB=================');
@@ -111,6 +121,70 @@ module.exports = {
         })
       }
   }), 
+
+  getTablewithColumns: async(function(data) {
+    var tableList = await (this.getTables(data).then(res => {
+      return res
+    }).catch(err => {
+      return {iserror: true, msg: err}
+    }))
+    // console.log(tableList)
+    if (!tableList.hasOwnProperty('iserror')) {
+      var conn = await( getConnection(data).then(res => {
+        return res
+      }).catch(err => {
+        return {iserror: true, msg: err}
+      }))
+      if (conn.hasOwnProperty('iserror') && conn.iserror) {
+        return {iserror: true, msg: err}
+      } else {
+        var result = tableList
+        // console.log(result)
+        for (let [inx, obj] of result.entries()) {
+        var cols = []
+        var s = await (conn.search({
+          size: 1,
+          index: data.dbname,
+          type: obj.name,
+          body: {
+              query: {
+                  match_all: { }
+              },
+          }
+        }))
+        if (s != undefined && s.hits.hits.length > 0) {
+          for(let k in s.hits.hits[0]._source) {
+            cols.push({name: k})
+          }
+          cols.push({name: '_id'})
+        }
+        obj['columns'] = cols
+      }
+      conn.close()
+      // console.log('result', result)
+      return result
+      }
+    } else {
+      return tableList
+    }
+  }),
+
+  checkConnection: async(function(data) {
+    var conn = await( trygetConnection(data).then(res => {
+      console.log('elastic checkConnection ', res)
+      return res
+    }).catch(err => {
+      console.log('elastic error', err)
+      // conn.close()
+      return {iserror: true, msg: err}
+    }))
+    if (conn.hasOwnProperty('iserror') && conn.iserror) {
+      return conn
+    } else {
+      conn.close()
+      return {result: true}
+    }
+  }),
 
   getSchemaRecord: async(function (data, tname) {
     var conn = await( getConnection(data).then(res => {

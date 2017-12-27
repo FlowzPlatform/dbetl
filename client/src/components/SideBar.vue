@@ -1,7 +1,7 @@
 <template>
   <div style="width: inherit;">
     <div  style="background: rgb(54, 62, 79); height: 100%; position: fixed;width: inherit;">
-    <!--  -->
+    <!--  
       <Row style="padding: 16.3px 10px;border-bottom: 1px solid #15171b;">
         <Col :span="20" :offset="2">
           <Col :span="3">
@@ -24,10 +24,14 @@
           </Col>
         </Col>
       </Row>
-      
-      <Row style="padding-left: 15px;max-height:1000px; overflow-y: auto">
-        <Spin v-if="isSet" size="large" style="align:center"></Spin>
-        <Tree v-else :data="sidebarData" :load-data="loadData" @on-select-change="onSelect"></Tree>
+      -->
+      <Row v-bar class="vuebar-element">
+          <div>
+            <div style="padding:0px 15px 0px 15px;">
+              <Spin v-if="isSet" size="large" style="align:center"></Spin> 
+              <Tree v-else :data="sidebarData" :load-data="loadData" @on-select-change="onSelect" style="overflow: hidden;"></Tree>
+            </div>
+          </div>
       </Row>
     </div>
   </div>
@@ -96,7 +100,7 @@
       },
       loadData (item, callback) {
         schema.get(item.id).then(response => {
-          console.log('response.iserror', response)
+          // console.log('response.iserror', response)
           if (response.iserror) {
             this.$Notice.error({
               duration: 3,
@@ -130,7 +134,8 @@
                 style: {
                   width: '100%',
                   color: '#eee',
-                  fontSize: '18px'
+                  fontSize: '13px',
+                  verticalAlign: 'super'
                 }
               }, [
                 h('span', [
@@ -139,10 +144,10 @@
                       src: this[data.title]
                     },
                     style: {
-                      marginRight: '8px',
-                      marginLeft: '8px',
-                      width: '20px',
-                      height: '20px'
+                      marginRight: '4px',
+                      marginLeft: '4px',
+                      width: '16px',
+                      height: '16px'
                     }
                   }),
                   h('span', {
@@ -162,7 +167,8 @@
                     style: {
                       width: '100%',
                       color: '#eee',
-                      fontSize: '18px'
+                      fontSize: '13px',
+                      verticalAlign: 'super'
                     }
                   }, [
                     h('span', [
@@ -171,10 +177,10 @@
                           src: data.imgurl ? data.imgurl : this[data.selectedDb]
                         },
                         style: {
-                          marginRight: '8px',
-                          marginLeft: '8px',
-                          width: '20px',
-                          height: '20px'
+                          marginRight: '4px',
+                          marginLeft: '4px',
+                          width: '16px',
+                          height: '16px'
                         }
                       }),
                       h('span', {
@@ -221,6 +227,9 @@
   /*.menu-item {
     background-color: #2b4c77;
   }*/
+.vuebar-element {
+  height:calc(100vh - 60px);
+}
   .ficon {
     font-size: 16px;
   }
@@ -302,7 +311,8 @@
   }
   .ivu-tree-title {
     color: #eee;
-    font-size: 18px; 
+    font-size: 13px; 
+    vertical-align: middle;
   }
   .ivu-tree-title:hover {
     color: #ffd04b;
@@ -343,7 +353,7 @@
     position: relative;
     display: block;
     border-radius: 50%;
-    background-color: #fff;
+    /*background-color: #fff;*/
     margin: 20px 0px 0px 150px;
     animation: ani-spin-bounce 1s 0s ease-in-out infinite;
   }
@@ -353,4 +363,5 @@
     text-align: center;
     margin-top: 10px;
   }
+  
 </style>
