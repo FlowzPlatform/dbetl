@@ -99,7 +99,7 @@ module.exports = {
       return {iserror: true, msg: err}
     }))
     if (conn.hasOwnProperty('iserror') && conn.iserror) {
-        return res
+        return conn
       } else {
         var result = await (
           conn.search({

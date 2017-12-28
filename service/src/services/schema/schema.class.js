@@ -105,9 +105,14 @@ var createFunction = async(function(data, params) {
     // check the connection that already connected or not
     var api = require(cpath + data.selectedDb + 'api')
     var data = await (api.getTablewithColumns(data).then(res => {
-      return res
+      if(res.hasOwnProperty('iserror') && res.iserror) {
+        throw new errors.GeneralError('Not Connected to Database', {errors: res.msg})
+      } else {
+        return res
+      }
     }).catch(err => {
-      return err
+      throw new errors.GeneralError('Not Connected to Database', {errors: err})
+      // return {iserror: true, msg: err}
     }))
     return data
   } else if (params.query.checkconn != undefined && params.query.checkconn == 'true') {
