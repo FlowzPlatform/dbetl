@@ -1,5 +1,5 @@
 let errors = require('@feathersjs/errors');
-
+var endecrypt = require('../encryption/security')
 module.exports = {
   before: {
     all: [],
@@ -50,6 +50,7 @@ var beforeGet = (hook) => {
   return hook.app.service('databases').find({ query }).then(response => {
     if (response.data.length === 1) {
       // console.log(response)
+      response.data[0].password = endecrypt.decrypt(response.data[0].password)
       hook.params.data = response.data[0]
     } else {
       console.log(response)
@@ -71,6 +72,7 @@ var beforeCreate = (hook) => {
     return hook.app.service('databases').find({ query }).then(response => {
       if (response.data.length === 1) {
         // console.log(response)
+        response.data[0].password = endecrypt.decrypt(response.data[0].password)
         hook.params.conndata = response.data[0]
       } else {
         console.log(response)
