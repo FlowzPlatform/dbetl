@@ -287,7 +287,7 @@ var UUID = async(function generateUUID() {
 var filterObj = async (function(mobj, fArr) {
 	var fobj = {}
 	for( let [i, obj] of fArr.entries()) {
-		console.log('...........................', i, '>>>>', obj)
+		// console.log('...........................', i, '>>>>', obj)
 		if (obj.trasform != '') {
 			let res = await (transformFunction(mobj, obj.transform, obj.name))
 			mobj[obj.name] = res
@@ -323,6 +323,7 @@ q.process(async(job, next) => {
 			var aurl = 'http://' + job.configData.host + ':' + job.configData.port;
 			var res = []
 			var instance = []
+			var isDup = job.data.eDuplicate
 			// var _resi = await (axios.get('http://'+job.configData.host+':'+job.configData.port+'/'))
 			var sConn = await (createConn(job.data.source));
 			var tConn = await (createConn(job.data.target, job.data.mapdata));
@@ -385,7 +386,7 @@ q.process(async(job, next) => {
 						  })     
 						};
 						var resTableList = await (tableList())
-						console.log('resTableList',resTableList)
+						// console.log('resTableList',resTableList)
 						for (let [i, sObj] of resTableList.entries()) {
 							instanceVal = {};         
 							
@@ -402,6 +403,8 @@ q.process(async(job, next) => {
 					// inserting source data into target table
 					if(job.data.target.selectedDb == 'mongo') {
 						var _res = []
+						var having = []
+						var arrOfErr = []
 						// var sId = await (getSchemaidByName(aurl, obj.target))
 						for (let [i, sObj] of sData.entries()) {
 							// sObj._id = sObj._id
@@ -412,10 +415,46 @@ q.process(async(job, next) => {
 							if (obj.colsData.length !== 0) {
 								sObj = await (filterObj(sObj, obj.colsData))
 							}
-							var s = await (tConn.conn.collection(obj.target).insert(sObj))
-							_res.push(s)
+							if(isDup) {
+								if(sObj.hasOwnProperty('_id')) {
+									var checkDup = await (tConn.conn.collection(obj.target).find().toArray())
+									// console.log(checkDup)
+									// var a = _.cloneDeep(sObj)
+									// delete a._id
+									var isExist = _.find(checkDup, sObj)
+									if(isExist != undefined) {
+										having.push(sObj)
+									} else {
+										var s = await (tConn.conn.collection(obj.target).insert(sObj))
+										_res.push(s)
+									}
+								} else {
+									var checkDup = await (tConn.conn.collection(obj.target).find({}, {_id: 0}).toArray())
+									// console.log(checkDup)
+									var a = _.cloneDeep(sObj)
+									delete a._id
+									var isExist = _.find(checkDup, a)
+									if(isExist != undefined) {
+										having.push(sObj)
+									} else {
+										var s = await (tConn.conn.collection(obj.target).insert(sObj))
+										_res.push(s)
+									}
+								}
+								// console.log('_res..............', _res)
+							} else {
+								var s = await (tConn.conn.collection(obj.target).insert(sObj).then(res => {
+									return res
+								}).catch(err => {
+									// console.log('.....>>>>>>>> ', err)
+									arrOfErr.push({data: sObj, err: err})
+									return err
+								}))
+								_res.push(s)
+							} 
 						}
-						// console.log(_res)
+						// console.log('having............', having)
+						console.log('_res..............', arrOfErr)
 						// await (sConn.conn.collection(obj.source).find().toArray())
 					} else if(job.data.target.selectedDb == 'rethink') {
 						var _res = []
@@ -455,7 +494,7 @@ q.process(async(job, next) => {
 						// 	var s = await (tConn.conn.table(obj.target).insert(sObj).run())
 						// 	_res.push(s)
 						// }
-						// console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>', _res)
+						console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>', _res)
 
 					} else if(job.data.target.selectedDb == 'elastic') {
 						var _res = []
