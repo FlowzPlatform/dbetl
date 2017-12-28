@@ -458,43 +458,52 @@ q.process(async(job, next) => {
 						// await (sConn.conn.collection(obj.source).find().toArray())
 					} else if(job.data.target.selectedDb == 'rethink') {
 						var _res = []
+						var arrOfErr = []
 						// var sId = await (getSchemaidByName(aurl, obj.target))
 						// console.log(sData)
 						for (let [i, sObj] of sData.entries()) {
-							if(sObj.hasOwnProperty('_id')) {
-								sObj.id = (sObj._id).toString()
-								sObj._id = sObj.id
-							}
-
+							// if(sObj.hasOwnProperty('_id')) {
+							// 	sObj.id = (sObj._id).toString()
+							// 	sObj._id = sObj.id
+							// }
 							if (obj.colsData.length !== 0) {
 								sObj = await (filterObj(sObj, obj.colsData))
 							}
-							// console.log('>>>>> ', sObj)
-							var s = await (tConn.conn.table(obj.target).insert(sObj).run())
-							_res.push(s)		
-						} 		
-						// for (let [i, sObj] of sData.entries()) {
-							
-						// 	if(sObj.hasOwnProperty('_id')) {
-						// 		sObj.id = (sObj._id).toString()
-						// 		sObj._id = sObj.id
-						// 	}
-						// 	// else{
-						// 	// 	let uuid = await (UUID())
-						// 	// 	sObj._id = uuid
-						// 	// 	sObj.id = uuid
-						// 	// }
-							
-						// 	// if(sObj.hasOwnProperty('Schemaid')) {
-						// 	// 	sObj.Schemaid = sId
-						// 	// 	// console.log(sObj.Schemaid)
-						// 	// }
-						// 	// console.log('sObj',sObj)
-							
-						// 	var s = await (tConn.conn.table(obj.target).insert(sObj).run())
-						// 	_res.push(s)
-						// }
+							if (isDup) {
+								if (sObj.hasOwnProperty('id')) {
+									var a = await (tConn.conn.table(obj.target).run())
+									var isExist = _.find(a, sObj)
+									if(isExist == undefined) {
+										var s = await (tConn.conn.table(obj.target).insert(sObj).run())
+										_res.push(s)		
+									}
+								} else {
+									console.log('without..........id')
+									var a = await (tConn.conn.table(obj.target).without('id').run())
+									var n = _.cloneDeep(sObj)
+									delete n.id
+									var isExist = _.find(a, n)
+									if(isExist == undefined) {
+										var s = await (tConn.conn.table(obj.target).insert(sObj).run())
+										_res.push(s)		
+									}
+								}
+							} else {
+								// console.log('>>>>> ', sObj)
+								var s = await (tConn.conn.table(obj.target).insert(sObj).run().then(res => {
+									if(res.errors == 1) {
+										arrOfErr.push(sObj)
+									}
+									return res
+								}).catch(err => {
+									arrOfErr.push(sObj)
+									return err
+								}))
+								_res.push(s)		
+							}
+						}
 						console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>', _res)
+						console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> arrOfErr', arrOfErr)
 
 					} else if(job.data.target.selectedDb == 'elastic') {
 						var _res = []
