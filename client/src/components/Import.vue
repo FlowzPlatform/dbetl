@@ -51,9 +51,10 @@
                     </Row>
                     <Button type="primary" @click="handleConnect('frmSourceDbForm')"  :disabled="sourceDisable" style="margin-left: 80px">Connect
                         <span>
-                      <Icon  v-if="check_conn" :type="conn_icon" style="padding-left:5px;font-size:12px;"/>
-                  </span>
+                            <Icon  v-if="check_conn" :type="conn_icon" style="padding-left:5px;font-size:12px;"/>
+                        </span>
                     </Button>
+                    <Checkbox v-model="eDuplicate" style="float:right">Exclude eDuplicate records?</Checkbox>
                 </Form>
             </Card>
         </Col>
@@ -305,8 +306,8 @@
     </div>
     <!-- <hr><hr><hr><hr> -->
     <!-- {{sdatabase}} -->
-    <!-- <hr><hr><hr><hr> -->
-    <!-- {{tableData}} -->
+    <hr><hr><hr><hr>
+    {{tableData}}
     <!-- <hr><hr><hr><hr> -->
     <!-- {{disableCheck}} -->
     <!-- {{importedData}} -->
@@ -326,6 +327,7 @@ export default {
       istConnect: false,
       selectAllTable: true,
       CascaderData: [],
+      eDuplicate: false,
       sdatabase: ['rethink'],
       openTrasformEditorIndex: -1,
       openCodeMirrorEditorIndex: -1,
@@ -579,7 +581,8 @@ export default {
             d.colsData = _.reject(d.colsData, { 'isField': false })
           }
         })
-        console.log('this.importedData', this.importedData)
+        this.importedData.eDuplicate = this.eDuplicate
+        // console.log('this.importedData', this.importedData)
         this.importedData.userId = this.$store.state.user._id
         api.request('post', '/import-to-external-db', this.importedData).then((res) => {
           this.$Notice.success({title: 'Imported!', desc: ''})
