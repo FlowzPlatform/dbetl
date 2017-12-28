@@ -116,8 +116,7 @@ router.beforeEach((to, from, next) => {
         store.commit('SET_USER', response)
         next()
       }).catch(error => {
-        console.log(error.message)
-        if (error.response.data === 'invalid token') {
+        if (error.response.status === 401) {
           router.app.$cookie.delete('auth_token', { domain: location })
         }
         // window.console.log('Not authenticated')
