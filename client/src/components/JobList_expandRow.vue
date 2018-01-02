@@ -316,26 +316,4 @@
     .expand-row{
         margin-bottom: 16px;
     }
-    .ivu-table td, .ivu-table th {
-    min-width: 0;
-    height: 40px;
-    box-sizing: border-box;
-    text-align: left;
-    text-overflow: ellipsis;
-    vertical-align: middle;
-    border-top: 1px solid #e9eaec;
-    border-right: 1px solid #e9eaec;
-    border-bottom: 1px solid #e9eaec;
-    border-left: 1px solid #e9eaec;
-  }
-  .ivu-btn-primary {
-    color: #fff;
-    background-color: #2d8cf0;
-    border-color: #2d8cf0;
-    float: right;
-    margin-right: 5%;
-    margin-bottom: 1%;
-    margin-top: 1%;
-    }
-
 </style>
