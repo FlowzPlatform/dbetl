@@ -61,10 +61,12 @@ var createConn = async (function(data, mapdata) {
 	} else if(data.selectedDb == 'elastic') {
 		 var client = await (new elasticsearch.Client({
 	        host: data.host + ':' + data.port
-	      }).ping({
-	        requestTimeout: 1000
 	      }))
+		 // .ping({
+	        // requestTimeout: 1000
+	      // })
       // console.log(client)
+      	// console.log('.......', client)
     	return {conn: client, db: data.selectedDb}
 	} else if (data.selectedDb == 'nedb') {
 		var nPath = path.join(nedbpath, '/' + data.dbname)
@@ -325,7 +327,9 @@ q.process(async(job, next) => {
 			var instance = []
 			var isDup = job.data.eDuplicate
 			// var _resi = await (axios.get('http://'+job.configData.host+':'+job.configData.port+'/'))
+			// console.log('11111111111111111111111111111111111111111111111', job.data.source)
 			var sConn = await (createConn(job.data.source));
+			//console.log('22222222222222222222222222222222222222222222222', sConn)
 			var tConn = await (createConn(job.data.target, job.data.mapdata));
 			// console.log(sConn, '/>>>>>>>>>>>', tConn)
 			// console.log('11111111111111111111111111111111111111')
@@ -357,6 +361,12 @@ q.process(async(job, next) => {
 					                match_all: { }
 					            },
 					        }
+					    }).then(res => {
+					    	// console.log('_res.................', res)
+					    	return res
+					    }).catch(err => {
+					    	// console.log('Error...................', err)
+					    	return err
 					    }))
 						_res.hits.hits.forEach(function(hit){
 					        var item =  hit._source;
@@ -421,9 +431,15 @@ q.process(async(job, next) => {
 									// console.log(checkDup)
 									// var a = _.cloneDeep(sObj)
 									// delete a._id
-									var isExist = _.find(checkDup, sObj)
-									if(isExist != undefined) {
-										having.push(sObj)
+									var isExist = _.findIndex(checkDup, sObj)
+									if(isExist != -1) {
+										var isCopy = _.isEqual(checkDup[isExist], sObj)
+										if(!isCopy) {
+											var s = await (tConn.conn.collection(obj.target).insert(sObj))
+											_res.push(s)	
+										} else {
+											having.push(sObj)
+										}
 									} else {
 										var s = await (tConn.conn.collection(obj.target).insert(sObj))
 										_res.push(s)
@@ -433,9 +449,15 @@ q.process(async(job, next) => {
 									// console.log(checkDup)
 									var a = _.cloneDeep(sObj)
 									delete a._id
-									var isExist = _.find(checkDup, a)
-									if(isExist != undefined) {
-										having.push(sObj)
+									var isExist = _.findIndex(checkDup, a)
+									if(isExist != -1) {
+										var isCopy = _.isEqual(checkDup[isExist], a)
+										if(!isCopy) {
+											var s = await (tConn.conn.collection(obj.target).insert(sObj))
+											_res.push(s)	
+										} else {
+											having.push(sObj)
+										}
 									} else {
 										var s = await (tConn.conn.collection(obj.target).insert(sObj))
 										_res.push(s)
@@ -472,20 +494,32 @@ q.process(async(job, next) => {
 							if (isDup) {
 								if (sObj.hasOwnProperty('id')) {
 									var a = await (tConn.conn.table(obj.target).run())
-									var isExist = _.find(a, sObj)
-									if(isExist == undefined) {
+									var isExist = _.findIndex(a, sObj)
+									if(isExist == -1) {
 										var s = await (tConn.conn.table(obj.target).insert(sObj).run())
 										_res.push(s)		
+									} else {
+										var isCopy = _.isEqual(a[isExist], sObj)
+										if(!isCopy) {
+											var s = await (tConn.conn.table(obj.target).insert(sObj).run())
+											_res.push(s)
+										}
 									}
 								} else {
 									console.log('without..........id')
 									var a = await (tConn.conn.table(obj.target).without('id').run())
 									var n = _.cloneDeep(sObj)
 									delete n.id
-									var isExist = _.find(a, n)
-									if(isExist == undefined) {
+									var isExist = _.findIndex(a, n)
+									if(isExist == -1) {
 										var s = await (tConn.conn.table(obj.target).insert(sObj).run())
 										_res.push(s)		
+									} else {
+										var isCopy = _.isEqual(a[isExist], n)
+										if(!isCopy) {
+											var s = await (tConn.conn.table(obj.target).insert(sObj).run())
+											_res.push(s)
+										}
 									}
 								}
 							} else {
@@ -507,9 +541,10 @@ q.process(async(job, next) => {
 
 					} else if(job.data.target.selectedDb == 'elastic') {
 						var _res = []
+						var arrOfErr = []
 						// var sId = await (getSchemaidByName(aurl, obj.target))
 						for (let [i, sObj] of sData.entries()) {
-							sObj._id = (sObj._id).toString()
+							// sObj._id = (sObj._id).toString()
 							// delete sObj.id
 							// if(sObj.hasOwnProperty('Schemaid')) {
 							// 	sObj.Schemaid = sId
@@ -517,13 +552,118 @@ q.process(async(job, next) => {
 							if (obj.colsData.length !== 0) {
 								sObj = await (filterObj(sObj, obj.colsData))
 							}
-							var s = await (tConn.conn.index({
-						        index: job.data.target.dbname,
-						        type: obj.target,
-						        body: sObj
-						    }))
-							_res.push(s)
+							// var s = await (tConn.conn.index({
+						 //        index: job.data.target.dbname,
+						 //        type: obj.target,
+						 //        body: sObj
+						 //    }))
+							// _res.push(s)
+							if (isDup) {
+								// console.log('isDup', isDup)
+								if (sObj.hasOwnProperty('_id')) {
+									// console.log('11111111111111111111')
+									sObj._id = (sObj._id).toString()
+									var a = await (tConn.conn.search({
+								        index: job.data.source.dbname,
+								        type: obj.source,
+								        body: {
+								            query: {
+								                match_all: { }
+								            },
+								        }
+								    }).then(res => {
+								    	// console.log(res)
+								    	var a = _.map(res.hits.hits, (d) => {
+								    		var s = d._source
+								    		s._id = d._id
+								    		return s 
+								    	})
+										// console.log('22222222222222222222', a)
+								    	return a
+								    }).catch(err => {
+								    	// console.log('>>>>>>>>>>>>>>>>>>>>>>>.', err)
+								    	return []
+								    }))
+								    // console.log('aaaaaaaaaaaaaaa', a, '>>>>>>>>>>>>>>>', sObj)
+									var isExist = _.findIndex(a, sObj)
+									// console.log('isExist', isExist)
+									if(isExist == -1) {
+										var s = await (tConn.conn.index({
+									        index: job.data.target.dbname,
+									        type: obj.target,
+									        body: sObj
+									    }))
+										_res.push(s)	
+									} else {
+										var isCopy = _.isEqual(a[isExist], sObj)
+										if(!isCopy) {
+											var s = await (tConn.conn.index({
+										        index: job.data.target.dbname,
+										        type: obj.target,
+										        body: sObj
+										    }))
+											_res.push(s)
+										}
+									}
+								} else {
+									console.log('without.........._id')
+									var a = await (tConn.conn.search({
+								        index: job.data.source.dbname,
+								        type: obj.source,
+								        body: {
+								            query: {
+								                match_all: { }
+								            },
+								        }
+								    }).then(res => {
+								    	return _.map(res.hits.hits, (d) => {
+								    		return d._source
+								    	})
+								    }).catch(err => {
+								    	return []
+								    }))
+									var n = _.cloneDeep(sObj)
+									delete n._id
+									// console.log('...................', a, '>>>>>>>>>>>>>>>', n)
+									var isExist = _.findIndex(a, n)
+									// console.log('isExist.........', isExist)
+									if(isExist == -1) {
+										// console.log('created..............')
+										var s = await (tConn.conn.index({
+									        index: job.data.target.dbname,
+									        type: obj.target,
+									        body: sObj
+									    }))
+										_res.push(s)		
+									} else {
+										var isCopy = _.isEqual(a[isExist], n)
+										if (!isCopy) {
+											var s = await (tConn.conn.index({
+										        index: job.data.target.dbname,
+										        type: obj.target,
+										        body: sObj
+										    }))
+											_res.push(s)		
+										}
+									}
+								}
+							} else {
+								// console.log('>>>>> ', sObj)
+								var s = await (tConn.conn.index({
+							        index: job.data.target.dbname,
+							        type: obj.target,
+							        body: sObj
+							    }).then(res => {
+							    	return res
+							    }).catch(err => {
+							    	arrOfErr.push(sObj)
+							    	return err
+							    }))
+								_res.push(s)		
+							}
 						}
+						// console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>', _res)
+						// console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>> error ', arrOfErr)
 					} else if(job.data.target.selectedDb == 'mysql') {
 						var _res = []
 						
