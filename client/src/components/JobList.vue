@@ -1,12 +1,19 @@
 <template>
-    <Table :columns="columns1" :data="data2"></Table>
+    <Table :loading="loading" :columns="columns" :data="tableData" size="small" border></Table>
 </template>
 <script>
-import expandRow from './expand-row.vue'
-import api from '@/api'
+// General
 import Emitter from '@/mixins/emitter'
-import Settings from './Settings.vue'
 import _ from 'lodash'
+import moment from 'moment'
+
+// Model
+import importTrackerModel from '@/api/importTracker'
+
+// Component
+import expandRow from './expand-row.vue'
+import Settings from './Settings.vue'
+
 let index
 export default {
   name: 'joblist',
@@ -14,11 +21,13 @@ export default {
   mixins: [Emitter],
   data () {
     return {
-      columns1: [
+      loading: true,
+      columns: [
         {
           type: 'expand',
           width: 20,
           render: (h, params) => {
+            console.log('params', params)
             return h(expandRow, {
               props: {
                 row: params.row
@@ -26,10 +35,10 @@ export default {
             })
           }
         },
-        {
-          title: 'Id',
-          key: 'id'
-        },
+        // {
+        //   title: 'Id',
+        //   key: 'id'
+        // },
         {
           title: 'Source',
           key: 'source'
@@ -57,30 +66,46 @@ export default {
         {
           title: 'Status',
           key: 'status'
+        },
+        {
+          title: 'Created',
+          key: 'created',
+          width: 170,
+          render: (h, params) => {
+            if (params.row.created !== undefined) {
+              return h('div', [
+                h('Tooltip', {
+                  props: {
+                    content: params.row.created
+                  }
+                }, moment(params.row.created).format('lll'))
+              ])
+            } else {
+              return h('div', '--')
+            }
+          }
         }
       ],
-      data2: []
+      tableData: []
     }
   },
   feathers: {
     'import-tracker': {
       updated (message) {
         let self = this
-        for (var i = 0; i < self.data2.length; i++) {
-          if (self.data2[i].id === message.id) {
+        for (var i = 0; i < self.tableData.length; i++) {
+          if (self.tableData[i].id === message.id) {
             index = i
           }
         }
-        self.data2.splice(index, 1)
-        self.data2.push(message)
-        var desc = _.sortBy(self.data2, 'modified')
-        self.data2 = desc.reverse()
+        self.tableData.splice(index, 1)
+        self.tableData.push(message)
+        var desc = _.sortBy(self.tableData, 'modified')
+        self.tableData = desc.reverse()
       },
       created (data) {
-        let self = this
-        self.data2.push(data)
-        var desc = _.sortBy(self.data2, 'modified')
-        self.data2 = desc.reverse()
+        this.tableData.push(data)
+        this.tableData = _.chain(this.tableData).sortBy('modified').reverse().value()
       },
       removed (data) {
         this.init()
@@ -88,13 +113,9 @@ export default {
     }
   },
   mounted () {
-    var self = this
-    api.request('get', '/import-tracker/').then(response => {
-      for (var i = 0; i < response.data.length; i++) {
-        self.data2.push(response.data[i])
-      }
-      var desc = _.sortBy(self.data2, 'modified')
-      self.data2 = desc.reverse()
+    importTrackerModel.get().then(response => {
+      this.tableData = _.chain(response).sortBy('created').reverse().value()
+      this.loading = false
     })
   }
 }
