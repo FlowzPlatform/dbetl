@@ -51,9 +51,10 @@
                     </Row>
                     <Button type="primary" @click="handleConnect('frmSourceDbForm')"  :disabled="sourceDisable" style="margin-left: 80px">Connect
                         <span>
-                      <Icon  v-if="check_conn" :type="conn_icon" style="padding-left:5px;font-size:12px;"/>
-                  </span>
+                            <Icon  v-if="check_conn" :type="conn_icon" style="padding-left:5px;font-size:12px;"/>
+                        </span>
                     </Button>
+                    <Checkbox v-model="eDuplicate" style="float:right">Exclude eDuplicate records?</Checkbox>
                 </Form>
             </Card>
         </Col>
@@ -183,7 +184,7 @@
                                     </td>
                                     <td class="">
                                         <div class="ivu-table-cell">
-                                            <AutoComplete placeholder="input here" v-model="tableData[index].target" @on-search="fillColsData(tableData[index].target, index)" @on-select="fillColsData(tableData[index].target, index)"  style="width:200px" :disabled="abc(index)" clearable>
+                                            <AutoComplete placeholder="input here" v-model="tableData[index].target" @on-search="fillColsData(tableData[index].target, index)" @on-select="fillColsData(tableData[index].target, index)"  style="width:200px" clearable>
                                                 <Option v-for="(obj, inx) in t_collection" :value="obj.name" :key="inx">{{ obj.name }}</Option>
                                             </AutoComplete>
                                             <a v-if ="abc(index)" @click="clearField(index)">Clear</a>
@@ -305,8 +306,8 @@
     </div>
     <!-- <hr><hr><hr><hr> -->
     <!-- {{sdatabase}} -->
-    <!-- <hr><hr><hr><hr> -->
-    <!-- {{tableData}} -->
+    <hr><hr><hr><hr>
+    {{tableData}}
     <!-- <hr><hr><hr><hr> -->
     <!-- {{disableCheck}} -->
     <!-- {{importedData}} -->
@@ -314,10 +315,12 @@
 </template>
 <script>
 import _ from 'lodash'
-import api from '../api'
+// import api from '../api'
 // import modelSettings from '@/api/settings'
 import modelDatabases from '@/api/databases'
 import modelSchema from '@/api/schema'
+import modelImportToExternalDb from '@/api/import-to-external-db'
+
 export default {
   data () {
     return {
@@ -326,6 +329,7 @@ export default {
       istConnect: false,
       selectAllTable: true,
       CascaderData: [],
+      eDuplicate: false,
       sdatabase: ['rethink'],
       openTrasformEditorIndex: -1,
       openCodeMirrorEditorIndex: -1,
@@ -453,7 +457,8 @@ export default {
       }
     },
     abc (index) {
-      // console.log('abc', this.disableCheck[index].check)
+      // if()
+      // console.log('abc', this.disableCheck, index)
       return this.disableCheck[index].check
     },
     clearField (index) {
@@ -472,6 +477,7 @@ export default {
       })
     },
     fillColsData (tSelect, index) {
+      // this.openTrasformEditor(index)
       // console.log('this.tableData', this.tableData[index].target)
       // alert(tSelect)
       // var s = tSelect
@@ -486,7 +492,7 @@ export default {
       // this.tableData[index].colsData = []
       // var s = this.s_collection[index].columns
       if (this.tableData[index].colsData.length === 0) {
-        console.log('this.s_collection[index].columns', this.s_collection[index].columns)
+        // console.log('this.s_collection[index].columns', this.s_collection[index].columns)
         for (let i = 0; i < this.s_collection[index].columns.length; i++) {
           var trans = 'return row["' + this.s_collection[index].columns[i].name + '"];'
           this.tableData[index].colsData.push({isField: true, name: this.s_collection[index].columns[i].name, input: this.s_collection[index].columns[i].name, transform: trans})
@@ -504,7 +510,9 @@ export default {
         return false
       }
       this.openTrasformEditorIndex = index
-      this.disableCheck[index].check = true
+      // console.log(index, this.tableData[index].target)
+      this.fillColsData(this.tableData[index].target, index)
+      // this.disableCheck[index].check = true
     },
     openCodeMirror (index) {
       if (this.openCodeMirrorEditorIndex === index) {
@@ -579,9 +587,11 @@ export default {
             d.colsData = _.reject(d.colsData, { 'isField': false })
           }
         })
-        console.log('this.importedData', this.importedData)
+        this.importedData.eDuplicate = this.eDuplicate
+        // console.log('this.importedData', this.importedData)
         this.importedData.userId = this.$store.state.user._id
-        api.request('post', '/import-to-external-db', this.importedData).then((res) => {
+        // api.request('post', '/import-to-external-db', this.importedData).then((res) => {
+        modelImportToExternalDb.post(this.importedData).then((res) => {
           this.$Notice.success({title: 'Imported!', desc: ''})
           this.$router.push('/instancejoblist/' + this.$route.params.id)
         }).catch((err) => {

@@ -11,5 +11,10 @@ export default {
         return response.data
       })
     }
+  },
+  post: (data) => {
+    return api.request('post', '/' + model, data).then(response => {
+      return response.data
+    })
   }
 }
