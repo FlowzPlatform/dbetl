@@ -48,7 +48,7 @@
           </Row>
         </TabPane>
         <TabPane label="Mapping" name="mapping">
-          <Table :columns="mappingColumns" :data="mappingRow" size="small" stripe></Table>
+          <Table :columns="mappingColumns" :data="mappingRow" size="small"></Table>
         </TabPane>
       </Tabs>
     </div>

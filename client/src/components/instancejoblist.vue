@@ -18,7 +18,17 @@
     </Row>
     <Row>
       <Col>
-        <Table :loading="loading" :columns="columns" :data="tableData" size="small" stripe></Table>
+        <Table :loading="loading" :columns="columns" :data="tableData.data" size="small" border></Table>
+      </Col>
+      <Col>
+        <div class="f-pagination">
+          <div class="total-page">
+            <b>Total Records:</b> {{tableData.total}}
+          </div>
+          <div class="page">
+            <Page :total="tableData.total" :page-size="$store.state.limit" @on-change="handlePage"></Page>
+          </div>
+        </div>
       </Col>
     </Row>
   </div>
@@ -26,7 +36,7 @@
 
 <script>
 // Generals
-import _ from 'lodash'
+// import _ from 'lodash'
 import moment from 'moment'
 
 // Models
@@ -55,7 +65,6 @@ export default {
         {
           title: 'Source',
           key: 'source',
-          width: 250,
           render: (h, params) => {
             return h('div', params.row.data.source.selectedDb + ' / ' + params.row.data.source.dbname)
           }
@@ -63,7 +72,6 @@ export default {
         {
           title: 'Target',
           key: 'target',
-          width: 250,
           render: (h, params) => {
             return h('div', params.row.data.target.selectedDb + ' / ' + params.row.data.target.dbname)
           }
@@ -72,6 +80,8 @@ export default {
           title: 'jobCreated',
           key: 'dateCreated',
           sortable: true,
+          width: 150,
+          align: 'center',
           render: (h, params) => {
             if (params.row.dateCreated !== undefined) {
               return h('div', [
@@ -87,39 +97,81 @@ export default {
           }
         },
         {
-          title: 'status',
-          key: 'status',
-          width: 200,
-          sortable: true
-        },
-        {
           title: 'Progress',
           key: 'action',
-          // width: 300,
+          width: 150,
           align: 'center',
           render: (h, params) => {
-            return h('div', [
-              h('i-circle', {
+            return h('div', {
+              'class': {
+                progressTooltip: true
+              }
+            }, [
+              h('Tooltip', {
                 props: {
-                  percent: this.tableData[params.index].progress,
-                  'stroke-width': 5,
-                  size: 35
+                  content: params.row.status.charAt(0).toUpperCase() + params.row.status.slice(1)
                 }
               }, [
-                h('span', this.tableData[params.index].progress + '%')
+                h('Progress', {
+                  props: {
+                    percent: params.row.progress,
+                    strokeWidth: 5,
+                    status: (params.row.status && params.row.status.toLowerCase()) === 'terminated' ? 'wrong' : 'active'
+                  }
+                })
               ])
+              // h('i-circle', {
+              //   props: {
+              //     percent: this.tableData[params.index].progress,
+              //     'stroke-width': 5,
+              //     size: 35
+              //   }
+              // }, [
+              //   h('span', this.tableData[params.index].progress + '%')
+              // ])
             ])
           }
         }
       ],
       crumbData: {},
-      tableData: []
+      tableData: [],
+      skip: 0
     }
   },
   mounted () {
     this.init()
   },
   methods: {
+    handlePage (newPage) {
+      this.loading = true
+      this.skip = this.$store.state.limit * (newPage - 1)
+      this.getTableData()
+    },
+    getTableData () {
+      let self = this
+      // Get Imported data details
+      modelimportToExternalDb.get(null, {
+        $limit: this.$store.state.limit,
+        $skip: this.skip,
+        $sort: {
+          dateCreated: -1
+        },
+        'data.target.id': self.$route.params.id
+      }).then(response => {
+        this.tableData = response
+        // this.tableData = _.chain(response).filter(f => {
+        //   return f.data.target.id === self.$route.params.id
+        // }).sortBy(s => { return s.dateCreated }).reverse().value()
+        this.loading = false
+      }).catch(error => {
+        this.$Notice.error({
+          title: error,
+          desc: 'connection to the server timed out',
+          duration: 0
+        })
+        this.loading = false
+      })
+    },
     init () {
       let self = this
       if (this.$route.params.id !== undefined) {
@@ -130,20 +182,7 @@ export default {
         }).catch(err => {
           console.log('Error...', err)
         })
-        // Get Imported data details
-        modelimportToExternalDb.get().then(response => {
-          this.tableData = _.chain(response).filter(f => {
-            return f.data.target.id === self.$route.params.id
-          }).sortBy(s => { return s.dateCreated }).reverse().value()
-          this.loading = false
-        }).catch(error => {
-          this.$Notice.error({
-            title: error,
-            desc: 'connection to the server timed out',
-            duration: 0
-          })
-          this.loading = false
-        })
+        self.getTableData()
       } else {
         this.$router.go(-1)
       }
@@ -172,3 +211,11 @@ export default {
   }
 }
 </script>
+<style>
+  .progressTooltip > .ivu-tooltip {
+    display: block;
+  }
+  .progressTooltip > .ivu-tooltip > .ivu-tooltip-rel {
+    display: block;
+  }
+</style>
