@@ -1,291 +1,62 @@
 <template>
     <div>
-        <div class="ivu-tabs-tabpane">
-          <div class="ivu-table-wrapper">
-            <div class="ivu-table ivu-table-small">
-              <div class="ivu-table-header">
-                <table cellspacing="0" cellpadding="0" border="1" style="width:100%;">
-                  <colgroup>
-                    <col width="200">
-                    <col width="800">
-                  </colgroup>
-                    <tr>
-                      <th class="">
-                        <div class="ivu-table-cell">
-                          <span>Job Finished</span>
-                        </div>
-                      </th>
-                      <td class="">
-                        <div class="ivu-table-cell">
-                          <span>{{getFinishDate(row.dateFinished)}}</span>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <th class="">
-                        <div class="ivu-table-cell">
-                          <span>Source Connection</span>
-                        </div>
-                      </th>
-                      <td class="">
-                        <table cellspacing="0" cellpadding="0" style="width: 100%;" border="1">
-                          <colgroup>
-                            <col width="20">
-                            <col width="20">
-                            <col width="20">
-                            <col width="20">
-                          </colgroup>
-                          <thead>
-                            <tr>
-                            <th class="">
-                              <div class="ivu-table-cell">
-                                <span>DB</span>
-                              </div>
-                            </th>
-                            <th class="">
-                              <div class="ivu-table-cell">
-                                <span>Databasename</span>
-                              </div>
-                            </th>
-                            <th class="">
-                              <div class="ivu-table-cell">
-                                <span>Host</span>
-                              </div>
-                            </th>
-                            <th class="">
-                              <div class="ivu-table-cell">
-                                <span>Port</span>
-                              </div>
-                            </th>
-                           </tr>
-                         </thead>
-                         <tbody class="ivu-table-tbody">
-                         <tr class="ivu-table-row">
-                           <td class="">
-                             <div class="ivu-table-cell">
-                              {{row.data.source.selectedDb}}
-                             </div>
-                           </td>
-                           <td class="">
-                             <div class="ivu-table-cell">
-                              {{row.data.source.dbname}}
-                             </div>
-                           </td>
-                           <td class="">
-                             <div class="ivu-table-cell">
-                              {{row.data.source.host}}
-                             </div>
-                           </td>
-                           <td class="">
-                             <div class="ivu-table-cell">
-                              {{row.data.source.port}}
-                             </div>
-                           </td>
-                         </tr>
-                       </tbody>
-                      </table>
-                      </td>
-                    </tr>
-                    <tr>
-                      <th class="">
-                        <div class="ivu-table-cell">
-                          <span>Target Connection</span>
-                        </div>
-                      </th>
-                      <td class="">
-                        <table cellspacing="0" cellpadding="0" style="width: 100%;" border="1">
-                          <colgroup>
-                            <col width="20">
-                            <col width="20">
-                            <col width="20">
-                            <col width="20">
-                            <col width="20">
-                          </colgroup>
-                          <thead>
-                            <tr>
-                            <th class="">
-                              <div class="ivu-table-cell">
-                                <span>DB</span>
-                              </div>
-                            </th>
-                            <th class="">
-                              <div class="ivu-table-cell">
-                                <span>Connection Name</span>
-                              </div>
-                            </th>
-                            <th class="">
-                              <div class="ivu-table-cell">
-                                <span>Databasename</span>
-                              </div>
-                            </th>
-                            <th class="">
-                              <div class="ivu-table-cell">
-                                <span>Host</span>
-                              </div>
-                            </th>
-                            <th class="">
-                              <div class="ivu-table-cell">
-                                <span>Port</span>
-                              </div>
-                            </th>
-                           </tr>
-                         </thead>
-                         <tbody class="ivu-table-tbody">
-                         <tr class="ivu-table-row">
-                           <td class="">
-                             <div class="ivu-table-cell">
-                              {{row.data.target.selectedDb}}
-                             </div>
-                           </td>
-                           <td class="">
-                             <div class="ivu-table-cell">
-                              {{row.data.target.connection_name}}
-                             </div>
-                           </td>
-                           <td class="">
-                             <div class="ivu-table-cell">
-                              {{row.data.target.dbname}}
-                             </div>
-                           </td>
-                           <td class="">
-                             <div class="ivu-table-cell">
-                              {{row.data.target.host}}
-                             </div>
-                           </td>
-                           <td class="">
-                             <div class="ivu-table-cell">
-                              {{row.data.target.port}}
-                             </div>
-                           </td>
-                         </tr>
-                       </tbody>
-                      </table>
-                      </td>
-                    </tr>
-                    <tr>
-                      <th class="">
-                        <div class="ivu-table-cell">
-                          <span>Mapping</span>
-                        </div>
-                      </th>
-                      <td class="">
-                        <!-- <div class="ivu-table-cell"> -->
-                          <div class="ivu-tabs-tabpane">
-                            <div class="ivu-table-wrapper">
-                              <div class="ivu-table ivu-table-small">
-                                <div class="ivu-table-header">
-                                  <table cellspacing="0" cellpadding="0" border="1" style="width:100%;">
-                                    <!-- <colgroup>
-                                      <col width="40">
-                                      <col width="40">
-                                      <col width="20">
-                                    </colgroup> -->
-                                    <thead>
-                                      <tr>
-                                        <th class="">
-                                          <div class="ivu-table-cell">
-                                            <span>Source Table</span>
-                                          </div>
-                                        </th>
-                                        <th class="">
-                                          <div class="ivu-table-cell">
-                                            <span>Destination Table</span>
-                                          </div>
-                                        </th> 
-                                        <th class="">
-                                          <div class="ivu-table-cell">
-                                            <span>Field Mapping</span>
-                                          </div>
-                                        </th>
-                                      </tr>
-                                    </thead>
-                                    <tbody class="ivu-table-tbody">
-                                      <template v-for="(obj, index) in row.data.mapdata" >
-                                        <tr class="ivu-table-row">
-                                          <td class="">
-                                            <div class="ivu-table-cell">
-                                              {{obj.source}}
-                                            </div>
-                                          </td>
-                                          <td class="">
-                                            <div class="ivu-table-cell">
-                                              {{obj.target}}
-                                            </div>
-                                          </td>
-                                          <td class="">
-                                            <div class="ivu-table-cell">
-                                              <a v-if="obj.colsData.length != 0" @click="openTrasformEditor(index)"> Click Here</a>
-                                            </div>
-                                          </td>
-                                        </tr>
-                                        <tr v-if="openTrasformEditorIndex === index" class="ivu-table-row">
-                                          <td colspan="3" style="padding: 15px 100px 15px 100px; background-color:#eee;">
-                                            <!-- {{tableData[index].source}} -->
-                                            <div class="ivu-table-wrapper">
-                                              <div class="ivu-table ivu-table-small">
-                                                  <div class="ivu-table-header">
-                                                      <table cellspacing="0" cellpadding="0" border="0" style="width: 100%;">
-                                                          <!-- <colgroup> -->
-                                                              <!-- <col width="10"> -->
-                                                                  <!-- <col width="50"> -->
-                                                                      <!-- <col width="50"> -->
-                                                                          <!-- <col width="25"> -->
-                                                          <!-- </colgroup> -->
-                                                          <thead>
-                                                              <tr>
-                                                                  <th class="" style="background-color:#f8f8f9; color:#394263;font-size:13px">
-                                                                      <div class="ivu-table-cell">
-                                                                          <span> Source Fields</span>
-                                                                      </div>
-                                                                  </th>
-                                                                  <th class="" style="background-color:#f8f8f9; color:#394263;font-size:13px">
-                                                                      <div class="ivu-table-cell">
-                                                                          <span> Destinstion Fields (name / input)</span>
-                                                                      </div>
-                                                                  </th>
-                                                              </tr>
-                                                          </thead>
-                                                          <tbody class="ivu-table-tbody">
-                                                              <template v-for="(record, inx) in row.data.mapdata[index].colsData">
-                                                                  <tr class="ivu-table-row">
-                                                                      <td class="">
-                                                                          <div class="ivu-table-cell">
-                                                                              <span>{{record.name}}</span>
-                                                                          </div>
-                                                                      </td>
-                                                                      <td class="">
-                                                                          <div class="ivu-table-cell">
-                                                                            <span>{{record.name}} <b>/</b> {{record.input}} </span>
-                                                                          </div>
-                                                                      </td>
-                                                                  </tr>
-                                                              </template>
-                                                          </tbody>
-                                                      </table>
-                                                  </div>
-                                              </div>
-                                              </div>
-                                          </td>
-                                        </tr>
-                                      </template>
-                                    </tbody>
-                                  </table>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        <!-- </div> -->
-                      </td>
-                    </tr>
-                </table>
-              </div>
-            </div>
-          </div>
-        </div>
+      <Tabs>
+        <TabPane label="Source / Destination" name="source_destination">
+          <Row type="flex" justify="space-around">
+            <Col span="11">
+              <Card>
+                <p slot="title">Source</p>
+                <p>
+                  <span class="small-head">DB: </span> 
+                  <span class="text">{{row.data.source.selectedDb}}</span>
+                </p>
+                <p>
+                  <span class="small-head">Database Name: </span>
+                  <span class="text">{{row.data.source.dbname}}</span>
+                </p>
+                <p>
+                  <span class="small-head">Host: </span>
+                  <span class="text">{{row.data.source.host}}</span>
+                </p>
+                <p>
+                  <span class="small-head">Port: </span>
+                  <span class="text">{{row.data.source.port}}</span>
+                </p>
+              </Card>
+            </Col>
+            <Col span="11">
+              <Card>
+                <p slot="title">Destination</p>
+                <p>
+                  <span class="small-head">DB: </span> 
+                  <span class="text">{{row.data.target.selectedDb}}</span>
+                </p>
+                <p>
+                  <span class="small-head">Database Name: </span>
+                  <span class="text">{{row.data.target.dbname}}</span>
+                </p>
+                <p>
+                  <span class="small-head">Host: </span>
+                  <span class="text">{{row.data.target.host}}</span>
+                </p>
+                <p>
+                  <span class="small-head">Port: </span>
+                  <span class="text">{{row.data.target.port}}</span>
+                </p>
+              </Card>
+            </Col>
+          </Row>
+        </TabPane>
+        <TabPane label="Mapping" name="mapping">
+          <Table :columns="mappingColumns" :data="mappingRow" size="small" stripe></Table>
+        </TabPane>
+      </Tabs>
     </div>
 </template>
 <script>
   let moment = require('moment')
+  import _ from 'lodash'
+  import Vue from 'vue'
   export default {
     name: 'JobList_expandRow',
     props: {
@@ -293,6 +64,61 @@
     },
     data () {
       return {
+        mappingRow: Vue.util.extend([], this.row.data.mapdata),
+        test: true,
+        mappingColumns: [{
+          type: 'expand',
+          width: 40,
+          render: (h, params) => {
+            return h('div', [
+              h('Table', {
+                props: {
+                  columns: [{
+                    title: 'Source Fields',
+                    key: 'input'
+                  }, {
+                    title: 'Destination Fields',
+                    key: 'name'
+                  }, {
+                    title: 'Transform',
+                    key: 'transform'
+                  }],
+                  data: params.row.colsData
+                }
+              })
+            ])
+          }
+        }, {
+          title: 'Source Table',
+          key: 'source'
+        }, {
+          title: 'Destination Table',
+          key: 'target'
+        }, {
+          title: 'Field Mapping',
+          key: '_expanded',
+          render: (h, params) => {
+            var self = this
+            return h('div', [
+              h('Button', {
+                props: {
+                  type: 'text',
+                  size: 'small'
+                },
+                style: {
+                  marginRight: '5px'
+                },
+                on: {
+                  click: (e) => {
+                    self.mappingRow[0]._expanded = !self.mappingRow[0]._expanded
+                    let temp = _.clone(self.mappingRow)
+                    self.mappingRow = temp
+                  }
+                }
+              }, 'Click Here')
+            ])
+          }
+        }],
         openTrasformEditorIndex: -1
       }
     },
@@ -313,7 +139,10 @@
   }
 </script>
 <style scoped>
-    .expand-row{
-        margin-bottom: 16px;
-    }
+  .small-head{
+    font-size: 12px; font-weight: bold; color: rgb(70, 76, 91);
+  }
+  .text {
+     font-size: 12px; color: rgb(101, 113, 128);
+  }
 </style>

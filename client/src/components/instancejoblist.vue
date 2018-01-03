@@ -16,7 +16,7 @@
         </Row>
       </Col>
     </Row>
-    <Row style="padding-bottom: 10px">
+    <Row>
       <Col>
         <Table :loading="loading" :columns="columns" :data="tableData" size="small" stripe></Table>
       </Col>
@@ -77,7 +77,7 @@ export default {
               return h('div', [
                 h('Tooltip', {
                   props: {
-                    content: params.row.dateCreated
+                    content: moment(params.row.dateCreated).format('lll')
                   }
                 }, moment(params.row.dateCreated).fromNow())
               ])
