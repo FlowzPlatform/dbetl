@@ -79,7 +79,6 @@ export default {
         {
           title: 'jobCreated',
           key: 'dateCreated',
-          sortable: true,
           width: 150,
           align: 'center',
           render: (h, params) => {
@@ -151,11 +150,9 @@ export default {
       let self = this
       // Get Imported data details
       modelimportToExternalDb.get(null, {
+        '$sort[dateCreated]': -1,
         $limit: this.$store.state.limit,
         $skip: this.skip,
-        $sort: {
-          dateCreated: -1
-        },
         'data.target.id': self.$route.params.id
       }).then(response => {
         this.tableData = response
