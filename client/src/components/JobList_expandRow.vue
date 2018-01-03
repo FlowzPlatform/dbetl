@@ -81,7 +81,53 @@
                     key: 'name'
                   }, {
                     title: 'Transform',
-                    key: 'transform'
+                    key: 'transform',
+                    align: 'center',
+                    width: 100,
+                    ellipsis: true,
+                    render: (h, params) => {
+                      return h('div', [
+                        h('Button', {
+                          props: {
+                            type: 'text',
+                            size: 'small'
+                          },
+                          style: {
+                            marginRight: '5px'
+                          },
+                          on: {
+                            click: () => {
+                              this.$Modal.confirm({
+                                render: (h) => {
+                                  return h('codemirror', {
+                                    props: {
+                                      value: 'return abc;', // params.row.transform,
+                                      options: {
+                                        tabSize: 2,
+                                        styleActiveLine: true,
+                                        lineNumbers: true,
+                                        line: true,
+                                        mode: 'text/javascript',
+                                        lineWrapping: true,
+                                        theme: 'base16-light',
+                                        readOnly: true,
+                                        height: '100px'
+                                      }
+                                    }
+                                  })
+                                }
+                              })
+                            }
+                          }
+                        }, [
+                          h('Icon', {
+                            props: {
+                              type: 'eye'
+                            }
+                          })
+                        ])
+                      ])
+                    }
                   }],
                   data: params.row.colsData
                 }
@@ -97,8 +143,10 @@
         }, {
           title: 'Field Mapping',
           key: '_expanded',
+          width: 150,
           render: (h, params) => {
             var self = this
+            // <Icon type="eye"></Icon>
             return h('div', [
               h('Button', {
                 props: {
