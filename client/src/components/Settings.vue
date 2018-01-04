@@ -45,10 +45,14 @@
                                       <Icon type="load-c" size=18 class="demo-spin-icon-load"></Icon>
                                   </Spin>
                               </div>
-                              <div class="upload-btn-wrapper">
+                             <!--  <div class="upload-btn-wrapper">
                                   <button class="btn"><Icon type="ios-cloud-upload-outline"></Icon> Upload Icon</button>
                                   <input type="file" id="upldIcn" title="Upload icon" accept="image/*">
-                              </div>
+                              </div> -->
+                              <label for="upldIcn" class="custom-upld">
+                                <i class="fa fa-cloud-upload"></i> Upload Icon
+                              </label>
+                              <input id="upldIcn" type="file" accept="image/*"/>
                           </FormItem>
                       </Col>
                   </Row>
@@ -144,11 +148,14 @@
                   <Row>
                     <Col span="10" v-if="frmSettings.rdoCrt == 'rbtCSV'">
                         <h4>CSV File Upload</h4>
-                        <div class="upload-btn-wrapper" v-on:click="uploadCsv()">
+                       <!--  <div class="upload-btn-wrapper" v-on:click="uploadCsv()">
                           <button class="btn"><Icon type="ios-cloud-upload-outline"></Icon> Upload CSV</button>
                           <input type="file" id="upldCSV" title="Upload CSV" accept=".csv">
-                        </div>
-
+                        </div> -->
+                        <label for="upldCSV" class="custom-upld" v-on:click="uploadCsv()">
+                          <i class="fa fa-cloud-upload"></i> Upload CSV
+                        </label>
+                        <input id="upldCSV" type="file" accept=".csv"/>
                     </Col>
                     <Col span="10" v-if="frmSettings.rdoCrt == 'rbtDB'" style="display:none;">
                     <h4>Database Settings</h4>
@@ -2033,5 +2040,23 @@ border-color: white;
 .transform-block > .ivu-table-cell {
   display: inline-block;
   vertical-align: middle;
+}
+input[type="file"] {
+    display: none;
+}
+.custom-upld {
+    display: inline-block;
+    padding: 2px 15px;
+    cursor: pointer;
+    border-radius: 6px;
+    background-color: #2d8cf0;
+    transition: background-color 1s;
+    font-weight: 1;
+    font-size: 12px;
+    color: #fff;
+}
+.custom-upld:hover {
+  background-color: #2d8cf08c;
+  transition: background-color 1s;
 }
 </style>

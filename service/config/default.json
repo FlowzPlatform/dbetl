@@ -16,7 +16,7 @@
   "qJobRetryMax": 0,
   "import": "importSchema",
   "importToExternal": "import_to_external_db",
+  "importCsvtoDb": "csvtodb",
   "instance_table": "flowzinstance",
-  "approvar_table": "approvalClass",
-  // "mongodb": "MONGO_DB"
+  "approvar_table": "approvalClass"
 }

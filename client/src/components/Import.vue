@@ -9,53 +9,6 @@
         <Col span="14" style="border:1px solid #eee; ">
             <Card :bordered="false">
                 <p slot="title">SOURCE</p>
-                <Form ref="frmSourceDbForm" :model="source" :rules="ruleValidate" :label-width="80">
-                    <Row>
-                        <Col span="12">
-                            <FormItem label="Select DB" prop="selectedDb">
-                                <!-- <Select v-model="source.selectedDb" style="width:200px" :disabled="sourceDisable">
-                                    <Option v-for="item in dbList" :value="item.value" :key="item.value">{{ item.label }}</Option>
-                                </Select> -->
-                                <Cascader :data="CascaderData" filterable v-model='sdatabase' @on-change="setSourceData"></Cascader>
-                            </FormItem>
-                        </Col>
-                        <Col span="12">
-                            <FormItem label="Database" prop="dbname">
-                                <Input v-model="source.dbname" :disabled="setForInternal" :readonly="sourceDisable"></Input>
-                            </FormItem>
-                        </Col>
-                    </Row>
-                    <Row>
-                        <Col span="12">
-                            <FormItem label="Host" prop="host">
-                                <Input v-model="source.host":disabled="setForInternal"  :readonly="sourceDisable"></Input>
-                            </FormItem>
-                        </Col>
-                        <Col span="12">
-                            <FormItem label="Port" prop="port">
-                                <Input v-model="source.port":disabled="setForInternal"  :readonly="sourceDisable"></Input>
-                            </FormItem>
-                        </Col>
-                    </Row>
-                    <Row>
-                        <Col span="12">
-                            <FormItem label="Username">
-                                <Input placeholder="Username":disabled="setForInternal"  v-model="source.username" :readonly="sourceDisable"></Input>
-                            </FormItem>
-                        </Col>
-                        <Col span="12">
-                            <FormItem label="Password">
-                                <Input type="password" placeholder="Password":disabled="setForInternal"  v-model="source.password" :readonly="sourceDisable"></Input>
-                            </FormItem>
-                        </Col>
-                    </Row>
-                    <Button type="primary" @click="handleConnect('frmSourceDbForm')"  :disabled="sourceDisable" style="margin-left: 80px">Connect
-                        <span>
-                            <Icon  v-if="check_conn" :type="conn_icon" style="padding-left:5px;font-size:12px;"/>
-                        </span>
-                    </Button>
-                    <Checkbox v-model="eDuplicate" style="float:right">Exclude eDuplicate records?</Checkbox>
-                </Form>
             </Card>
         </Col>
         <Col span="1">
