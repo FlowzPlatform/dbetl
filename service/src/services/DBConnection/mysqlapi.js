@@ -210,6 +210,48 @@ var getConnection = async (function(data) {
 //     return err;
 //   })
 // });
+var checkType = function (type) {
+  var flag = false;
+  switch (type) {
+    case 'int':
+      flag = true;
+      break;
+    case 'tinyint':
+      flag = true;
+      break;
+    case 'smallint':
+      flag = true;
+      break;
+    case 'mediumint':
+      flag = true;
+      break;
+    case 'bigint':
+      flag = true;
+      break;
+    case 'decimal':
+      flag = true;
+      break;
+    case 'float':
+      flag = true;
+      break; 
+    case 'double':
+      flag = true;
+      break;
+    case 'real':
+      flag = true;
+      break;
+    case 'bit':
+      flag = true;
+      break;
+    case 'boolean':
+      flag = true;
+      break;
+    case 'serial':
+      flag = true;
+      break;
+  }
+  return flag;
+}
 
 var schemaTableAllData = async(function (dbinstance) {
   var result = []
@@ -537,6 +579,156 @@ module.exports = {
     }
   }),
 
+  getTablewithColumns: async(function(data) {
+    var connection = await( getConnection(data).then(res => {
+      return res
+    }).catch(err => {
+      return {iserror: true, msg: err}
+    }))
+    if (connection.hasOwnProperty('iserror') && conn.iserror) {
+      return conn
+    } else {
+      
+    ///////////////////////////////////
+    // //get tables
+    var getDatabaseTables = await (getQuery('mysql', 'select', 'getDatabaseTables'));
+    getDatabaseTables = getDatabaseTables.replace('{{ table_name }}', 'information_schema.tables');
+    getDatabaseTables = getDatabaseTables.replace('{{ database_name }}', data.dbname);
+    getDatabaseTables = getDatabaseTables.replace('{{ fields }}', 'group_concat(table_name) as table_name');
+
+    var tableList = function () {
+      var result = []
+
+      return new Promise((resolve, reject) => {
+        connection.query(getDatabaseTables, function (error, result, fields) {
+          error ? reject(error) : resolve(result[0].table_name)
+        })
+      }).then(content => {
+        return content;
+      }).catch(err => {
+        return err;
+      })
+    };
+    var resTableList = await (tableList())
+
+    //foreach table get columns
+    var entitydata = async(function () {
+      var promises = []
+      var rs = []
+
+      var tableName = resTableList.split(",");
+
+      _.forEach(tableName, function (t, key) {
+        //if(t != 'tbl_schema' && t != 'tbl_entity' && t != 'tbl_property')
+        {
+          var getTableColumns = await (getQuery('mysql', 'select', 'getTableColumns'));
+          getTableColumns = getTableColumns.replace('{{ table_name }}', 'information_schema.columns');
+          getTableColumns = getTableColumns.replace('{{ fields }}', 'group_concat(column_name order by ordinal_position) as columns, group_concat(column_type order by ordinal_position) as types, group_concat(column_key order by ordinal_position) as pi');
+          getTableColumns = getTableColumns.replace('{{ database_name }}', data.dbname);
+          getTableColumns = getTableColumns.replace('{{ tableName }}', t);
+          // console.log('getTableColumns........', getTableColumns)
+
+          var process = new Promise((resolve, reject) => {
+            connection.query(getTableColumns, function (error, result, fields) {
+              // console.log('result???????????????',result)
+              _.forEach(result, function (column, key) {
+                  // var columnName = result[0];
+                  var columnName = column.columns.split(",");
+                  var columntype = column.types.split(",");
+                  var columnpi = column.pi.split(",");
+                  // console.log('columnName:::: ', columnName, '  columntype:::: ', columntype, ' columnpi:::: ', columnpi)
+                  cols = []
+                  // _.forEach(columnName, function (c, k) {
+                  //   cols.push({ name: c })
+                  // })
+                  for (let [i, rs] of columnName.entries()) {
+                    var ispri = false;
+                    if (columnpi[i] == 'PRI') {
+                      ispri = true
+                    }
+                    cols.push({ name: rs, type: columntype[i], isprimary: ispri})
+                  }
+                })
+                // console.log('cols???????????????',cols) 
+
+              rs[key] = { name: t, columns: cols }
+                // console.log('rs[key]???????????????',rs[key]) 
+
+              error ? reject(error) : resolve(rs[key])
+            })
+          })
+          promises.push(process);
+        }
+      });
+
+      return Promise.all(promises).then(content => {
+        return _.union(content)
+      });
+    })
+    var columnsResponse = await (entitydata())
+    return columnsResponse
+    }
+  }),
+
+  getThisTablewithColumns: async(function(data, tname) {
+    var connection = await( getConnection(data).then(res => {
+      return res
+    }).catch(err => {
+      return {iserror: true, msg: err}
+    }))
+    if (connection.hasOwnProperty('iserror') && conn.iserror) {
+      return conn
+    } else {
+
+    var entitydata = async(function () {
+      var promises = []
+      var rs = []
+
+      var tableName = tname
+
+          var getTableColumns = await (getQuery('mysql', 'select', 'getTableColumns'));
+          getTableColumns = getTableColumns.replace('{{ table_name }}', 'information_schema.columns');
+          getTableColumns = getTableColumns.replace('{{ fields }}', 'group_concat(column_name order by ordinal_position) as columns, group_concat(column_type order by ordinal_position) as types, group_concat(column_key order by ordinal_position) as pi');
+          getTableColumns = getTableColumns.replace('{{ database_name }}', data.dbname);
+          getTableColumns = getTableColumns.replace('{{ tableName }}', tableName);
+          console.log('getTableColumns........', getTableColumns)
+
+          var process = new Promise((resolve, reject) => {
+            connection.query(getTableColumns, function (error, result, fields) {
+              // console.log('result???????????????',result)
+              _.forEach(result, function (column, key) {
+                  // var columnName = result[0];
+                  var columnName = column.columns.split(",");
+                  var columntype = column.types.split(",");
+                  var columnpi = column.pi.split(",");
+                  // console.log('columnName:::: ', columnName, '  columntype:::: ', columntype, ' columnpi:::: ', columnpi)
+                  cols = []
+                  // _.forEach(columnName, function (c, k) {
+                  //   cols.push({ name: c })
+                  // })
+                  for (let [i, rs] of columnName.entries()) {
+                    var ispri = false;
+                    if (columnpi[i] == 'PRI') {
+                      ispri = true
+                    }
+                    cols.push({ name: rs, type: columntype[i], isprimary: ispri})
+                  }
+                })
+                
+              error ? reject(error) : resolve(cols)
+            })
+          })
+          promises.push(process);
+       
+      return Promise.all(promises).then(content => {
+        return _.union(content)
+      });
+    })
+    var columnsResponse = await (entitydata())
+    return columnsResponse[0]
+    }
+  }),
+
   getSchemaRecord: async(function (data, tname) {
     var conn = await( getConnection(data).then(res => {
       return res
@@ -573,6 +765,114 @@ module.exports = {
       } else {
         return []
       }
+    }
+  }),
+
+  postSchemaRecord: async(function (data, rdata) {
+    console.log('...............................')
+    var conn = await( getConnection(data).then(res => {
+      return res
+    }).catch(err => {
+      return {iserror: true, msg: err}
+    }))
+    if (conn.hasOwnProperty('iserror') && conn.iserror) {
+      return conn
+    } else {
+
+      var thisTableStruct = await (this.getThisTablewithColumns(data, rdata.tname))
+      // console.log('thisTableStruct..............', thisTableStruct)
+      // var s = _.map(thisTableStruct, (d) => {
+      //   return d.type
+      // })
+      // console.log('SSSS..............', s)
+      var tableFields='';
+      var tableValues='';
+      k=0;
+
+      _.forEach(rdata.data, function (d,key) {
+        // if(key != 'Schemaid' && key != 'database')
+        // {
+          var flag = false
+          var findk = _.filter(thisTableStruct, {name: key})
+          // console.log('key.............', key, findk)
+          if (findk != undefined || findk.length > 0) {
+            var s = findk[0].type.split('(')
+            flag = await (checkType(s[0]))
+            // console.log('>>>>', s, flag)
+          }
+          if(k==0)
+          {
+            let res = await (UUID())
+            let uuid = res;
+
+            tableFields += key;
+            // if(typeof data.Schemaid !== 'undefined')
+            // {
+            //   tableFields += ",Schemaid";
+            // }
+
+            if(typeof d == 'object')
+              {
+                tableValues += "'"+JSON.stringify(d)+"'";
+              }
+              else{
+                if (!flag) {
+                  tableValues += "'"+d+"'";
+                } else {
+                  tableValues += d;
+                }
+              }
+              // if(typeof data.Schemaid !== 'undefined')
+              // {
+              //   tableValues += ",'"+data.Schemaid+"'";
+              // }
+          }
+          else
+          {
+            if(typeof d == 'object')
+            {
+              tableFields += ','+key;
+              tableValues += ",'"+JSON.stringify(d)+"'";
+            }
+            else{
+              tableFields += ','+key;
+              if (!flag) {
+                  tableValues += ",'"+d+"'";
+                } else {
+                  tableValues += ","+d;
+                }
+            }
+          }
+          k++;
+        // }
+      })
+
+      var schemadata = function () {
+        var result = []
+        // for (let [i, inst] of db.entries()) {
+          // if ( inst.id == data.inst_id ) {
+            return new Promise((resolve, reject) => {
+              var commonInsert = await(getQuery('mysql','insert','commonInsert'));
+              commonInsert = commonInsert.replace('{{ table_name }}',rdata.tname);
+              commonInsert = commonInsert.replace('{{ fields }}',tableFields);
+              commonInsert = commonInsert.replace('{{ values }}',tableValues);
+              // console.log('commonInsert ..........', commonInsert)
+              conn.query(commonInsert, function (error, result, fields) {
+                error? reject(error) : resolve(result.insertId)
+              })
+            }).then(content => {
+              return content;
+            }).catch(err=> {
+              // console.log('Error.........', err)
+              throw new Error(err);
+            })
+          // }
+        // }
+      }
+      var res = await (schemadata())
+      console.log('response', res)
+      conn.end()
+      return res;
     }
   }),
 
