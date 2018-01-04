@@ -2020,18 +2020,8 @@ border-color: white;
 .transform-function {
   float: right;
 }
-.ivu-table-cell, .ivu-input-wrapper {
-  padding: 0px 9px 0px 9px;
-}
-.mapping-table > .ivu-table-cell {
-  display: inline-block;
-}
 .property > .ivu-poptip {
   display: block;
   text-align: center;
-}
-.transform-block > .ivu-table-cell {
-  display: inline-block;
-  vertical-align: middle;
 }
 </style>

@@ -686,12 +686,3 @@ export default {
   }
 }
 </script>
-<style>
-  .ivu-table th {
-    height: 44px;
-    white-space: nowrap;
-    overflow: hidden;
-    background-color: #394263;
-    color: #fff;
-}
-</style>

@@ -1,10 +1,10 @@
 import api from '../../api'
 let model = 'import-to-external-db'
 export default {
-  get: (id) => {
-    if (id === undefined) {
-      return api.request('get', '/' + model).then(response => {
-        return response.data.data
+  get: (id = null, params = null) => {
+    if (id === null) {
+      return api.request('get', '/' + model, null, params).then(response => {
+        return response.data
       })
     } else {
       return api.request('get', '/' + model + '/' + id).then(response => {
