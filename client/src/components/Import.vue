@@ -306,8 +306,8 @@
     </div>
     <!-- <hr><hr><hr><hr> -->
     <!-- {{sdatabase}} -->
-    <hr><hr><hr><hr>
-    {{tableData}}
+    <!-- <hr><hr><hr><hr> -->
+    <!-- {{tableData}} -->
     <!-- <hr><hr><hr><hr> -->
     <!-- {{disableCheck}} -->
     <!-- {{importedData}} -->
@@ -532,6 +532,7 @@ export default {
           this.conn_icon = 'load-a'
           var sCheck = false
           this.s_collection = await modelSchema.postData(this.source).then(response => {
+            console.log('response..........', response)
             this.issConnect = true
             sCheck = true
             this.sourceDisable = true
