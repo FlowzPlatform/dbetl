@@ -8,29 +8,40 @@ var endecrypt = require('../encryption/security')
 var db = [];
 var defaultDb = [];
 
-db1.mysql.dbinstance.forEach(function (instance, inx) {  
-  var pass = endecrypt.decrypt(instance.password)
+var getConnection = async (function(data) {
+  var connection = await (mysql.createConnection({
+    host     : data.host,
+    port     : data.port,
+    user     : data.username,
+    password : data.password,
+    database : data.dbname 
+  }))
+  connection.connect()
+  return connection
+})
+// db1.mysql.dbinstance.forEach(function (instance, inx) {  
+//   var pass = endecrypt.decrypt(instance.password)
 
-  var conn1 = mysql.createConnection({
-    host     : instance.host,
-    port     : instance.port,
-    user     : instance.username,
-    password : pass
-  });
-  conn1.connect();
+//   var conn1 = mysql.createConnection({
+//     host     : instance.host,
+//     port     : instance.port,
+//     user     : instance.username,
+//     password : pass
+//   });
+//   conn1.connect();
 
-  conn1.query("CREATE DATABASE IF NOT EXISTS "+instance.dbname, function (err) {
-    if (err) throw err;
-    conn1.query('USE '+instance.dbname, function (err) {
-        if (err) throw err;
-        if (instance.isenable) {
-          db.push({ id: instance.id, conn: conn1 })
-        }
-        if (instance.isdefault) {
-          defaultDb.push({ id: instance.id, conn: conn1 })
-        }
-    });
-  });
+//   conn1.query("CREATE DATABASE IF NOT EXISTS "+instance.dbname, function (err) {
+//     if (err) throw err;
+//     conn1.query('USE '+instance.dbname, function (err) {
+//         if (err) throw err;
+//         if (instance.isenable) {
+//           db.push({ id: instance.id, conn: conn1 })
+//         }
+//         if (instance.isdefault) {
+//           defaultDb.push({ id: instance.id, conn: conn1 })
+//         }
+//     });
+//   });
   // conn1.end();
   // if (instance.isenable) {
   //   var pass = endecrypt.decrypt(instance.password)
@@ -46,7 +57,7 @@ db1.mysql.dbinstance.forEach(function (instance, inx) {
 
   //   db.push({ id: instance.id, conn: connection })
   // }
-})
+// })
 
 // var schemadataWithId = async(function (id, selectedDB) {
 //   var result = []
@@ -482,6 +493,89 @@ var getUpdatedFields = async(function (data) {
 })
 
 module.exports = {
+
+  getTables: async(function(data) {
+    var conn = await( getConnection(data).then(res => {
+      return res
+    }).catch(err => {
+      // console.log(err)
+      return {iserror: true, msg: err}
+    }))
+    if (conn.hasOwnProperty('iserror') && conn.iserror) {
+      return conn
+    } else {
+      var dbName = data.dbname
+      // //get tables
+      var getDatabaseTables = await(getQuery('mysql','select','getDatabaseTables'));
+      getDatabaseTables = getDatabaseTables.replace('{{ table_name }}','information_schema.tables');
+      getDatabaseTables = getDatabaseTables.replace('{{ database_name }}',dbName);
+      getDatabaseTables = getDatabaseTables.replace('{{ fields }}','group_concat(table_name) as table_name');
+      // console.log(getDatabaseTables)
+      var tableList = function () {
+        var result = []
+        
+        return new Promise((resolve, reject) => {
+          conn.query(getDatabaseTables, function (error, result, fields) {
+            error? reject(error) : resolve(result[0].table_name)
+          })
+        }).then(content => {
+          return content;
+        }).catch(err=> {
+          return err;
+        })     
+      };
+      var resTableList = await (tableList())
+      conn.end()
+      if (resTableList != null ) {
+        var tableName = resTableList.split(",");
+        return _.map(tableName, (d)=> {
+          return { name: d}
+        })
+      } else {
+        return []
+      }
+    }
+  }),
+
+  getSchemaRecord: async(function (data, tname) {
+    var conn = await( getConnection(data).then(res => {
+      return res
+    }).catch(err => {
+      return {iserror: true, msg: err}
+    }))
+    if (conn.hasOwnProperty('iserror') && conn.iserror) {
+      return conn
+    } else {
+      var commonSelect = await(getQuery('mysql','select','commonSelect'));
+
+      commonSelect = commonSelect.replace('{{ table_name }}',tname );
+      commonSelect = commonSelect.replace('{{ fields }}','*');
+
+      // console.log(getDatabaseTables)
+      var tableList = function () {
+        var result = []
+        
+        return new Promise((resolve, reject) => {
+          conn.query(commonSelect, function (error, result) {
+            error? reject(error) : resolve(result)
+          })
+        }).then(content => {
+          return content;
+        }).catch(err=> {
+          return err;
+        })     
+      };
+      var resTableList = await (tableList())
+      conn.end()
+      // console.log('resTableList......', resTableList)
+      if (resTableList != null ) {
+        return resTableList
+      } else {
+        return []
+      }
+    }
+  }),
+
   generateInstanceTable: async(function (data){
     console.log('mysql generate instance collection..........');
 
