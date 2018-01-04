@@ -463,7 +463,7 @@ var getUpdatedFields = async(function (data) {
   var tableFields='';
   k=0;
 
-  _.forEach(data.data, function (d,key) {
+  _.forEach(data, function (d,key) {
     if(key != 'Schemaid' && key != '_id' && key != 'id' && key != 'database')
     {
       if(k==0)
@@ -573,6 +573,63 @@ module.exports = {
       } else {
         return []
       }
+    }
+  }),
+
+  putSchemaRecord: async(function (data, rdata) {
+    // console.log(rdata)
+    var conn = await( getConnection(data).then(res => {
+      return res
+    }).catch(err => {
+      return {iserror: true, msg: err}
+    }))
+    if (conn.hasOwnProperty('iserror') && conn.iserror) {
+      return conn
+    } else {
+      var schemadata = function () {
+      var result = []
+      tableFields = await(getUpdatedFields(rdata.data));
+      // console.log('tableFields', tableFields)
+      // for (let [i, inst] of db.entries()) {
+      //   if ( inst.id == data.inst_id ) {
+          return new Promise((resolve, reject) => {
+            var commonUpdate = await(getQuery('mysql','update','commonUpdate'));
+            commonUpdate = commonUpdate.replace('{{ table_name }}',rdata.tname);
+            commonUpdate = commonUpdate.replace('{{ fields }}',tableFields);
+            commonUpdate = commonUpdate.replace('{{ where }}','id='+rdata.rid);
+            console.log(commonUpdate)
+            conn.query(commonUpdate, function (error, result, fields) {
+              error? reject(error) : resolve(rdata.rid)
+            })
+          }).then(content => {
+            return content;
+          }).catch(err=> {
+            return err;
+          })
+      //   }
+      // }
+    };
+    conn.close()
+    var res = await (schemadata())
+    return res;
+    }
+  }),
+
+  deleteSchemaRecord: async(function (data, rdata) {
+    var conn = await( getConnection(data).then(res => {
+      return res
+    }).catch(err => {
+      return {iserror: true, msg: err}
+    }))
+    if (conn.hasOwnProperty('iserror') && conn.iserror) {
+      return conn
+    } else {
+      var commonDelete = await(getQuery('mysql','delete','commonDelete'));
+      commonDelete = commonDelete.replace('{{ table_name }}',rdata.tname);
+      commonDelete = commonDelete.replace('{{ where }}','id='+ rdata.rid);
+  
+      conn.query(commonDelete);
+      return rdata.rid; 
     }
   }),
 
