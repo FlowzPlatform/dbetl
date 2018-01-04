@@ -349,14 +349,6 @@
     font-size: 18px;
     padding-top: 3px;
   }
-  .ivu-spin-dot {
-    position: relative;
-    display: block;
-    border-radius: 50%;
-    /*background-color: #fff;*/
-    margin: 20px 0px 0px 150px;
-    animation: ani-spin-bounce 1s 0s ease-in-out infinite;
-  }
   .ivu-tree-empty {
     color: #eee;
     font-size: 16px;
