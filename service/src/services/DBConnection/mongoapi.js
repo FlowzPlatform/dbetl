@@ -133,7 +133,7 @@ module.exports = {
     if (conn.hasOwnProperty('iserror') && conn.iserror) {
       return conn
     } else {
-      conn.close()
+      conn.end()
       return {result: true}
     }
   }),
