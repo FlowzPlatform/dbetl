@@ -16,8 +16,17 @@ var getConnection = async (function(data) {
     password : data.password,
     database : data.dbname 
   }))
-  connection.connect()
-  return connection
+  return new Promise((resolve, reject) => {
+    connection.connect(function(err) {
+      if (err) {
+        resolve({iserror: true, msg: err})
+      } 
+      else {
+        resolve(connection)
+      }
+    })
+  })
+  // return connection
 })
 // db1.mysql.dbinstance.forEach(function (instance, inx) {  
 //   var pass = endecrypt.decrypt(instance.password)
@@ -930,6 +939,22 @@ module.exports = {
   
       conn.query(commonDelete);
       return rdata.rid; 
+    }
+  }),
+
+  checkConnection: async(function(data) {
+    var conn = await( getConnection(data).then(res => {
+      // console.log('response...............................', res)
+      return res
+    }).catch(err => {
+      // console.log('Error...............................', err)
+      return {iserror: true, msg: err}
+    }))
+    if (conn.hasOwnProperty('iserror') && conn.iserror) {
+      return conn
+    } else {
+      conn.end()
+      return {result: true}
     }
   }),
 

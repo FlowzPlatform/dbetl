@@ -132,13 +132,11 @@ var createConn = async (function(data, mapdata) {
 					checkColumn = checkColumn.replace('{{ fieldType }}','INT(11) NOT NULL AUTO_INCREMENT');
 					
 					connection.query(checkColumn);
-							
 				}
 				
 			}
 		}
 		return {conn: connection, db: data.selectedDb}
-
 	}
 })
 
@@ -159,7 +157,7 @@ var updateSchema = async( function(data,table_name,databse_name,conn) {
 	
 	_.forEach(data, function (d,key) {
         // if(key != 'Schemaid' && key != 'id' && key != '_id')
-		if(key != 'id' && key != '_id')
+		if(key != 'id')
         {
           if(k==0)
           {
@@ -193,7 +191,7 @@ var updateSchema = async( function(data,table_name,databse_name,conn) {
           k++; 
         }
 	  })
-	  
+	  console.log('tableFields :: ', tableFields, '  tableValues::::: ', tableValues)
 	  var columns = tableFields.split(",");
 	  
 	  var updateSchemaData = async(function () {
@@ -202,7 +200,7 @@ var updateSchema = async( function(data,table_name,databse_name,conn) {
     
         _.forEach(columns, function (entity,index) {
   
-          if(entity != 'id' && entity != '_id')
+          if(entity != 'id')
           {
             var checkColumn = await(getQuery('mysql','select','checkColumn'));
             checkColumn = checkColumn.replace('{{ table_name }}','information_schema.COLUMNS');
@@ -210,7 +208,7 @@ var updateSchema = async( function(data,table_name,databse_name,conn) {
             checkColumn = checkColumn.replace('{{ fields }}','*');
             checkColumn = checkColumn.replace('{{ database_name }}',databse_name);
             checkColumn = checkColumn.replace('{{ column_name }}',entity.replace(' ', '_'));
-			
+			console.log('checkColumn..............', checkColumn)
             var process = new Promise((resolve, reject) => {
 				conn.conn.query(checkColumn, function (error, result, fields) {
                 error? reject(error) : result.length == 0 ? resolve(entity.replace(' ', '_')) : resolve('')
@@ -683,6 +681,7 @@ q.process(async(job, next) => {
 							// return false;
 							// sObj.Schemaid = sId
 							var response = await (updateSchema(sObj, obj.target,job.data.target.dbname,tConn))
+							console.log('response.........mysql', response)
 						}
 					}
 			}
