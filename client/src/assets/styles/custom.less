@@ -16,7 +16,7 @@
     }
   }
   &layout-content{
-    min-height: 200px;
+    min-height: ~"calc(100vh - 130px)";
     margin: 15px;
     /*overflow: hidden;*/
     background: #fff;
@@ -30,6 +30,8 @@
     text-align: center;
     padding: 10px 0 10px;
     color: #9ea7b4;
+    border-top: 1px solid #ccc;
+    box-shadow: 0px 0px 5px rgba(50, 50, 50, 0.50);
     // border-top: 1px solid #ccc;
   }
 }
@@ -149,6 +151,9 @@
 
 .vb.vb-dragging-phantom > .vb-dragger > .vb-dragger-styler {
   background-color: rgba(48, 121, 244,.5);
+}
+.ivu-poptip-inner{
+  box-shadow: 0 1px 6px rgba(0,0,0,1);
 }
 
 @import '//cdnjs.cloudflare.com/ajax/libs/tinymce/4.6.3/skins/lightgray/skin.min.css';
