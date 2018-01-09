@@ -4,33 +4,33 @@ var temp = {
   socketURI: 'http://localhost:3034',
   fixedLayout: false,
   hideLogoOnMobile: false,
-  microURI: 'http://auth.flowz.com/api',
+  microURI: 'http://auth.' + process.env.domainkey + '/api',
   facebookSuccessCallbackUrl: 'http://localhost:8000',
-  loginWithFacebookUrl: 'http://auth.flowz.com/auth/facebook',
+  loginWithFacebookUrl: 'http://auth.' + process.env.domainkey + '/auth/facebook',
   googleSuccessCallbackUrl: 'http://localhost:8000',
-  loginWithGoogleUrl: 'http://auth.flowz.com/auth/Gplus',
+  loginWithGoogleUrl: 'http://auth.' + process.env.domainkey + '/auth/Gplus',
   twitterSuccessCallbackUrl: 'http://localhost:8000',
-  loginWithTwitterUrl: 'http://auth.flowz.com/auth/twitter',
+  loginWithTwitterUrl: 'http://auth.' + process.env.domainkey + '/auth/twitter',
   linkedinSuccessCallbackUrl: 'http://localhost:8000',
-  loginWithLinkedinUrl: 'http://auth.flowz.com/auth/linkedin',
+  loginWithLinkedinUrl: 'http://auth.' + process.env.domainkey + '/auth/linkedin',
   githubSuccessCallbackUrl: 'http://localhost:8000',
-  loginWithGithubUrl: 'http://auth.flowz.com/auth/github'
+  loginWithGithubUrl: 'http://auth.' + process.env.domainkey + '/auth/github'
 }
 if (process.env.NODE_ENV !== 'development') {
   temp = {
-    serverURI: 'http://api.flowz.com/dbetl', // 'http://api.flowz.com/dbetl', // ws.flowz.com:4034
-    socketURI: 'http://ws.flowz.com:3034',
+    serverURI: 'http://api.' + process.env.domainkey + '/dbetl', // 'http://api.' + process.env.domainkey + '/dbetl', // ws.' + process.env.domainkey + ':4034
+    socketURI: 'http://ws.' + process.env.domainkey + ':3034',
     fixedLayout: false,
     hideLogoOnMobile: false,
-    microURI: 'http://auth.flowz.com/api',
-    facebookSuccessCallbackUrl: 'http://dbetl.flowz.com/',
-    loginWithFacebookUrl: 'http://auth.flowz.com/auth/facebook',
-    googleSuccessCallbackUrl: 'http://dbetl.flowz.com/',
-    loginWithGoogleUrl: 'http://auth.flowz.com/auth/Gplus',
-    linkedinSuccessCallbackUrl: 'http://dbetl.flowz.com/',
-    loginWithLinkedinUrl: 'http://auth.flowz.com/auth/linkedin',
-    githubSuccessCallbackUrl: 'http://dbetl.flowz.com/',
-    loginWithGithubUrl: 'http://auth.flowz.com/auth/github'
+    microURI: 'http://auth.' + process.env.domainkey + '/api',
+    facebookSuccessCallbackUrl: 'http://dbetl.' + process.env.domainkey + '/',
+    loginWithFacebookUrl: 'http://auth.' + process.env.domainkey + '/auth/facebook',
+    googleSuccessCallbackUrl: 'http://dbetl.' + process.env.domainkey + '/',
+    loginWithGoogleUrl: 'http://auth.' + process.env.domainkey + '/auth/Gplus',
+    linkedinSuccessCallbackUrl: 'http://dbetl.' + process.env.domainkey + '/',
+    loginWithLinkedinUrl: 'http://auth.' + process.env.domainkey + '/auth/linkedin',
+    githubSuccessCallbackUrl: 'http://dbetl.' + process.env.domainkey + '/',
+    loginWithGithubUrl: 'http://auth.' + process.env.domainkey + '/auth/github'
   }
 }
 export default temp

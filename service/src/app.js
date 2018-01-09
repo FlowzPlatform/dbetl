@@ -36,7 +36,7 @@ app.configure(rest());
 // app.configure(socketio());
 app.configure(socketio(3034, {
   wsEngine: 'uws',
-  origin: '*.flowz.com:*'
+  origin: '*.' + (process.env.domainkey ? 'localhost' : process.env.domainkey) + ':*'
 }));
 // Configure other middleware (see `middleware/index.js`)
 app.configure(middleware);
