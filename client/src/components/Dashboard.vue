@@ -22,6 +22,16 @@ export default {
   mounted () {
     var self = this
     $(document).ready(function () {
+      var formData = new FormData() // Currently empty
+      // formData.append('uri', 'data:text/csv;charset=utf-8, Symbol,Company,Price AAPL,Apple\n', 'chris.jpg');
+      var blob = new Blob(['Symbol,Company,Price AAPL,Apple\n'], {type: 'text/csv'})
+      formData.append('uri', blob)
+      var request = new XMLHttpRequest()
+      request.open('POST', 'http://localhost:3034/myuploads')
+      request.setRequestHeader('authorization', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1OTJmZDNiMDlkZjI1ZDAwZjdhMTEzOTMiLCJpYXQiOjE1MTU0OTY5MTMsImV4cCI6MTUxNTUwMDU0MywiYXVkIjoiaHR0cHM6Ly95b3VyZG9tYWluLmNvbSIsImlzcyI6ImZlYXRoZXJzIiwic3ViIjoiYW5vbnltb3VzIn0.rl7Q6HwEIZGsnaKqSHyTFZ-vi9UnBXVJP6C2JruhLtU')
+      request.setRequestHeader('cache-control', 'no-cache')
+      request.send(formData)
+
       var myDropzone = new Dropzone('#my-awesome-dropzone', {url: 'http://localhost:3034/myuploads', headers: {'Authorization': self.$store.state.token}, paramName: 'uri', addRemoveLinks: true, maxFiles: 1})
       // , maxFiles: 1
       myDropzone.on('maxfilesexceeded', function (file) {

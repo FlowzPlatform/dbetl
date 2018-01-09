@@ -65,6 +65,7 @@
     "mysql": "^2.15.0",
     "nedb": "^1.8.0",
     "nedb-promise": "^2.0.1",
+    "papaparse": "^4.3.6",
     "path": "^0.12.7",
     "request": "^2.83.0",
     "request-promise": "^4.2.2",

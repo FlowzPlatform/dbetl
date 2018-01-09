@@ -40,6 +40,29 @@
       </template>
       <!-- Preview csv data -->
       <template v-if="csvPreviewData.length > 0">
+        <!-- Preview table -->
+        <Row>
+          <Col :span="24">
+            <Table border size="small" :columns="csvTrasformColumns()" :data="csvPreviewTraformedData()" class="tablePreview"></Table>
+          </Col>
+        </Row>
+        
+        <!-- Action button -->
+        <div style="margin: 10px 0;">
+          <Row>
+            <Col :span="24">
+              <div style="float: right;">
+                <Button type="primary" v-if="isHandson" @click="handleContinue">Continue</Button>
+                <Button type="primary" :loading="loading.validating" v-if="!isHandson" @click="handleValidation">
+                  <span v-if="!loading.validating">Validate & Upload</span>
+                  <span v-else>Validating...</span>
+                </Button>
+              </div>
+            </Col>
+          </Row>
+        </div>
+
+        <!-- Handson table with error -->
         <template v-if="isHandson">
           <Row>
             <Col :span="24">
@@ -47,120 +70,112 @@
                 <HotTable root="test-hot" ref="testHot" :settings="hotSettings"></HotTable>
               </div>
             </Col>
-          </Row>
-        </template>
-        <Row>
-          <Col :span="24">
-            <Table border size="small" :columns="csvTrasformColumns()" :data="csvPreviewTraformedData()" class="tablePreview"></Table>
-          </Col>
-        </Row>
-        <div style="margin: 10px 0;">
-          <Row>
             <Col :span="24">
-              <div style="float: right;">
-                <Button type="primary" v-if="isHandson" @click="handleContinue">Continue</Button>
-                <Button type="primary" v-if="!isHandson" @click="handleValidation">Validate & Upload</Button>
-              </div>
+              <div style="color: #ff0000;">{{handsonTableError}}</div>
             </Col>
           </Row>
-        </div>
-        <Row>
-          <Col :span="24">
-            <Form ref="formNewHeaders" :model="frmNewHeaders">
-              <div class="ivu-table-wrapper">
-                <div class="ivu-table ivu-table-border" >
-                  <div class="ivu-table-body">
-                    <table style="width:100%">
-                      <thead>
-                        <tr>
-                          <th class="">
-                            <div class="ivu-table-cell">Header</div>
-                          </th>
-                          <th class=""><div class="ivu-table-cell">Edit header</div></th>
-                          <th class=""><div class="ivu-table-cell">Type</div></th>
-                          <th class=" ivu-table-column-center" style="width:100px;"><div class="ivu-table-cell">Validation</div></th>
-                          <th class=""><div class="ivu-table-cell">Notes</div></th>
-                          <th class=" ivu-table-column-center" style="width:100px;"><div class="ivu-table-cell">Transform</div></th>
-                        </tr>
-                      </thead>
-                      <tbody class="ivu-table-tbody">
-                        <template v-for="(item, index) in csvHeaders">
-                          <tr class="ivu-table-row" >
-                            <td>
-                              <div class="ivu-table-cell">
-                                {{item.id}}
-                              </div>
-                            </td>
-                            <td>
-                              <div class="ivu-table-cell">
-                                <Input v-model="item.header" size="small"></Input>
-                              </div>
-                            </td>
-                            <td>
-                              <div class="ivu-table-cell">
-                                <Select v-model="item.type"  size="small">
-                                  <Option value="text" key="text">Text</Option>
-                                  <Option value="email" key="email">Email</Option>
-                                  <Option value="number" key="number">Number</Option>
-                                  <Option value="boolean" key="boolean">Boolean</Option>
-                                  <Option value="phone" key="phone">Phone</Option>
-                                  <Option value="date" key="date">Date</Option>
-                                </Select>
-                              </div>
-                            </td>
-                            <td class="ivu-table-column-center">
-                              <div class="ivu-table-cell">
-                                <Poptip placement="left" width="400">
-                                  <a>
-                                    <Icon type="edit"></Icon>
-                                  </a>
-                                  <div slot="title">
-                                    <h3>Validation Properties</h3>
-                                  </div>
-                                  <div slot="content">
-                                    <Form-item label="Min" :label-width="90" class="no-margin">
-                                      <Input-number v-model="item.min" size="small"></Input-number>
-                                    </Form-item>
-                                    <Form-item label="Max" :label-width="90" class="no-margin">
-                                      <Input-number size="small" v-model="item.max"></Input-number>
-                                    </Form-item>
-                                    <Form-item label="Allowed Value" :label-width="90" class="no-margin">
-                                      <InputTag :tags="item.allowedValue"></InputTag>
-                                    </Form-item>
-                                    <Form-item label="Default Value" :label-width="90" class="no-margin">
-                                      <Input size="small" v-model="item.defaultValue"></Input>
-                                    </Form-item>
-                                    <Form-item label="regEx" :label-width="90" class="no-margin">
-                                      <Input size="small" v-model="item.regEx"></Input>
-                                    </Form-item>
-                                    <Form-item label="" :label-width="90" class="no-margin">
-                                      <Checkbox v-model="item.optional">Optional</Checkbox>
-                                    </Form-item>
-                                  </div>
-                                </Poptip>
-                              </div>
-                            </td>
-                            <td>
-                              <div class="ivu-table-cell">
-                                <Input type="textarea" placeholder="Notes..." v-model="item.notes" size="small"></Input>
-                              </div>
-                            </td>
-                            <td  class="ivu-table-column-center">
-                              <div class="ivu-table-cell">
-                                  <a @click="renderCodemirror(item)"><Icon type="compose"></Icon></a>
-                                  <!-- <codemirror v-model='item.transform' :options="editorOptions"></codemirror> -->
-                              </div>
-                            </td>
+        </template>
+
+        <!-- Header and validation settings --> 
+        <template v-if="!loading.validating">
+          <Row>
+            <Col :span="24">
+              <Form ref="formNewHeaders" :model="frmNewHeaders">
+                <div class="ivu-table-wrapper">
+                  <div class="ivu-table ivu-table-border" >
+                    <div class="ivu-table-body">
+                      <table style="width:100%">
+                        <thead>
+                          <tr>
+                            <th class="">
+                              <div class="ivu-table-cell">Header</div>
+                            </th>
+                            <th class=""><div class="ivu-table-cell">Edit header</div></th>
+                            <th class=""><div class="ivu-table-cell">Type</div></th>
+                            <th class=" ivu-table-column-center" style="width:100px;"><div class="ivu-table-cell">Validation</div></th>
+                            <th class=""><div class="ivu-table-cell">Notes</div></th>
+                            <th class=" ivu-table-column-center" style="width:100px;"><div class="ivu-table-cell">Transform</div></th>
                           </tr>
-                        </template>
-                      </tbody>
-                    </table>
+                        </thead>
+                        <tbody class="ivu-table-tbody">
+                          <template v-for="(item, index) in csvHeaders">
+                            <tr class="ivu-table-row" >
+                              <td>
+                                <div class="ivu-table-cell">
+                                  {{item.id}}
+                                </div>
+                              </td>
+                              <td>
+                                <div class="ivu-table-cell">
+                                  <Input v-model="item.header" size="small"></Input>
+                                </div>
+                              </td>
+                              <td>
+                                <div class="ivu-table-cell">
+                                  <Select v-model="item.type"  size="small">
+                                    <Option value="text" key="text">Text</Option>
+                                    <Option value="email" key="email">Email</Option>
+                                    <Option value="number" key="number">Number</Option>
+                                    <Option value="boolean" key="boolean">Boolean</Option>
+                                    <Option value="phone" key="phone">Phone</Option>
+                                    <Option value="date" key="date">Date</Option>
+                                  </Select>
+                                </div>
+                              </td>
+                              <td class="ivu-table-column-center">
+                                <div class="ivu-table-cell">
+                                  <Poptip placement="left" width="400">
+                                    <a>
+                                      <Icon type="edit"></Icon>
+                                    </a>
+                                    <div slot="title">
+                                      <h3>Validation Properties</h3>
+                                    </div>
+                                    <div slot="content">
+                                      <Form-item label="Min" :label-width="90" class="no-margin">
+                                        <Input-number v-model="item.min" size="small"></Input-number>
+                                      </Form-item>
+                                      <Form-item label="Max" :label-width="90" class="no-margin">
+                                        <Input-number size="small" v-model="item.max"></Input-number>
+                                      </Form-item>
+                                      <Form-item label="Allowed Value" :label-width="90" class="no-margin">
+                                        <InputTag :tags="item.allowedValue"></InputTag>
+                                      </Form-item>
+                                      <Form-item label="Default Value" :label-width="90" class="no-margin">
+                                        <Input size="small" v-model="item.defaultValue"></Input>
+                                      </Form-item>
+                                      <Form-item label="regEx" :label-width="90" class="no-margin">
+                                        <Input size="small" v-model="item.regEx"></Input>
+                                      </Form-item>
+                                      <Form-item label="" :label-width="90" class="no-margin">
+                                        <Checkbox v-model="item.optional">Optional</Checkbox>
+                                      </Form-item>
+                                    </div>
+                                  </Poptip>
+                                </div>
+                              </td>
+                              <td>
+                                <div class="ivu-table-cell">
+                                  <Input type="textarea" placeholder="Notes..." v-model="item.notes" size="small"></Input>
+                                </div>
+                              </td>
+                              <td  class="ivu-table-column-center">
+                                <div class="ivu-table-cell">
+                                    <a @click="renderCodemirror(item)"><Icon type="compose"></Icon></a>
+                                    <!-- <codemirror v-model='item.transform' :options="editorOptions"></codemirror> -->
+                                </div>
+                              </td>
+                            </tr>
+                          </template>
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </Form>
-          </Col>
-        </Row>
+              </Form>
+            </Col>
+          </Row>
+        </template>
       </template>
     </div>
 </div>
@@ -182,7 +197,8 @@ export default {
     return {
       isHandson: false,
       loading: {
-        fileRead: false
+        fileRead: false,
+        validating: false
       },
       hotSettings: {
         data: [],
@@ -311,7 +327,8 @@ export default {
         }
       },
       gParser: undefined,
-      complexSchema: []
+      complexSchema: [],
+      handsonTableError: ''
     }
   },
   created () {
@@ -569,6 +586,7 @@ export default {
     },
     handleValidation () {
       let self = this
+      self.loading.validating = true
       // Set hansontable Header
       self.hotSettings.colHeaders = _.chain(self.csvHeaders).map(m => {
         return m.header
@@ -587,6 +605,7 @@ export default {
         skipEmptyLines: true,
         // worker: true,
         complete: function (results, file) {
+          self.loading.validating = false
           console.log('self.csvData', self.csvData)
         },
         step: function (results, parser) {
@@ -599,6 +618,17 @@ export default {
           console.log('Error', error)
         }
       })
+    },
+    uploadFile (data) {
+      var formData = new FormData() // Currently empty
+      // formData.append('uri', 'data:text/csv;charset=utf-8, Symbol,Company,Price AAPL,Apple\n', 'chris.jpg');
+      var blob = new Blob(['Symbol,Company,Price AAPL,Apple\n'], {type: 'text/csv'})
+      formData.append('uri', blob)
+      var request = new XMLHttpRequest()
+      request.open('POST', 'http://localhost:3034/myuploads')
+      request.setRequestHeader('authorization', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1OTJmZDNiMDlkZjI1ZDAwZjdhMTEzOTMiLCJpYXQiOjE1MTU0OTY5MTMsImV4cCI6MTUxNTUwMDU0MywiYXVkIjoiaHR0cHM6Ly95b3VyZG9tYWluLmNvbSIsImlzcyI6ImZlYXRoZXJzIiwic3ViIjoiYW5vbnltb3VzIn0.rl7Q6HwEIZGsnaKqSHyTFZ-vi9UnBXVJP6C2JruhLtU')
+      request.setRequestHeader('cache-control', 'no-cache')
+      request.send(formData)
     },
     validateObject (data) {
       let self = this
@@ -616,8 +646,11 @@ export default {
               return cellProp
             }
           }
+          self.handsonTableError = errors[0].message
           self.isHandson = true
         } else {
+          self.handsonTableError = ''
+          self.isHandson = false
           self.csvData.push(self.hotSettings.data[0])
           if (self.gParser.paused()) {
             self.gParser.resume()
