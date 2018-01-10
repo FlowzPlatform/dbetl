@@ -53,9 +53,10 @@
             <Col :span="24">
               <div style="float: right;">
                 <Button type="primary" v-if="isHandson" @click="handleContinue">Continue</Button>
-                <Button type="primary" :loading="loading.validating" v-if="!isHandson" @click="handleValidation">
-                  <span v-if="!loading.validating">Validate & Upload</span>
-                  <span v-else>Validating...</span>
+                <Button type="primary" :loading="loading.validating || loading.uploading" v-if="!isHandson" @click="handleValidation">
+                  <span v-if="!loading.validating && !loading.uploading">Validate & Upload</span>
+                  <span v-else-if="loading.validating">Validating...</span>
+                  <span v-else="loading.uploading">Uploading...</span>
                 </Button>
               </div>
             </Col>
@@ -187,6 +188,14 @@ import InputTag from 'vue-input-tag'
 import modelDatabases from '@/api/databases'
 import HotTable from 'vue-handsontable-official'
 import SimpleSchema from 'simpleschema'
+// import axios from 'axios'
+import moment from 'moment'
+import AWS from 'aws-sdk'
+AWS.config.update({
+  accessKeyId: process.env.accesskey,
+  secretAccessKey: process.env.secretkey
+})
+AWS.config.region = 'us-west-2'
 
 export default {
   components: {
@@ -198,7 +207,8 @@ export default {
       isHandson: false,
       loading: {
         fileRead: false,
-        validating: false
+        validating: false,
+        uploading: false
       },
       hotSettings: {
         data: [],
@@ -414,7 +424,7 @@ export default {
       })
     },
     init () {
-      var self = this
+      let self = this
       modelDatabases.get(this.$route.params.id).then(response => {
         self.target = response // _.merge(self.target, response)
         self.importedData.source = self.source
@@ -591,7 +601,6 @@ export default {
       self.hotSettings.colHeaders = _.chain(self.csvHeaders).map(m => {
         return m.header
       }).value()
-      console.log('self.hotSettings.colHeaders', self.hotSettings.colHeaders)
       // Set schema
       self.complexSchema = new SimpleSchema(_.chain(self.csvHeaders).map(m => {
         return self.simpleSchemaOption[m.type](m)
@@ -606,7 +615,9 @@ export default {
         // worker: true,
         complete: function (results, file) {
           self.loading.validating = false
-          console.log('self.csvData', self.csvData)
+          self.loading.uploading = true
+          // console.log('self.csvData', self.csvData)
+          self.uploadFile()
         },
         step: function (results, parser) {
           self.gParser = parser
@@ -620,15 +631,34 @@ export default {
       })
     },
     uploadFile (data) {
-      var formData = new FormData() // Currently empty
+      let self = this
+      let csvStr = Papa.unparse(self.csvData)
+      let formData = new FormData() // Currently empty
       // formData.append('uri', 'data:text/csv;charset=utf-8, Symbol,Company,Price AAPL,Apple\n', 'chris.jpg');
-      var blob = new Blob(['Symbol,Company,Price AAPL,Apple\n'], {type: 'text/csv'})
+      let blob = new Blob([csvStr], {type: 'text/csv'})
       formData.append('uri', blob)
-      var request = new XMLHttpRequest()
-      request.open('POST', 'http://localhost:3034/myuploads')
-      request.setRequestHeader('authorization', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1OTJmZDNiMDlkZjI1ZDAwZjdhMTEzOTMiLCJpYXQiOjE1MTU0OTY5MTMsImV4cCI6MTUxNTUwMDU0MywiYXVkIjoiaHR0cHM6Ly95b3VyZG9tYWluLmNvbSIsImlzcyI6ImZlYXRoZXJzIiwic3ViIjoiYW5vbnltb3VzIn0.rl7Q6HwEIZGsnaKqSHyTFZ-vi9UnBXVJP6C2JruhLtU')
-      request.setRequestHeader('cache-control', 'no-cache')
-      request.send(formData)
+      // axios.post('http://localhost:3034/myuploads', formData)
+      // // Using XMLHttpRequest
+      // let request = new XMLHttpRequest()
+      // request.open('POST', 'http://localhost:3034/myuploads')
+      // request.setRequestHeader('authorization', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1OTJmZDNiMDlkZjI1ZDAwZjdhMTEzOTMiLCJpYXQiOjE1MTU0OTY5MTMsImV4cCI6MTUxNTUwMDU0MywiYXVkIjoiaHR0cHM6Ly95b3VyZG9tYWluLmNvbSIsImlzcyI6ImZlYXRoZXJzIiwic3ViIjoiYW5vbnltb3VzIn0.rl7Q6HwEIZGsnaKqSHyTFZ-vi9UnBXVJP6C2JruhLtU')
+      // request.setRequestHeader('cache-control', 'no-cache')
+      // request.send(formData)
+      let bucket = new AWS.S3({ params: { Bucket: 'airflowbucket1/obexpense/expenses' } })
+      bucket.upload({
+        Key: moment.utc().valueOf() + '_' + self.file.name,
+        ContentType: 'text/csv',
+        Body: csvStr
+      }).on('httpUploadProgress', function (evt) {
+        console.log('Uploaded :: ' + parseInt((evt.loaded * 100) / evt.total) + '%')
+      }).send(function (err, data) {
+        if (err) {
+          alert(err)
+        } else {
+          // mjmlobj = {'filename': filename, 'url': data.Location, 'notes': notes}
+          self.loading.uploading = false
+        }
+      })
     },
     validateObject (data) {
       let self = this
@@ -641,7 +671,7 @@ export default {
           }
           self.hotSettings.cells = (row, col) => {
             if (_.findIndex(self.csvHeaders, (d) => { return d.header === errors[0].field }) === col) {
-              var cellProp = {}
+              let cellProp = {}
               cellProp.className = 'hansonCellError'
               return cellProp
             }

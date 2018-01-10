@@ -37,20 +37,20 @@ module.exports = {
 let beforeCreate = function (context) {
   if (!context.data.uri && context.params.file) {
     var file = context.params.file;
-    Papa.parse(this.file, {
-        header: true,
-        encoding: 'UTF-8',
-        preview: 5,
-        skipEmptyLines: true,
-        complete: function (results, file) {
-          console.log('result', results.data)
-        },
-        error: function (error, file) {
-          console.log('file', file)
-          console.log('Error', error)
-        }
-      })
-      // console.log('file', file);
+    // Papa.parse(this.file, {
+    //   header: true,
+    //   encoding: 'UTF-8',
+    //   preview: 5,
+    //   skipEmptyLines: true,
+    //   complete: function (results, file) {
+    //     console.log('result', results.data)
+    //   },
+    //   error: function (error, file) {
+    //     console.log('file', file)
+    //     console.log('Error', error)
+    //   }
+    // })
+    // console.log('file', file);
     const uri = dauria.getBase64DataURI(file.buffer, file.mimetype);
     context.data = { uri: uri };
   }
