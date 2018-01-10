@@ -19,7 +19,7 @@ var temp = {
 if (process.env.NODE_ENV !== 'development') {
   temp = {
     serverURI: 'http://api.' + process.env.domainkey + '/dbetl', // 'http://api.' + process.env.domainkey + '/dbetl', // ws.' + process.env.domainkey + ':4034
-    socketURI: 'http://ws.' + process.env.domainkey + ':3034',
+    socketURI: 'ws://ws.' + process.env.domainkey + ':3034',
     fixedLayout: false,
     hideLogoOnMobile: false,
     microURI: 'http://auth.' + process.env.domainkey + '/api',
