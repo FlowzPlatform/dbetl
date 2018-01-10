@@ -10,6 +10,7 @@ import InstanceList from '@/components/InstanceList'
 // import SchemaMappingList from '@/components/SchemaMappingList'
 import Settings from '@/components/Settings'
 import Import from '@/components/Import'
+import ImportCSV from '@/components/ImportCSV'
 import Db from '@/components/Db'
 import Login from '@/components/Login'
 import Register from '@/components/Register'
@@ -121,6 +122,10 @@ const routes = [{
     path: 'Dbsetting/import/:id',
     name: 'import',
     component: Import
+  }, {
+    path: 'Dbsetting/importcsv/:id',
+    name: 'importcsv',
+    component: ImportCSV
   }, {
     path: 'recordList/:id/:tname',
     name: 'recordList',
