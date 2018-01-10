@@ -43,6 +43,10 @@
         <!-- Preview table -->
         <Row>
           <Col :span="24">
+            <div>
+              <span style="font-weight: bold;font-size: 16px;color: #225e9c;">Preview Details&nbsp;</span>
+              <small>(Displaying Some Data As Reference)</small>
+            </div>
             <Table border size="small" :columns="csvTrasformColumns()" :data="csvPreviewTraformedData()" class="tablePreview"></Table>
           </Col>
         </Row>
@@ -81,6 +85,9 @@
         <template v-if="!loading.validating">
           <Row>
             <Col :span="24">
+              <div>
+                <span style="font-weight: bold;font-size: 16px;color: #225e9c;">Header Details</span>
+              </div>
               <Form ref="formNewHeaders" :model="frmNewHeaders">
                 <div class="ivu-table-wrapper">
                   <div class="ivu-table ivu-table-border" >
@@ -182,14 +189,18 @@
 </div>
 </template>
 <script>
+// Plugins
 import _ from 'lodash'
 import Papa from 'papaparse'
 import InputTag from 'vue-input-tag'
-import modelDatabases from '@/api/databases'
 import HotTable from 'vue-handsontable-official'
 import SimpleSchema from 'simpleschema'
-// import axios from 'axios'
 import moment from 'moment'
+
+// Apis
+import modelDatabases from '@/api/databases'
+import modelCsvtodb from '@/api/csvtodb'
+
 import AWS from 'aws-sdk'
 AWS.config.update({
   accessKeyId: process.env.accesskey,
@@ -241,7 +252,6 @@ export default {
         styleSelectedText: true,
         highlightSelectionMatches: { showToken: /\w/, annotateScrollbar: true }
       },
-      openModal: true,
       transformStr: '',
       transformMethod: 0,
       simpleSchemaOption: {
@@ -633,10 +643,10 @@ export default {
     uploadFile (data) {
       let self = this
       let csvStr = Papa.unparse(self.csvData)
-      let formData = new FormData() // Currently empty
-      // formData.append('uri', 'data:text/csv;charset=utf-8, Symbol,Company,Price AAPL,Apple\n', 'chris.jpg');
-      let blob = new Blob([csvStr], {type: 'text/csv'})
-      formData.append('uri', blob)
+      // let formData = new FormData() // Currently empty
+      // // formData.append('uri', 'data:text/csv;charset=utf-8, Symbol,Company,Price AAPL,Apple\n', 'chris.jpg');
+      // let blob = new Blob([csvStr], {type: 'text/csv'})
+      // formData.append('uri', blob)
       // axios.post('http://localhost:3034/myuploads', formData)
       // // Using XMLHttpRequest
       // let request = new XMLHttpRequest()
@@ -655,8 +665,16 @@ export default {
         if (err) {
           alert(err)
         } else {
+          console.log('data', data)
           // mjmlobj = {'filename': filename, 'url': data.Location, 'notes': notes}
-          self.loading.uploading = false
+          modelCsvtodb.post({
+            target: self.target,
+            source: {file: data.Location}
+          }).then(response => {
+            self.$Message.info('Successfully uploaded trasformed data.')
+            self.reset()
+            self.loading.uploading = false
+          })
         }
       })
     },
@@ -691,6 +709,21 @@ export default {
     handleContinue () {
       // console.log('self.$refs.testHot', this.$refs.testHot.table.getData())
       this.validateObject()
+    },
+    reset () {
+      this.hotSettings = {
+        data: [],
+        colHeaders: []
+      }
+      this.csvPreviewData = []
+      this.csvHeaders = []
+      this.csvData = []
+      this.file = null
+      this.transformStr = ''
+      this.transformMethod = 0
+      this.gParser = undefined
+      this.complexSchema = []
+      this.handsonTableError = ''
     }
   }
 }

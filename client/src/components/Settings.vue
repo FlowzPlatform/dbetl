@@ -806,80 +806,80 @@ export default {
           // console.log("called")
           let fileChooser = document.getElementById('upldCSV')
           let file = fileChooser.files[0]
-          if (_.contains(self.allowedFileType, file.type)) {
-            Papa.parse(file, {
-              header: true,
-              encoding: 'UTF-8',
-              complete: function (results, file) {
-                console.log(results.data)
-                // console.log("Parsing complete:", results.data, file);
-                results.data.optType = [{
-                  value: 'text',
-                  label: 'Text'
-                }, {
-                  value: 'email',
-                  label: 'Email'
-                }, {
-                  value: 'number',
-                  label: 'Number'
-                }, {
-                  value: 'boolean',
-                  label: 'Boolean'
-                }, {
-                  value: 'phone',
-                  label: 'Phone'
-                }, {
-                  value: 'date',
-                  label: 'Date'
-                }]
+          // if (_.contains(self.allowedFileType, file.type)) {
+          Papa.parse(file, {
+            header: true,
+            encoding: 'UTF-8',
+            complete: function (results, file) {
+              console.log(results.data)
+              // console.log("Parsing complete:", results.data, file);
+              results.data.optType = [{
+                value: 'text',
+                label: 'Text'
+              }, {
+                value: 'email',
+                label: 'Email'
+              }, {
+                value: 'number',
+                label: 'Number'
+              }, {
+                value: 'boolean',
+                label: 'Boolean'
+              }, {
+                value: 'phone',
+                label: 'Phone'
+              }, {
+                value: 'date',
+                label: 'Date'
+              }]
 
-                self.frmSettings.upldCSV = results.data
-                self.uploadedCSVData = results.data
-                self.headers = Object.keys(self.frmSettings.upldCSV[0])
-                for (var i = 0; i < self.headers.length; i++) {
-                  self.complexSchema[self.headers[i]] = {'type': 'string'}
-                }
-                self.options = self.headers
-                self.displaymessage = true
-                self.validateButton = true
-                _.forEach(self.headers, (f) => {
-                  self.csvData.push({
-                    id: f,
-                    header: f,
-                    type: 'text',
-                    min: 0,
-                    max: 0,
-                    allowedValue: [],
-                    defaultValue: '',
-                    dependentOn: '',
-                    regEx: '',
-                    placeholder: '',
-                    optional: true,
-                    IsArray: '',
-                    transform: '',
-                    transformMethod: ''
-                  })
-                })
-                logs.push({date: Date(), status: 'upload_completed'})
-                var obj = {
-                  status: 'upload_completed',
-                  modified: Date(),
-                  log: logs
-                }
-                api.request('patch', '/import-tracker/' + id, obj).then(res => {
-                  console.log('response', res.data)
-                })
-                .catch(error => {
-                  console.log(error)
-                })
-              },
-              error: (error, file) => {
-                console.log('Error', error)
+              self.frmSettings.upldCSV = results.data
+              self.uploadedCSVData = results.data
+              self.headers = Object.keys(self.frmSettings.upldCSV[0])
+              for (var i = 0; i < self.headers.length; i++) {
+                self.complexSchema[self.headers[i]] = {'type': 'string'}
               }
-            })
-          } else {
-            self.$Message.error('only csv file type allowed')
-          }
+              self.options = self.headers
+              self.displaymessage = true
+              self.validateButton = true
+              _.forEach(self.headers, (f) => {
+                self.csvData.push({
+                  id: f,
+                  header: f,
+                  type: 'text',
+                  min: 0,
+                  max: 0,
+                  allowedValue: [],
+                  defaultValue: '',
+                  dependentOn: '',
+                  regEx: '',
+                  placeholder: '',
+                  optional: true,
+                  IsArray: '',
+                  transform: '',
+                  transformMethod: ''
+                })
+              })
+              logs.push({date: Date(), status: 'upload_completed'})
+              var obj = {
+                status: 'upload_completed',
+                modified: Date(),
+                log: logs
+              }
+              api.request('patch', '/import-tracker/' + id, obj).then(res => {
+                console.log('response', res.data)
+              })
+              .catch(error => {
+                console.log(error)
+              })
+            },
+            error: (error, file) => {
+              console.log('Error', error)
+            }
+          })
+          // } else {
+          //   self.$Message.error('only csv file type allowed')
+          // }
         })
       })
     },
