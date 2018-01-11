@@ -20,6 +20,9 @@ import recordList from '@/components/recordList'
 import instancejoblist from '@/components/instancejoblist'
 import createRecord from '@/components/createRecord'
 import EmailVerification from '@/components/EmailVerification'
+import Uploader from '@/components/uploader'
+import uploaderLanding from '@/components/uploader_landing'
+import mainUpload from '@/components/mainUpload'
 
 // import FlowzList from '@/components/FlowList'
 // import Instance from '@/components/instance'
@@ -146,6 +149,29 @@ const routes = [{
     path: 'instancejoblist/:id',
     name: 'instancejoblist',
     component: instancejoblist,
+    props: {
+      id: Text,
+      required: false
+    }
+  },
+  {
+    path: '/uploader',
+    name: 'Uploader',
+    component: Uploader
+  },
+  {
+    path: '/landing/:id',
+    name: 'uploaderLanding',
+    component: uploaderLanding,
+    props: {
+      id: Text,
+      required: false
+    }
+  },
+  {
+    path: '/upload/:id',
+    name: 'mainUpload',
+    component: mainUpload,
     props: {
       id: Text,
       required: false

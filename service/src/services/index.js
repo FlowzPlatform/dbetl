@@ -15,6 +15,13 @@ const customerUploadedData = require('./customer-uploaded-data/customer-uploaded
 const importToExternalDb = require('./import-to-external-db/import-to-external-db.service.js');
 const connectiondata = require('./connectiondata/connectiondata.service.js');
 const databases = require('./databases/databases.service.js');
+const pdmUploaderData = require('./pdm-uploader-data/pdm-uploader-data.service.js');
+const uploader = require('./uploader/uploader.service.js');
+const uploaderSchema = require('./uploader-schema/uploader-schema.service.js');
+const uploaderCsvFiles = require('./uploader-csv-files/uploader-csv-files.service.js');
+const uploaderCsvFileMapping = require('./uploader-csv-file-mapping/uploader-csv-file-mapping.service.js');
+const importToJobqueue = require('./import-to-jobqueue/import-to-jobqueue.service.js');
+const importToConfirm = require('./import-to-confirm/import-to-confirm.service.js');
 const csvtodb = require('./csvtodb/csvtodb.service.js');
 const myuploads = require('./myuploads/myuploads.service.js');
 module.exports = function() {
@@ -36,6 +43,13 @@ module.exports = function() {
   app.configure(importToExternalDb);
   app.configure(connectiondata);
   app.configure(databases);
+  app.configure(pdmUploaderData);
+  app.configure(uploader);
+  app.configure(uploaderSchema);
+  app.configure(uploaderCsvFiles);
+  app.configure(uploaderCsvFileMapping);
+  app.configure(importToJobqueue);
+  app.configure(importToConfirm);
   app.configure(csvtodb);
   app.configure(myuploads);
 };

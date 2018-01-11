@@ -1,0 +1,64 @@
+2018-01-06T15:20:33.569448469 0.186263s notice: Recursively removing directory /home/software/DBETL_pdm_uploader/dbetl/rethinkdb_data/tmp
+2018-01-06T15:20:33.581105985 0.197923s notice: Initializing directory /home/software/DBETL_pdm_uploader/dbetl/rethinkdb_data
+2018-01-06T15:20:33.581262359 0.198076s info: Creating a default database for your convenience. (This is because you ran 'rethinkdb' without 'create', 'serve', or '--join', and the directory '/home/software/DBETL_pdm_uploader/dbetl/rethinkdb_data' did not already exist or is empty.)
+2018-01-06T15:20:33.581779542 0.198593s notice: Running rethinkdb 2.3.5 (GCC 5.4.0)...
+2018-01-06T15:20:33.585066682 0.201882s notice: Running on Linux 4.4.0-104-generic x86_64
+2018-01-06T15:20:33.585139136 0.201952s notice: Loading data from directory /home/software/DBETL_pdm_uploader/dbetl/rethinkdb_data
+2018-01-06T15:20:33.662712565 0.279531s info: Automatically using cache size of 5091 MB
+2018-01-06T15:20:33.663510629 0.280324s notice: Listening for intracluster connections on port 29015
+2018-01-06T15:20:33.669014863 0.285828s notice: Listening for client driver connections on port 28015
+2018-01-06T15:20:33.669167371 0.285980s notice: Listening for administrative HTTP connections on port 8080
+2018-01-06T15:20:33.669173420 0.285986s notice: Listening on cluster addresses: 127.0.0.1, 127.0.1.1, ::1
+2018-01-06T15:20:33.669176397 0.285989s notice: Listening on driver addresses: 127.0.0.1, 127.0.1.1, ::1
+2018-01-06T15:20:33.669179516 0.285992s notice: Listening on http addresses: 127.0.0.1, 127.0.1.1, ::1
+2018-01-06T15:20:33.669181480 0.285994s notice: To fully expose RethinkDB on the network, bind to all addresses by running rethinkdb with the `--bind all` command line option.
+2018-01-06T15:20:33.669185156 0.285998s notice: Server ready, "OBLAP_75_ytu" 26ae9843-bc82-4130-a8d2-f2547b7768ba
+2018-01-06T15:20:36.809093880 3.425907s notice: A newer version of the RethinkDB server is available: 2.3.6. You can read the changelog at <https://github.com/rethinkdb/rethinkdb/releases>.
+2018-01-08T11:53:41.764934720 55950.267199s info: Table 23df56c3-c063-47a8-abe0-4ace3e94ea06: Starting a new Raft election for term 1.
+2018-01-08T11:53:41.767114237 55950.269379s info: Table 23df56c3-c063-47a8-abe0-4ace3e94ea06: Added replica on this server.
+2018-01-08T11:53:41.781465458 55950.283730s info: Table 23df56c3-c063-47a8-abe0-4ace3e94ea06: This server is Raft leader for term 1. Latest log index is 0.
+2018-01-08T11:53:42.400033121 55950.902297s info: Table 682f9525-c529-4869-89bd-a4ac29db90bf: Starting a new Raft election for term 1.
+2018-01-08T11:53:42.400305926 55950.902570s info: Table 682f9525-c529-4869-89bd-a4ac29db90bf: Added replica on this server.
+2018-01-08T11:53:42.409160386 55950.911424s info: Table 682f9525-c529-4869-89bd-a4ac29db90bf: This server is Raft leader for term 1. Latest log index is 0.
+2018-01-08T11:53:43.032256469 55951.534520s info: Table 0f20c337-05cf-460b-a93d-19171ddf8a1a: Starting a new Raft election for term 1.
+2018-01-08T11:53:43.032764376 55951.535028s info: Table 0f20c337-05cf-460b-a93d-19171ddf8a1a: Added replica on this server.
+2018-01-08T11:53:43.046438183 55951.548702s info: Table 0f20c337-05cf-460b-a93d-19171ddf8a1a: This server is Raft leader for term 1. Latest log index is 0.
+2018-01-09T09:54:40.954866557 86400.316991s warn: Problem when checking for new versions of RethinkDB: HTTP request to update.rethinkdb.com failed.
+2018-01-09T22:41:22.416316678 2.262205s notice: Running rethinkdb 2.3.5 (GCC 5.4.0)...
+2018-01-09T22:41:22.424362445 2.270250s notice: Running on Linux 4.4.0-104-generic x86_64
+2018-01-09T22:41:22.424453817 2.270338s notice: Loading data from directory /home/software/DBETL_pdm_uploader/dbetl/rethinkdb_data
+2018-01-09T22:41:22.479924327 2.325814s info: Automatically using cache size of 6512 MB
+2018-01-09T22:41:22.481348810 2.327234s notice: Listening for intracluster connections on port 29015
+2018-01-09T22:41:22.576736327 2.422622s notice: Listening for client driver connections on port 28015
+2018-01-09T22:41:22.576961374 2.422846s notice: Listening for administrative HTTP connections on port 8080
+2018-01-09T22:41:22.576966772 2.422851s notice: Listening on cluster addresses: 127.0.0.1, 127.0.1.1, ::1
+2018-01-09T22:41:22.576969870 2.422854s notice: Listening on driver addresses: 127.0.0.1, 127.0.1.1, ::1
+2018-01-09T22:41:22.577028610 2.422913s notice: Listening on http addresses: 127.0.0.1, 127.0.1.1, ::1
+2018-01-09T22:41:22.577032867 2.422917s notice: To fully expose RethinkDB on the network, bind to all addresses by running rethinkdb with the `--bind all` command line option.
+2018-01-09T22:41:22.577036199 2.422921s notice: Server ready, "OBLAP_75_ytu" 26ae9843-bc82-4130-a8d2-f2547b7768ba
+2018-01-09T22:41:23.533319369 3.379205s info: Table 0f20c337-05cf-460b-a93d-19171ddf8a1a: Starting a new Raft election for term 2.
+2018-01-09T22:41:23.548714630 3.394600s info: Table 0f20c337-05cf-460b-a93d-19171ddf8a1a: This server is Raft leader for term 2. Latest log index is 3.
+2018-01-09T22:41:24.215864837 4.061750s info: Table 23df56c3-c063-47a8-abe0-4ace3e94ea06: Starting a new Raft election for term 2.
+2018-01-09T22:41:24.230127514 4.076012s info: Table 23df56c3-c063-47a8-abe0-4ace3e94ea06: This server is Raft leader for term 2. Latest log index is 3.
+2018-01-09T22:41:24.383348742 4.229234s info: Table 682f9525-c529-4869-89bd-a4ac29db90bf: Starting a new Raft election for term 2.
+2018-01-09T22:41:24.397206827 4.243092s info: Table 682f9525-c529-4869-89bd-a4ac29db90bf: This server is Raft leader for term 2. Latest log index is 3.
+2018-01-09T22:41:25.459265540 5.305150s notice: A newer version of the RethinkDB server is available: 2.3.6. You can read the changelog at <https://github.com/rethinkdb/rethinkdb/releases>.
+2018-01-10T09:22:17.605110800 0.047001s notice: Running rethinkdb 2.3.5 (GCC 5.4.0)...
+2018-01-10T09:22:17.607248377 0.049137s notice: Running on Linux 4.4.0-104-generic x86_64
+2018-01-10T09:22:17.607290641 0.049178s notice: Loading data from directory /home/software/DBETL_pdm_uploader/dbetl/rethinkdb_data
+2018-01-10T09:22:17.632514251 0.074403s info: Automatically using cache size of 6525 MB
+2018-01-10T09:22:17.632835934 0.074723s notice: Listening for intracluster connections on port 29015
+2018-01-10T09:22:17.663750727 0.105638s notice: Listening for client driver connections on port 28015
+2018-01-10T09:22:17.663980833 0.105868s notice: Listening for administrative HTTP connections on port 8080
+2018-01-10T09:22:17.663983201 0.105870s notice: Listening on cluster addresses: 127.0.0.1, 127.0.1.1, ::1
+2018-01-10T09:22:17.663984646 0.105872s notice: Listening on driver addresses: 127.0.0.1, 127.0.1.1, ::1
+2018-01-10T09:22:17.663996311 0.105883s notice: Listening on http addresses: 127.0.0.1, 127.0.1.1, ::1
+2018-01-10T09:22:17.663997709 0.105885s notice: To fully expose RethinkDB on the network, bind to all addresses by running rethinkdb with the `--bind all` command line option.
+2018-01-10T09:22:17.664000509 0.105887s notice: Server ready, "OBLAP_75_ytu" 26ae9843-bc82-4130-a8d2-f2547b7768ba
+2018-01-10T09:22:18.979756478 1.421644s info: Table 0f20c337-05cf-460b-a93d-19171ddf8a1a: Starting a new Raft election for term 3.
+2018-01-10T09:22:18.987674490 1.429562s info: Table 0f20c337-05cf-460b-a93d-19171ddf8a1a: This server is Raft leader for term 3. Latest log index is 6.
+2018-01-10T09:22:19.543660852 1.985548s info: Table 682f9525-c529-4869-89bd-a4ac29db90bf: Starting a new Raft election for term 3.
+2018-01-10T09:22:19.551882690 1.993770s info: Table 682f9525-c529-4869-89bd-a4ac29db90bf: This server is Raft leader for term 3. Latest log index is 6.
+2018-01-10T09:22:19.622107518 2.063995s info: Table 23df56c3-c063-47a8-abe0-4ace3e94ea06: Starting a new Raft election for term 3.
+2018-01-10T09:22:19.630316942 2.072204s info: Table 23df56c3-c063-47a8-abe0-4ace3e94ea06: This server is Raft leader for term 3. Latest log index is 6.
+2018-01-10T09:22:21.426990640 3.868878s notice: A newer version of the RethinkDB server is available: 2.3.6. You can read the changelog at <https://github.com/rethinkdb/rethinkdb/releases>.
