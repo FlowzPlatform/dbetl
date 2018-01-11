@@ -18,5 +18,18 @@
   "importToExternal": "import_to_external_db",
   "instance_table": "flowzinstance",
   "approvar_table": "approvalClass",
-  // "mongodb": "MONGO_DB"
+  "mongodb": "MONGO_DB",
+  "mongodb_host": "mongodb_host",
+  "mongodb_port": "mongodb_host",
+  "jobqueueUrl": "http://api.flowzcluster.tk/rjobqueue1/job/create",
+  "importToConfirmUrl": "",
+  "rethinkdb": {
+    "db": "FlowzDBETL",
+    "servers": [
+      {
+        "host": "47.254.27.134",
+        "port": "28015"
+      }
+    ]
+  }
 }

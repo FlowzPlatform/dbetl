@@ -1,10 +1,10 @@
-console.log('process.env.NODE_ENV', process.env.NODE_ENV)
+console.log('process.env.NODE_ENV', process.env)
 var temp = {
   serverURI: 'http://localhost:3034',
   socketURI: 'http://localhost:3034',
   fixedLayout: false,
   hideLogoOnMobile: false,
-  microURI: 'http://auth.flowz.com/api',
+  microURI: 'http://auth.flowzcluster.tk/api',
   facebookSuccessCallbackUrl: 'http://localhost:8000',
   loginWithFacebookUrl: 'http://auth.flowz.com/auth/facebook',
   googleSuccessCallbackUrl: 'http://localhost:8000',
@@ -14,7 +14,8 @@ var temp = {
   linkedinSuccessCallbackUrl: 'http://localhost:8000',
   loginWithLinkedinUrl: 'http://auth.flowz.com/auth/linkedin',
   githubSuccessCallbackUrl: 'http://localhost:8000',
-  loginWithGithubUrl: 'http://auth.flowz.com/auth/github'
+  loginWithGithubUrl: 'http://auth.flowz.com/auth/github',
+  jobQueueUrl: 'http://api.flowzcluster.tk/rjobqueue1/job/create'
 }
 if (process.env.NODE_ENV !== 'development') {
   temp = {
@@ -30,7 +31,8 @@ if (process.env.NODE_ENV !== 'development') {
     linkedinSuccessCallbackUrl: 'http://dbetl.flowz.com/',
     loginWithLinkedinUrl: 'http://auth.flowz.com/auth/linkedin',
     githubSuccessCallbackUrl: 'http://dbetl.flowz.com/',
-    loginWithGithubUrl: 'http://auth.flowz.com/auth/github'
+    loginWithGithubUrl: 'http://auth.flowz.com/auth/github',
+    jobQueueUrl: 'http://api.flowzcluster.tk/rjobqueue1/job/create'
   }
 }
 export default temp
