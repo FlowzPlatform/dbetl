@@ -395,6 +395,7 @@ export default {
         return
       }
       this.file = files[0]
+      console.log('this.file', this.file)
       this.parseCSVToJSON(5, (results, file) => {
         self.csvHeaders = _.map(results.meta.fields, m => {
           return {
@@ -657,8 +658,9 @@ export default {
       let bucket = new AWS.S3({ params: { Bucket: 'airflowbucket1/obexpense/expenses' } })
       bucket.upload({
         Key: moment.utc().valueOf() + '_' + self.file.name,
-        ContentType: 'text/csv',
-        Body: csvStr
+        ContentType: 'text/csv;charset utf-8',
+        Body: csvStr,
+        ACL: 'public-read'
       }).on('httpUploadProgress', function (evt) {
         console.log('Uploaded :: ' + parseInt((evt.loaded * 100) / evt.total) + '%')
       }).send(function (err, data) {
