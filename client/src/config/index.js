@@ -14,7 +14,7 @@ var temp = {
   linkedinSuccessCallbackUrl: 'http://localhost:8000',
   loginWithLinkedinUrl: 'http://auth.' + process.env.domainkey + '/auth/linkedin',
   githubSuccessCallbackUrl: 'http://localhost:8000',
-  jobQueueUrl: 'http://api.flowzcluster.tk/rjobqueue1/job/create'
+  jobQueueUrl: 'http://api.flowzcluster.tk/rjobqueue1/job/create',
   loginWithGithubUrl: 'http://auth.' + process.env.domainkey + '/auth/github'
 }
 if (process.env.NODE_ENV !== 'development') {
