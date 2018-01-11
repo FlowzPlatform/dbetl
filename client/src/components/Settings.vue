@@ -45,10 +45,14 @@
                                       <Icon type="load-c" size=18 class="demo-spin-icon-load"></Icon>
                                   </Spin>
                               </div>
-                              <div class="upload-btn-wrapper">
+                             <!--  <div class="upload-btn-wrapper">
                                   <button class="btn"><Icon type="ios-cloud-upload-outline"></Icon> Upload Icon</button>
                                   <input type="file" id="upldIcn" title="Upload icon" accept="image/*">
-                              </div>
+                              </div> -->
+                              <label for="upldIcn" class="custom-upld">
+                                <i class="fa fa-cloud-upload"></i> Upload Icon
+                              </label>
+                              <input id="upldIcn" type="file" accept="image/*"/>
                           </FormItem>
                       </Col>
                   </Row>
@@ -144,11 +148,14 @@
                   <Row>
                     <Col span="10" v-if="frmSettings.rdoCrt == 'rbtCSV'">
                         <h4>CSV File Upload</h4>
-                        <div class="upload-btn-wrapper" v-on:click="uploadCsv()">
+                       <!--  <div class="upload-btn-wrapper" v-on:click="uploadCsv()">
                           <button class="btn"><Icon type="ios-cloud-upload-outline"></Icon> Upload CSV</button>
                           <input type="file" id="upldCSV" title="Upload CSV" accept=".csv">
-                        </div>
-
+                        </div> -->
+                        <label for="upldCSV" class="custom-upld" v-on:click="uploadCsv()">
+                          <i class="fa fa-cloud-upload"></i> Upload CSV
+                        </label>
+                        <input id="upldCSV" type="file" accept=".csv"/>
                     </Col>
                     <Col span="10" v-if="frmSettings.rdoCrt == 'rbtDB'" style="display:none;">
                     <h4>Database Settings</h4>
@@ -799,80 +806,80 @@ export default {
           // console.log("called")
           let fileChooser = document.getElementById('upldCSV')
           let file = fileChooser.files[0]
-          if (_.contains(self.allowedFileType, file.type)) {
-            Papa.parse(file, {
-              header: true,
-              encoding: 'UTF-8',
-              complete: function (results, file) {
-                console.log(results.data)
-                // console.log("Parsing complete:", results.data, file);
-                results.data.optType = [{
-                  value: 'text',
-                  label: 'Text'
-                }, {
-                  value: 'email',
-                  label: 'Email'
-                }, {
-                  value: 'number',
-                  label: 'Number'
-                }, {
-                  value: 'boolean',
-                  label: 'Boolean'
-                }, {
-                  value: 'phone',
-                  label: 'Phone'
-                }, {
-                  value: 'date',
-                  label: 'Date'
-                }]
+          // if (_.contains(self.allowedFileType, file.type)) {
+          Papa.parse(file, {
+            header: true,
+            encoding: 'UTF-8',
+            complete: function (results, file) {
+              console.log(results.data)
+              // console.log("Parsing complete:", results.data, file);
+              results.data.optType = [{
+                value: 'text',
+                label: 'Text'
+              }, {
+                value: 'email',
+                label: 'Email'
+              }, {
+                value: 'number',
+                label: 'Number'
+              }, {
+                value: 'boolean',
+                label: 'Boolean'
+              }, {
+                value: 'phone',
+                label: 'Phone'
+              }, {
+                value: 'date',
+                label: 'Date'
+              }]
 
-                self.frmSettings.upldCSV = results.data
-                self.uploadedCSVData = results.data
-                self.headers = Object.keys(self.frmSettings.upldCSV[0])
-                for (var i = 0; i < self.headers.length; i++) {
-                  self.complexSchema[self.headers[i]] = {'type': 'string'}
-                }
-                self.options = self.headers
-                self.displaymessage = true
-                self.validateButton = true
-                _.forEach(self.headers, (f) => {
-                  self.csvData.push({
-                    id: f,
-                    header: f,
-                    type: 'text',
-                    min: 0,
-                    max: 0,
-                    allowedValue: [],
-                    defaultValue: '',
-                    dependentOn: '',
-                    regEx: '',
-                    placeholder: '',
-                    optional: true,
-                    IsArray: '',
-                    transform: '',
-                    transformMethod: ''
-                  })
-                })
-                logs.push({date: Date(), status: 'upload_completed'})
-                var obj = {
-                  status: 'upload_completed',
-                  modified: Date(),
-                  log: logs
-                }
-                api.request('patch', '/import-tracker/' + id, obj).then(res => {
-                  console.log('response', res.data)
-                })
-                .catch(error => {
-                  console.log(error)
-                })
-              },
-              error: (error, file) => {
-                console.log('Error', error)
+              self.frmSettings.upldCSV = results.data
+              self.uploadedCSVData = results.data
+              self.headers = Object.keys(self.frmSettings.upldCSV[0])
+              for (var i = 0; i < self.headers.length; i++) {
+                self.complexSchema[self.headers[i]] = {'type': 'string'}
               }
-            })
-          } else {
-            self.$Message.error('only csv file type allowed')
-          }
+              self.options = self.headers
+              self.displaymessage = true
+              self.validateButton = true
+              _.forEach(self.headers, (f) => {
+                self.csvData.push({
+                  id: f,
+                  header: f,
+                  type: 'text',
+                  min: 0,
+                  max: 0,
+                  allowedValue: [],
+                  defaultValue: '',
+                  dependentOn: '',
+                  regEx: '',
+                  placeholder: '',
+                  optional: true,
+                  IsArray: '',
+                  transform: '',
+                  transformMethod: ''
+                })
+              })
+              logs.push({date: Date(), status: 'upload_completed'})
+              var obj = {
+                status: 'upload_completed',
+                modified: Date(),
+                log: logs
+              }
+              api.request('patch', '/import-tracker/' + id, obj).then(res => {
+                console.log('response', res.data)
+              })
+              .catch(error => {
+                console.log(error)
+              })
+            },
+            error: (error, file) => {
+              console.log('Error', error)
+            }
+          })
+          // } else {
+          //   self.$Message.error('only csv file type allowed')
+          // }
         })
       })
     },
@@ -1309,7 +1316,7 @@ export default {
           self.loadingData = false
           self.$Notice.error({title: 'Error!', desc: 'Error in saving CSV...!  Kindly check your data'})
         }
-      }, 3000)
+      }, 50000)
     },
     undo (data) {
       var self = this
@@ -1337,7 +1344,7 @@ export default {
             } else {
               self.$Notice.error({title: 'Error!', desc: 'Error in deleting the records!'})
             }
-          }, 1000)
+          }, 50000)
         })
       } else {
         socket.emit('import', data, (error, data) => {
@@ -1377,14 +1384,14 @@ export default {
               }
             })
             setTimeout(function () {
-              if (err === '' || err === false) {
+              if (err === '' || err === false || err === undefined) {
                 self.disabled = true
                 self.disableImport = true
                 self.completed = true
               } else {
                 self.$Notice.error({title: 'Error!', desc: 'Error in importing data to realDb...!'})
               }
-            }, 1000)
+            }, 50000)
           })
         })
       } else {
@@ -1398,14 +1405,14 @@ export default {
         })
         setTimeout(function () {
           console.log('err', err)
-          if (err === '' || err === false) {
+          if (err === '' || err === false || err === undefined) {
             self.disabled = true
             self.disableImport = true
             self.completed = true
           } else {
             self.$Notice.error({title: 'Error!', desc: 'Error in importing data to realDb...!'})
           }
-        }, 1000)
+        }, 50000)
       }
     },
     getsettingsAll: function (value) {

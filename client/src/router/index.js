@@ -10,6 +10,7 @@ import InstanceList from '@/components/InstanceList'
 // import SchemaMappingList from '@/components/SchemaMappingList'
 import Settings from '@/components/Settings'
 import Import from '@/components/Import'
+import ImportCSV from '@/components/ImportCSV'
 import Db from '@/components/Db'
 import Login from '@/components/Login'
 import Register from '@/components/Register'
@@ -19,6 +20,9 @@ import recordList from '@/components/recordList'
 import instancejoblist from '@/components/instancejoblist'
 import createRecord from '@/components/createRecord'
 import EmailVerification from '@/components/EmailVerification'
+import Uploader from '@/components/uploader'
+import uploaderLanding from '@/components/uploader_landing'
+import mainUpload from '@/components/mainUpload'
 
 // import FlowzList from '@/components/FlowList'
 // import Instance from '@/components/instance'
@@ -122,6 +126,10 @@ const routes = [{
     name: 'import',
     component: Import
   }, {
+    path: 'Dbsetting/importcsv/:id',
+    name: 'importcsv',
+    component: ImportCSV
+  }, {
     path: 'recordList/:id/:tname',
     name: 'recordList',
     component: recordList,
@@ -141,6 +149,29 @@ const routes = [{
     path: 'instancejoblist/:id',
     name: 'instancejoblist',
     component: instancejoblist,
+    props: {
+      id: Text,
+      required: false
+    }
+  },
+  {
+    path: '/uploader',
+    name: 'Uploader',
+    component: Uploader
+  },
+  {
+    path: '/landing/:id',
+    name: 'uploaderLanding',
+    component: uploaderLanding,
+    props: {
+      id: Text,
+      required: false
+    }
+  },
+  {
+    path: '/upload/:id',
+    name: 'mainUpload',
+    component: mainUpload,
     props: {
       id: Text,
       required: false

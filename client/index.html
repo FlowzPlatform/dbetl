@@ -11,8 +11,11 @@
 
   <!-- Fonts -->
   <link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
   <link href="https://unpkg.com/vue-multiselect@2.0.3/dist/vue-multiselect.min.css" rel="stylesheet">
 
+  <link rel='stylesheet' href='/static/dropzone/dropzone.css'>
+  <script src='/static/dropzone/dropzone.js'></script>
   <script src="https://docs.handsontable.com/pro/1.14.3/bower_components/handsontable-pro/dist/handsontable.full.min.js"></script>
   <link href="https://docs.handsontable.com/pro/1.14.3/bower_components/handsontable-pro/dist/handsontable.full.min.css" rel="stylesheet" />
 </head>
@@ -20,9 +23,27 @@
 <body>
   <div id="app"></div>
   <!-- built files will be auto injected -->
-  <!-- <script type="text/javascript">
-
-  </script> -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.20.1/moment.min.js"></script>
+  <script type="text/javascript">
+    String.prototype.capitalize = function() { // eslint-disable-line
+      return this.charAt(0).toUpperCase() + this.slice(1).toLowerCase()
+    }
+    String.prototype.stripHTMLTags = function() { // eslint-disable-line
+      return this.replace(/<[^>]*>/g, '')
+    }
+    String.prototype.stripSpecialCharacter = function() { // eslint-disable-line
+      return this.replace(/[\/\\#,+()$~%'":*<>{}]/g, '') // eslint-disable-line
+    }
+    String.prototype.toDecimal = function(precision) { // eslint-disable-line
+      return parseFloat(this).toFixed(precision)
+    }
+    String.prototype.toInteger = function() { // eslint-disable-line
+      return parseInt(this)
+    }
+    String.prototype.formatDate = function(format) { // eslint-disable-line
+      return moment(this).format(format)
+    }
+  </script>
 </body>
 
 </html>
