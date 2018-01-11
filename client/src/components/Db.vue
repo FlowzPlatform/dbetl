@@ -271,6 +271,27 @@ export default {
                     this.$router.push('/instancejoblist/' + params.row.id)
                   }
                 }
+              }, ''),
+              h('Button', {
+                props: {
+                  type: 'text',
+                  size: 'large',
+                  icon: 'ios-upload'
+                },
+                style: {
+                  // color: '#CC0000',
+                  color: '#5cadff',
+                  marginRight: '3px',
+                  padding: '0px',
+                  fontSize: '20px'
+                },
+                on: {
+                  click: () => {
+                    // alert(this.tabPane)
+                    this.$router.push('/Dbsetting/importcsv/' + params.row.id)
+                    // this.importcsv(params.row.id)
+                  }
+                }
               }, '')
             ])
           }
@@ -424,6 +445,27 @@ export default {
                 on: {
                   click: () => {
                     this.$router.push('/instancejoblist/' + params.row.id)
+                  }
+                }
+              }, ''),
+              h('Button', {
+                props: {
+                  type: 'text',
+                  size: 'large',
+                  icon: 'ios-upload'
+                },
+                style: {
+                  // color: '#CC0000',
+                  color: '#5cadff',
+                  marginRight: '3px',
+                  padding: '0px',
+                  fontSize: '20px'
+                },
+                on: {
+                  click: () => {
+                    // alert(this.tabPane)
+                    this.$router.push('/Dbsetting/importcsv/' + params.row.id)
+                    // this.importcsv(params.row.id)
                   }
                 }
               }, '')
@@ -687,6 +729,27 @@ export default {
                 on: {
                   click: () => {
                     this.$router.push('/instancejoblist/' + params.row.id)
+                  }
+                }
+              }, ''),
+              h('Button', {
+                props: {
+                  type: 'text',
+                  size: 'large',
+                  icon: 'ios-upload'
+                },
+                style: {
+                  // color: '#CC0000',
+                  color: '#5cadff',
+                  marginRight: '3px',
+                  padding: '0px',
+                  fontSize: '20px'
+                },
+                on: {
+                  click: () => {
+                    // alert(this.tabPane)
+                    this.$router.push('/Dbsetting/importcsv/' + params.row.id)
+                    // this.importcsv(params.row.id)
                   }
                 }
               }, '')

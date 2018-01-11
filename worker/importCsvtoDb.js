@@ -137,10 +137,16 @@ q.process(async(job, next) => {
 					var d1 = new Date().toLocaleTimeString()
 					console.log('.......Start......', d1)
 					// for (let [i, sObj] of job.data.source.entries()) {
-						var s = await (tConn.conn.table('csvData10').insert(sData).run().then(res => {
+						var tname = 'mycsv2'
+						var existTable = await (tConn.conn.tableList().contains(tname))
+			    		if(!existTable) {
+			    			var createTable = await (tConn.conn.tableCreate(tname)) 
+			    		}
+			    		console.log('existTable ' + tname + ' ==> ' + existTable)
+						var s = await (tConn.conn.table(tname).insert(sData).run().then(res => {
 							return res
 						}).catch(err => {
-							// console.log('.....>>>>>>>> ', err)
+							console.log('.....>>>>>>>> ', err)
 							arrOfErr.push({err: err})
 							return err
 						}))
@@ -148,28 +154,45 @@ q.process(async(job, next) => {
 					// }
 					var d2 = new Date().toLocaleTimeString()
 					console.log('.......End......', d2)
-					console.log('_error..............', arrOfErr)
+					// console.log('_error..............', arrOfErr)
 					// console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>', _res)
-					console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> arrOfErr', arrOfErr)
+					// console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> arrOfErr', arrOfErr)
 				} else if(job.data.target.selectedDb == 'elastic') {
 					var _res = []
 					// var sId = await (getSchemaidByName(aurl, obj.target))
+					// for (let [i, sObj] of sData.entries()) {
+					// 	sObj._id = (sObj._id).toString()
+					// 	// delete sObj.id
+					// 	// if(sObj.hasOwnProperty('Schemaid')) {
+					// 	// 	sObj.Schemaid = sId
+					// 	// }
+					// 	if (obj.colsData.length !== 0) {
+					// 		sObj = await (filterObj(sObj, obj.colsData))
+					// 	}
+					// 	var s = await (tConn.conn.index({
+					//         index: job.data.target.dbname,
+					//         type: obj.target,
+					//         body: sObj
+					//     }))
+					// 	_res.push(s)
+					// }
+					var myarr = []
+					var tname = 'mycsv1'
+					var rs = { "index" : { "_index" : job.data.target.dbname, "_type" : tname} }
 					for (let [i, sObj] of sData.entries()) {
-						sObj._id = (sObj._id).toString()
-						// delete sObj.id
-						// if(sObj.hasOwnProperty('Schemaid')) {
-						// 	sObj.Schemaid = sId
-						// }
-						if (obj.colsData.length !== 0) {
-							sObj = await (filterObj(sObj, obj.colsData))
-						}
-						var s = await (tConn.conn.index({
-					        index: job.data.target.dbname,
-					        type: obj.target,
-					        body: sObj
-					    }))
-						_res.push(s)
+						myarr.push(rs)
+						myarr.push(sObj)
 					}
+					// console.log(myarr)
+					var d1 = new Date().toLocaleTimeString()
+					console.log('.......Start......', d1)
+					var s = await (tConn.conn.bulk({
+				        body: myarr 
+				    }))
+					_res.push(s)
+					// console.log('_res...>> ', _res)
+					var d2 = new Date().toLocaleTimeString()
+					console.log('.......End......', d2)
 				} else if(job.data.target.selectedDb == 'mysql') {
 					var _res = []
 					
