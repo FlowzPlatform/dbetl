@@ -14,6 +14,7 @@ var fs = require('fs');
 var path = require('path');
 var Datastore = require('nedb-promise');
 var nedbpath = path.join(__dirname, '../service/nedb')
+var Papa = require('papaparse');
 // var aurl = 'http://' + job.configData.host + ':' + job.configData.port;
 // var endecrypt = require('../service/src/services/encryption/security')			
 var mysql = require('mysql');
@@ -75,92 +76,120 @@ var createConn = async (function(data, mapdata) {
 	}
 })
 
+var getSourceData = async (function(url) {
+	console.log('----URL---', url)
+	// return new Promise((resolve, reject) => {
+	// 	fs.readFile(url, function(err, data) {
+	// 		if(err) {
+	// 			reject(err)
+	// 		} else {
+	// 			resolve(data)
+	// 		}
+	// 	})
+	// })
+	return axios.get(url).then(res => {
+		// console.log('response...', res.data)
+		return res.data
+	}).catch(err => {
+		console.log('error...', err)
+		return null
+	})
+})
+
 q.process(async(job, next) => {
 	try {
 			// console.log('job.data\n ', JSON.stringify(job.data))
 			console.log('---------------------||  Start  ||--------------------------')
-			var aurl = 'http://' + job.configData.host + ':' + job.configData.port;
-			var tConn = await (createConn(job.data.target));
-			if(job.data.target.selectedDb == 'mongo') {
-				var _res = []
-				var arrOfErr = []
-				// var sId = await (getSchemaidByName(aurl, obj.target))
-				var d1 = new Date().toLocaleTimeString()
-				console.log('.......Start......', d1)
-				// for (let [i, sObj] of job.data.source.entries()) {
-					var s = await (tConn.conn.collection('csvdata10k5').insertMany(job.data.source).then(res => {
-						return res
-					}).catch(err => {
-						// console.log('.....>>>>>>>> ', err)
-						arrOfErr.push({err: err})
-						return err
-					}))
-					_res.push(s)
-				// }
-				var d2 = new Date().toLocaleTimeString()
-				console.log('.......End......', d2)
-				console.log('_error..............', arrOfErr)
-				// await (sConn.conn.collection(obj.source).find().toArray())
-			} else if(job.data.target.selectedDb == 'rethink') {
-				var _res = []
-				var arrOfErr = []
-				// var sId = await (getSchemaidByName(aurl, obj.target))
-				// console.log(sData)
-				var d1 = new Date().toLocaleTimeString()
-				console.log('.......Start......', d1)
-				// for (let [i, sObj] of job.data.source.entries()) {
-					var s = await (tConn.conn.table('csvData10').insert(job.data.source).run().then(res => {
-						return res
-					}).catch(err => {
-						// console.log('.....>>>>>>>> ', err)
-						arrOfErr.push({err: err})
-						return err
-					}))
-					_res.push(s)
-				// }
-				var d2 = new Date().toLocaleTimeString()
-				console.log('.......End......', d2)
-				console.log('_error..............', arrOfErr)
-				// console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>', _res)
-				console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> arrOfErr', arrOfErr)
-			} else if(job.data.target.selectedDb == 'elastic') {
-				var _res = []
-				// var sId = await (getSchemaidByName(aurl, obj.target))
-				for (let [i, sObj] of sData.entries()) {
-					sObj._id = (sObj._id).toString()
-					// delete sObj.id
-					// if(sObj.hasOwnProperty('Schemaid')) {
-					// 	sObj.Schemaid = sId
+			var sourceData = await (getSourceData(job.data.source.file))
+			// console.log('..sourceData....\n', sourceData)
+			if(sourceData != null) {
+				var _sres = await (Papa.parse(sourceData, {
+		            header: true,
+		            encoding: 'UTF-8'
+		        }))
+		        var sData = _sres.data 
+				var tConn = await (createConn(job.data.target));
+				if(job.data.target.selectedDb == 'mongo') {
+					var _res = []
+					var arrOfErr = []
+					// var sId = await (getSchemaidByName(aurl, obj.target))
+					var d1 = new Date().toLocaleTimeString()
+					console.log('.......Start......', d1)
+					// for (let [i, sObj] of job.data.source.entries()) {
+						var s = await (tConn.conn.collection('mycsv5').insertMany(sData).then(res => {
+							return res
+						}).catch(err => {
+							// console.log('.....>>>>>>>> ', err)
+							arrOfErr.push({err: err})
+							return err
+						}))
+						_res.push(s)
 					// }
-					if (obj.colsData.length !== 0) {
-						sObj = await (filterObj(sObj, obj.colsData))
+					var d2 = new Date().toLocaleTimeString()
+					console.log('.......End......', d2)
+					console.log('_error..............', arrOfErr)
+					// await (sConn.conn.collection(obj.source).find().toArray())
+				} else if(job.data.target.selectedDb == 'rethink') {
+					var _res = []
+					var arrOfErr = []
+					// var sId = await (getSchemaidByName(aurl, obj.target))
+					// console.log(sData)
+					var d1 = new Date().toLocaleTimeString()
+					console.log('.......Start......', d1)
+					// for (let [i, sObj] of job.data.source.entries()) {
+						var s = await (tConn.conn.table('csvData10').insert(sData).run().then(res => {
+							return res
+						}).catch(err => {
+							// console.log('.....>>>>>>>> ', err)
+							arrOfErr.push({err: err})
+							return err
+						}))
+						_res.push(s)
+					// }
+					var d2 = new Date().toLocaleTimeString()
+					console.log('.......End......', d2)
+					console.log('_error..............', arrOfErr)
+					// console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>', _res)
+					console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> arrOfErr', arrOfErr)
+				} else if(job.data.target.selectedDb == 'elastic') {
+					var _res = []
+					// var sId = await (getSchemaidByName(aurl, obj.target))
+					for (let [i, sObj] of sData.entries()) {
+						sObj._id = (sObj._id).toString()
+						// delete sObj.id
+						// if(sObj.hasOwnProperty('Schemaid')) {
+						// 	sObj.Schemaid = sId
+						// }
+						if (obj.colsData.length !== 0) {
+							sObj = await (filterObj(sObj, obj.colsData))
+						}
+						var s = await (tConn.conn.index({
+					        index: job.data.target.dbname,
+					        type: obj.target,
+					        body: sObj
+					    }))
+						_res.push(s)
 					}
-					var s = await (tConn.conn.index({
-				        index: job.data.target.dbname,
-				        type: obj.target,
-				        body: sObj
-				    }))
-					_res.push(s)
-				}
-			} else if(job.data.target.selectedDb == 'mysql') {
-				var _res = []
-				
-				// if(sObj.hasOwnProperty('_id')) {
-				// 	sObj.id = (sObj._id).toString()
-				// 	sObj._id = sObj.id
-				// }
-				
-				// var sId = await (getSchemaidByName(aurl, obj.target))
-				
-				for (let [i, sObj] of sData.entries()) {
-					if (obj.colsData.length !== 0) {
-						sObj = await (filterObj(sObj, obj.colsData))
-					}
+				} else if(job.data.target.selectedDb == 'mysql') {
+					var _res = []
 					
-					// console.log('sObj',sObj,obj.target,job.data.target.dbname)
-					// return false;
-					// sObj.Schemaid = sId
-					var response = await (updateSchema(sObj, obj.target,job.data.target.dbname,tConn))
+					// if(sObj.hasOwnProperty('_id')) {
+					// 	sObj.id = (sObj._id).toString()
+					// 	sObj._id = sObj.id
+					// }
+					
+					// var sId = await (getSchemaidByName(aurl, obj.target))
+					
+					for (let [i, sObj] of sData.entries()) {
+						if (obj.colsData.length !== 0) {
+							sObj = await (filterObj(sObj, obj.colsData))
+						}
+						
+						// console.log('sObj',sObj,obj.target,job.data.target.dbname)
+						// return false;
+						// sObj.Schemaid = sId
+						var response = await (updateSchema(sObj, obj.target,job.data.target.dbname,tConn))
+					}
 				}
 			}
 
