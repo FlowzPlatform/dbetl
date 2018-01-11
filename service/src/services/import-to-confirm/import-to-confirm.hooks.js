@@ -46,7 +46,7 @@ function beforeHook (hook) {
 }
 
 async function beforeCreate(hook) {
-  let base_url = app.get("importToConfirmUrl")
+  let base_url = app.get("jobqueueUrl")
   hook.data.connection = {
 	  "host":app.get("rdb_host"),
     "port": app.get("rdb_port"),
