@@ -8,6 +8,7 @@
   },
   "rdb_host": "RDB_HOST",
   "rdb_port": "RDB_PORT",
+  "domainkey": "domainkey",
   "rdb_user": "",
   "rdb_password": "",
   "rdb_db": "FlowzDBETL",
@@ -16,6 +17,7 @@
   "qJobRetryMax": 0,
   "import": "importSchema",
   "importToExternal": "import_to_external_db",
+  "importCsvtoDb": "csvtodb",
   "instance_table": "flowzinstance",
   "approvar_table": "approvalClass",
   "mongodb": "MONGO_DB",
@@ -27,7 +29,7 @@
     "db": "FlowzDBETL",
     "servers": [
       {
-        "host": "47.254.27.134",
+        "host": "localhost",
         "port": "28015"
       }
     ]

@@ -1,5 +1,5 @@
 <template>
-  <div style="width: inherit;">
+  <div class="sidebar">
     <div  style="background: rgb(54, 62, 79); height: 100%; position: fixed;width: inherit;">
     <!--  
       <Row style="padding: 16.3px 10px;border-bottom: 1px solid #15171b;">
@@ -134,8 +134,7 @@
                 style: {
                   width: '100%',
                   color: '#eee',
-                  fontSize: '13px',
-                  verticalAlign: 'super'
+                  fontSize: '13px'
                 }
               }, [
                 h('span', [
@@ -167,8 +166,7 @@
                     style: {
                       width: '100%',
                       color: '#eee',
-                      fontSize: '13px',
-                      verticalAlign: 'super'
+                      fontSize: '13px'
                     }
                   }, [
                     h('span', [
@@ -222,146 +220,46 @@
     }
   }
 </script>
-
-<style>
-  /*.menu-item {
-    background-color: #2b4c77;
-  }*/
-.vuebar-element {
-  height:calc(100vh - 60px);
-}
-  .ficon {
-    font-size: 16px;
+<style lang="less">
+  .vuebar-element {
+    height: ~"calc(100vh - 60px)";
   }
-  .play {
-    color:#00C851;
-  }
-  .play: hover {
-    color:#00C851;
-  }
-  .list {
-    color:#ffbb33;
-  }
-  .edit {
-    color:#2BBBAD;
-    font-weight:800;
-  }
-  .delete {
-    color: #CC0000;
-  }
-  .transform {
-    color: #00C851;
-  }
-  .el-dropdown-menu__item {
-    text-align: center;
-  }
- /* .ivu-menu-vertical .ivu-menu-item, .ivu-menu-vertical .ivu-menu-submenu-title{
-    position: initial;
-  }*/
-  .schema-icon {
-    width: 16px;
-    height: 16px;
-    margin-right:5px;
-  }
-  .menu-action-icon {
-    /*float: right;*/
-    /*display: none;*/
-  }
-  .menu-action-icon > div {
-    /*margin-right:2px;*/
-  }
-  .ivu-menu-item:hover .menu-action-icon{
-    /*display: block;*/
-  }
-
-  /* element-ui sidebar*/
-  .el-submenu__title {
-    color: #eee;
-    background-color: rgb(54, 62, 79);
-  }
-  .el-submenu__title:hover {
-    color: #ffd04b;
-    background-color: #495060;
-  }
-  .el-menu-item {
-    color: #fff;
-    background: #495060; 
-  }
-  .el-submenu .el-menu-item:hover, .el-submenu__title:hover {
-    color: #ffd04b;
-    background-color: #576075;
-  }
-  .el-menu--horizontal.el-menu--dark .el-submenu .el-menu-item.is-active, .el-menu-item.is-active {
-    color: #ffd04b;
-    background-color: #576075;
-    border-right: 2px solid #ffd04b;
-  }
-  /*.el-menu {
-    color: black;
-    background-color: black;
-  }*/
-  .el-menu-item * {
-    vertical-align: unset;
-  }
-
-  /* i-tree sidebar */ 
-  .ivu-tree-arrow {
-    color: #eee;
-    font-size: 18px;
-  }
-  .ivu-tree-title {
-    color: #eee;
-    font-size: 13px; 
-    vertical-align: middle;
-  }
-  .ivu-tree-title:hover {
-    color: #ffd04b;
-    background-color: #576075;
-  }
-  .ivu-tree-title-selected {
-    color: #ffd04b;
-    background-color: rgb(54, 62, 79); 
-  }
-  .ivu-tree-title-selected:hover {
-    background-color: #576075; 
-  }
-
-  .myHover {
-    background: red;
-  }
-
-  .ivu-tree-action {
-    display: none;
-    float: right;
-    margin-right: 32px;
-  }
-
-  .ivu-tree-children > li:hover > .ivu-tree-action  {
-    display: block;
-  }
-
-  .icon-grid {
-    margin-right: 6px;
-    margin-left: 8px;
-    width: 20px;
-    height:20px;
-    color: #eee;
-    font-size: 18px;
-    padding-top: 3px;
-  }
-  .ivu-spin-dot {
-    position: relative;
-    display: block;
-    border-radius: 50%;
-    /*background-color: #fff;*/
-    margin: 20px 0px 0px 150px;
-    animation: ani-spin-bounce 1s 0s ease-in-out infinite;
-  }
-  .ivu-tree-empty {
-    color: #eee;
-    font-size: 16px;
-    text-align: center;
-    margin-top: 10px;
+  .sidebar {
+    width: inherit;
+    .ivu-tree-arrow {
+      color: #eee;
+      font-size: 18px;
+    }
+    .ivu-tree-title {
+      color: #eee;
+      font-size: 13px; 
+      vertical-align: text-bottom;
+    }
+    .ivu-tree-title:hover {
+      color: #ffd04b;
+      background-color: #576075;
+    }
+    .ivu-tree-title-selected {
+      color: #ffd04b;
+      background-color: rgb(54, 62, 79); 
+    }
+    .ivu-tree-title-selected:hover {
+      background-color: #576075; 
+    }
+    .ivu-tree-action {
+      display: none;
+      float: right;
+      margin-right: 32px;
+    }
+    .ivu-tree-children > li:hover > .ivu-tree-action  {
+      display: block;
+    }
+    .ivu-tree-empty {
+      color: #eee;
+      font-size: 16px;
+      text-align: center;
+      margin-top: 10px;
+    }
   }
   
 </style>
