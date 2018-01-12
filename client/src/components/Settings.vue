@@ -45,14 +45,10 @@
                                       <Icon type="load-c" size=18 class="demo-spin-icon-load"></Icon>
                                   </Spin>
                               </div>
-                             <!--  <div class="upload-btn-wrapper">
+                              <div class="upload-btn-wrapper">
                                   <button class="btn"><Icon type="ios-cloud-upload-outline"></Icon> Upload Icon</button>
                                   <input type="file" id="upldIcn" title="Upload icon" accept="image/*">
-                              </div> -->
-                              <label for="upldIcn" class="custom-upld">
-                                <i class="fa fa-cloud-upload"></i> Upload Icon
-                              </label>
-                              <input id="upldIcn" type="file" accept="image/*"/>
+                              </div>
                           </FormItem>
                       </Col>
                   </Row>
@@ -148,14 +144,11 @@
                   <Row>
                     <Col span="10" v-if="frmSettings.rdoCrt == 'rbtCSV'">
                         <h4>CSV File Upload</h4>
-                       <!--  <div class="upload-btn-wrapper" v-on:click="uploadCsv()">
+                        <div class="upload-btn-wrapper" v-on:click="uploadCsv()">
                           <button class="btn"><Icon type="ios-cloud-upload-outline"></Icon> Upload CSV</button>
                           <input type="file" id="upldCSV" title="Upload CSV" accept=".csv">
-                        </div> -->
-                        <label for="upldCSV" class="custom-upld" v-on:click="uploadCsv()">
-                          <i class="fa fa-cloud-upload"></i> Upload CSV
-                        </label>
-                        <input id="upldCSV" type="file" accept=".csv"/>
+                        </div>
+
                     </Col>
                     <Col span="10" v-if="frmSettings.rdoCrt == 'rbtDB'" style="display:none;">
                     <h4>Database Settings</h4>
@@ -806,80 +799,80 @@ export default {
           // console.log("called")
           let fileChooser = document.getElementById('upldCSV')
           let file = fileChooser.files[0]
-          // if (_.contains(self.allowedFileType, file.type)) {
-          Papa.parse(file, {
-            header: true,
-            encoding: 'UTF-8',
-            complete: function (results, file) {
-              console.log(results.data)
-              // console.log("Parsing complete:", results.data, file);
-              results.data.optType = [{
-                value: 'text',
-                label: 'Text'
-              }, {
-                value: 'email',
-                label: 'Email'
-              }, {
-                value: 'number',
-                label: 'Number'
-              }, {
-                value: 'boolean',
-                label: 'Boolean'
-              }, {
-                value: 'phone',
-                label: 'Phone'
-              }, {
-                value: 'date',
-                label: 'Date'
-              }]
+          if (_.contains(self.allowedFileType, file.type)) {
+            Papa.parse(file, {
+              header: true,
+              encoding: 'UTF-8',
+              complete: function (results, file) {
+                console.log(results.data)
+                // console.log("Parsing complete:", results.data, file);
+                results.data.optType = [{
+                  value: 'text',
+                  label: 'Text'
+                }, {
+                  value: 'email',
+                  label: 'Email'
+                }, {
+                  value: 'number',
+                  label: 'Number'
+                }, {
+                  value: 'boolean',
+                  label: 'Boolean'
+                }, {
+                  value: 'phone',
+                  label: 'Phone'
+                }, {
+                  value: 'date',
+                  label: 'Date'
+                }]
 
-              self.frmSettings.upldCSV = results.data
-              self.uploadedCSVData = results.data
-              self.headers = Object.keys(self.frmSettings.upldCSV[0])
-              for (var i = 0; i < self.headers.length; i++) {
-                self.complexSchema[self.headers[i]] = {'type': 'string'}
-              }
-              self.options = self.headers
-              self.displaymessage = true
-              self.validateButton = true
-              _.forEach(self.headers, (f) => {
-                self.csvData.push({
-                  id: f,
-                  header: f,
-                  type: 'text',
-                  min: 0,
-                  max: 0,
-                  allowedValue: [],
-                  defaultValue: '',
-                  dependentOn: '',
-                  regEx: '',
-                  placeholder: '',
-                  optional: true,
-                  IsArray: '',
-                  transform: '',
-                  transformMethod: ''
+                self.frmSettings.upldCSV = results.data
+                self.uploadedCSVData = results.data
+                self.headers = Object.keys(self.frmSettings.upldCSV[0])
+                for (var i = 0; i < self.headers.length; i++) {
+                  self.complexSchema[self.headers[i]] = {'type': 'string'}
+                }
+                self.options = self.headers
+                self.displaymessage = true
+                self.validateButton = true
+                _.forEach(self.headers, (f) => {
+                  self.csvData.push({
+                    id: f,
+                    header: f,
+                    type: 'text',
+                    min: 0,
+                    max: 0,
+                    allowedValue: [],
+                    defaultValue: '',
+                    dependentOn: '',
+                    regEx: '',
+                    placeholder: '',
+                    optional: true,
+                    IsArray: '',
+                    transform: '',
+                    transformMethod: ''
+                  })
                 })
-              })
-              logs.push({date: Date(), status: 'upload_completed'})
-              var obj = {
-                status: 'upload_completed',
-                modified: Date(),
-                log: logs
+                logs.push({date: Date(), status: 'upload_completed'})
+                var obj = {
+                  status: 'upload_completed',
+                  modified: Date(),
+                  log: logs
+                }
+                api.request('patch', '/import-tracker/' + id, obj).then(res => {
+                  console.log('response', res.data)
+                })
+                .catch(error => {
+                  console.log(error)
+                })
+              },
+              error: (error, file) => {
+                console.log('Error', error)
               }
-              api.request('patch', '/import-tracker/' + id, obj).then(res => {
-                console.log('response', res.data)
-              })
-              .catch(error => {
-                console.log(error)
-              })
-            },
-            error: (error, file) => {
-              console.log('Error', error)
-            }
-          })
-          // } else {
-          //   self.$Message.error('only csv file type allowed')
-          // }
+            })
+          } else {
+            self.$Message.error('only csv file type allowed')
+          }
         })
       })
     },
@@ -2027,8 +2020,18 @@ border-color: white;
 .transform-function {
   float: right;
 }
+.ivu-table-cell, .ivu-input-wrapper {
+  padding: 0px 9px 0px 9px;
+}
+.mapping-table > .ivu-table-cell {
+  display: inline-block;
+}
 .property > .ivu-poptip {
   display: block;
   text-align: center;
+}
+.transform-block > .ivu-table-cell {
+  display: inline-block;
+  vertical-align: middle;
 }
 </style>

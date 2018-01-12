@@ -54,7 +54,7 @@
                             <Icon  v-if="check_conn" :type="conn_icon" style="padding-left:5px;font-size:12px;"/>
                         </span>
                     </Button>
-                    <Checkbox v-model="eDuplicate" style="float:right">Exclude Duplicate records?</Checkbox>
+                    <Checkbox v-model="eDuplicate" style="float:right">Exclude eDuplicate records?</Checkbox>
                 </Form>
             </Card>
         </Col>
@@ -306,8 +306,8 @@
     </div>
     <!-- <hr><hr><hr><hr> -->
     <!-- {{sdatabase}} -->
-    <!-- <hr><hr><hr><hr> -->
-    <!-- {{tableData}} -->
+    <hr><hr><hr><hr>
+    {{tableData}}
     <!-- <hr><hr><hr><hr> -->
     <!-- {{disableCheck}} -->
     <!-- {{importedData}} -->
@@ -532,7 +532,6 @@ export default {
           this.conn_icon = 'load-a'
           var sCheck = false
           this.s_collection = await modelSchema.postData(this.source).then(response => {
-            console.log('response..........', response)
             this.issConnect = true
             sCheck = true
             this.sourceDisable = true
@@ -687,3 +686,12 @@ export default {
   }
 }
 </script>
+<style>
+  .ivu-table th {
+    height: 44px;
+    white-space: nowrap;
+    overflow: hidden;
+    background-color: #394263;
+    color: #fff;
+}
+</style>

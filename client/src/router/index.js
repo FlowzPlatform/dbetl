@@ -3,19 +3,18 @@ import Router from 'vue-router'
 import Layout from '@/components/Layout'
 // import Login from '@/components/Login'
 import Dashboard from '@/components/Dashboard'
-// import Schema from '@/components/Schema'
+import Schema from '@/components/Schema'
 import SchemaInstance from '@/components/SchemaInstance'
 import InstanceList from '@/components/InstanceList'
-// import SchemaMapping from '@/components/SchemaMapping'
-// import SchemaMappingList from '@/components/SchemaMappingList'
+import SchemaMapping from '@/components/SchemaMapping'
+import SchemaMappingList from '@/components/SchemaMappingList'
 import Settings from '@/components/Settings'
 import Import from '@/components/Import'
-import ImportCSV from '@/components/ImportCSV'
 import Db from '@/components/Db'
 import Login from '@/components/Login'
 import Register from '@/components/Register'
 import JobList from '@/components/JobList'
-// import schemaList from '@/components/schemaList'
+import schemaList from '@/components/schemaList'
 import recordList from '@/components/recordList'
 import instancejoblist from '@/components/instancejoblist'
 import createRecord from '@/components/createRecord'
@@ -38,20 +37,20 @@ const routes = [{
     component: Dashboard,
     name: 'Dashboard',
     meta: { description: 'Overview of environment', requiresAuth: true }
-    // }, {
-    //   path: 'schema/edit/:id',
-    //   component: Schema,
-    //   name: 'schema/edit',
-    //   meta: { description: 'Schema' },
-    //   props: {
-    //     id: String,
-    //     required: true
-    //   }
-    // }, {
-    //   path: 'schema/new',
-    //   component: Schema,
-    //   name: 'schema/new',
-    //   meta: { description: 'Schema' }
+  }, {
+    path: 'schema/edit/:id',
+    component: Schema,
+    name: 'schema/edit',
+    meta: { description: 'Schema' },
+    props: {
+      id: String,
+      required: true
+    }
+  }, {
+    path: 'schema/new',
+    component: Schema,
+    name: 'schema/new',
+    meta: { description: 'Schema' }
   }, {
     path: 'schema-instance/:schemaid/new',
     component: SchemaInstance,
@@ -70,24 +69,24 @@ const routes = [{
       id: Number,
       required: false
     }
-    // }, {
-    //   path: 'schema-mapping/:id/new',
-    //   component: SchemaMapping,
-    //   name: 'schema-mapping/new',
-    //   meta: { description: 'SchemaMapping' },
-    //   props: {
-    //     id: Number,
-    //     required: false
-    //   }
-    // }, {
-    //   path: 'schema-mappinglist/:id',
-    //   component: SchemaMappingList,
-    //   name: 'schemamappinglist',
-    //   meta: { description: 'SchemaMappingList' },
-    //   props: {
-    //     id: Number,
-    //     required: false
-    //   }
+  }, {
+    path: 'schema-mapping/:id/new',
+    component: SchemaMapping,
+    name: 'schema-mapping/new',
+    meta: { description: 'SchemaMapping' },
+    props: {
+      id: Number,
+      required: false
+    }
+  }, {
+    path: 'schema-mappinglist/:id',
+    component: SchemaMappingList,
+    name: 'schemamappinglist',
+    meta: { description: 'SchemaMappingList' },
+    props: {
+      id: Number,
+      required: false
+    }
   }, {
     path: 'instancelist/:id',
     component: InstanceList,
@@ -114,10 +113,10 @@ const routes = [{
       required: false
     }
   }, {
-    //   path: 'schemaList',
-    //   name: 'schemaList',
-    //   component: schemaList
-    // }, {
+    path: 'schemaList',
+    name: 'schemaList',
+    component: schemaList
+  }, {
     path: 'jobs/list',
     name: 'joblist',
     component: JobList
@@ -125,10 +124,6 @@ const routes = [{
     path: 'Dbsetting/import/:id',
     name: 'import',
     component: Import
-  }, {
-    path: 'Dbsetting/importcsv/:id',
-    name: 'importcsv',
-    component: ImportCSV
   }, {
     path: 'recordList/:id/:tname',
     name: 'recordList',

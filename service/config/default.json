@@ -8,7 +8,6 @@
   },
   "rdb_host": "RDB_HOST",
   "rdb_port": "RDB_PORT",
-  "domainkey": "domainkey",
   "rdb_user": "",
   "rdb_password": "",
   "rdb_db": "FlowzDBETL",
@@ -17,18 +16,18 @@
   "qJobRetryMax": 0,
   "import": "importSchema",
   "importToExternal": "import_to_external_db",
-  "importCsvtoDb": "csvtodb",
   "instance_table": "flowzinstance",
   "approvar_table": "approvalClass",
   "mongodb": "MONGO_DB",
   "mongodb_host": "mongodb_host",
   "mongodb_port": "mongodb_host",
   "jobqueueUrl": "http://api.flowzcluster.tk/rjobqueue1/job/create",
+  "importToConfirmUrl": "",
   "rethinkdb": {
     "db": "FlowzDBETL",
     "servers": [
       {
-        "host": "localhost",
+        "host": "47.254.27.134",
         "port": "28015"
       }
     ]

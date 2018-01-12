@@ -2,18 +2,6 @@
 @css-prefix: f-;
 
 .@{css-prefix}{
-    
-  &pagination {
-    margin-top:10px;
-    clear: both;
-    > .total-page{
-      float: left;
-      line-height: 2.5;
-    }
-    > .page{
-      float: right;
-    }
-  } 
   &logo{
     width: 140px;
     height: 30px;
@@ -28,7 +16,7 @@
     }
   }
   &layout-content{
-    min-height: ~"calc(100vh - 130px)";
+    min-height: 200px;
     margin: 15px;
     /*overflow: hidden;*/
     background: #fff;
@@ -42,8 +30,6 @@
     text-align: center;
     padding: 10px 0 10px;
     color: #9ea7b4;
-    border-top: 1px solid #ccc;
-    box-shadow: 0px 0px 5px rgba(50, 50, 50, 0.50);
     // border-top: 1px solid #ccc;
   }
 }
@@ -141,7 +127,7 @@
   background-color: rgba(48, 121, 244,.1);
   margin: 5px 5px 5px 0;
   border-radius: 20px;
-  height: ~"calc(100% - 10px)";
+  height: calc(100% - 10px);
   display: block;
 }
 
@@ -163,9 +149,6 @@
 
 .vb.vb-dragging-phantom > .vb-dragger > .vb-dragger-styler {
   background-color: rgba(48, 121, 244,.5);
-}
-.ivu-poptip-inner{
-  box-shadow: 0 1px 6px rgba(0,0,0,1);
 }
 
 @import '//cdnjs.cloudflare.com/ajax/libs/tinymce/4.6.3/skins/lightgray/skin.min.css';

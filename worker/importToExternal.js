@@ -61,12 +61,10 @@ var createConn = async (function(data, mapdata) {
 	} else if(data.selectedDb == 'elastic') {
 		 var client = await (new elasticsearch.Client({
 	        host: data.host + ':' + data.port
+	      }).ping({
+	        requestTimeout: 1000
 	      }))
-		 // .ping({
-	        // requestTimeout: 1000
-	      // })
       // console.log(client)
-      	// console.log('.......', client)
     	return {conn: client, db: data.selectedDb}
 	} else if (data.selectedDb == 'nedb') {
 		var nPath = path.join(nedbpath, '/' + data.dbname)
@@ -132,11 +130,13 @@ var createConn = async (function(data, mapdata) {
 					checkColumn = checkColumn.replace('{{ fieldType }}','INT(11) NOT NULL AUTO_INCREMENT');
 					
 					connection.query(checkColumn);
+							
 				}
 				
 			}
 		}
 		return {conn: connection, db: data.selectedDb}
+
 	}
 })
 
@@ -150,36 +150,6 @@ var createConn = async (function(data, mapdata) {
 // 	}
 // })
 
-var getSchemaRecord = async(function (conn, tname) {
-  var commonSelect = await(getQuery('mysql','select','commonSelect'));
-
-  commonSelect = commonSelect.replace('{{ table_name }}',tname );
-  commonSelect = commonSelect.replace('{{ fields }}','*');
-
-  // console.log(getDatabaseTables)
-  var tableList = function () {
-    var result = []
-    
-    return new Promise((resolve, reject) => {
-      conn.conn.query(commonSelect, function (error, result) {
-        error? reject(error) : resolve(result)
-      })
-    }).then(content => {
-      return content;
-    }).catch(err=> {
-      return err;
-    })     
-  };
-  var resTableList = await (tableList())
-  // conn.conn.end()
-  // console.log('resTableList......', resTableList)
-  if (resTableList != null ) {
-    return resTableList
-  } else {
-    return []
-  }
-})
-
 var updateSchema = async( function(data,table_name,databse_name,conn) {
 	var tableFields='';
 	var tableValues='';
@@ -187,7 +157,7 @@ var updateSchema = async( function(data,table_name,databse_name,conn) {
 	
 	_.forEach(data, function (d,key) {
         // if(key != 'Schemaid' && key != 'id' && key != '_id')
-		if(key != 'id')
+		if(key != 'id' && key != '_id')
         {
           if(k==0)
           {
@@ -221,7 +191,7 @@ var updateSchema = async( function(data,table_name,databse_name,conn) {
           k++; 
         }
 	  })
-	  // console.log('tableFields :: ', tableFields, '  tableValues::::: ', tableValues)
+	  
 	  var columns = tableFields.split(",");
 	  
 	  var updateSchemaData = async(function () {
@@ -230,7 +200,7 @@ var updateSchema = async( function(data,table_name,databse_name,conn) {
     
         _.forEach(columns, function (entity,index) {
   
-          if(entity != 'id')
+          if(entity != 'id' && entity != '_id')
           {
             var checkColumn = await(getQuery('mysql','select','checkColumn'));
             checkColumn = checkColumn.replace('{{ table_name }}','information_schema.COLUMNS');
@@ -238,7 +208,7 @@ var updateSchema = async( function(data,table_name,databse_name,conn) {
             checkColumn = checkColumn.replace('{{ fields }}','*');
             checkColumn = checkColumn.replace('{{ database_name }}',databse_name);
             checkColumn = checkColumn.replace('{{ column_name }}',entity.replace(' ', '_'));
-			// console.log('checkColumn..............', checkColumn)
+			
             var process = new Promise((resolve, reject) => {
 				conn.conn.query(checkColumn, function (error, result, fields) {
                 error? reject(error) : result.length == 0 ? resolve(entity.replace(' ', '_')) : resolve('')
@@ -277,55 +247,6 @@ var updateSchema = async( function(data,table_name,databse_name,conn) {
 
     return "success";
 })
-
-var getThisTablewithColumns = async(function(tname, dbname, conn) {
-    var entitydata = async(function () {
-      var promises = []
-      var rs = []
-
-      var tableName = tname
-
-          var getTableColumns = await (getQuery('mysql', 'select', 'getTableColumns'));
-          getTableColumns = getTableColumns.replace('{{ table_name }}', 'information_schema.columns');
-          getTableColumns = getTableColumns.replace('{{ fields }}', 'group_concat(column_name order by ordinal_position) as columns, group_concat(column_type order by ordinal_position) as types, group_concat(column_key order by ordinal_position) as pi');
-          getTableColumns = getTableColumns.replace('{{ database_name }}', dbname);
-          getTableColumns = getTableColumns.replace('{{ tableName }}', tableName);
-          // console.log('getTableColumns........', getTableColumns)
-
-          var process = new Promise((resolve, reject) => {
-            conn.conn.query(getTableColumns, function (error, result, fields) {
-              // console.log('result???????????????',result)
-              _.forEach(result, function (column, key) {
-                  // var columnName = result[0];
-                  var columnName = column.columns.split(",");
-                  var columntype = column.types.split(",");
-                  var columnpi = column.pi.split(",");
-                  // console.log('columnName:::: ', columnName, '  columntype:::: ', columntype, ' columnpi:::: ', columnpi)
-                  cols = []
-                  // _.forEach(columnName, function (c, k) {
-                  //   cols.push({ name: c })
-                  // })
-                  for (let [i, rs] of columnName.entries()) {
-                    var ispri = false;
-                    if (columnpi[i] == 'PRI') {
-                      ispri = true
-                    }
-                    cols.push({ name: rs, type: columntype[i], isprimary: ispri})
-                  }
-                })
-                
-              error ? reject(error) : resolve(cols)
-            })
-          })
-          promises.push(process);
-       
-      return Promise.all(promises).then(content => {
-        return _.union(content)
-      });
-    })
-    var columnsResponse = await (entitydata())
-    return columnsResponse[0]
-  })
 
 var getQuery = async(function (dbName,type,queryFor) {
   let result = new Promise((resolve, reject) => {
@@ -404,9 +325,7 @@ q.process(async(job, next) => {
 			var instance = []
 			var isDup = job.data.eDuplicate
 			// var _resi = await (axios.get('http://'+job.configData.host+':'+job.configData.port+'/'))
-			// console.log('11111111111111111111111111111111111111111111111', job.data.source)
 			var sConn = await (createConn(job.data.source));
-			//console.log('22222222222222222222222222222222222222222222222', sConn)
 			var tConn = await (createConn(job.data.target, job.data.mapdata));
 			// console.log(sConn, '/>>>>>>>>>>>', tConn)
 			// console.log('11111111111111111111111111111111111111')
@@ -438,12 +357,6 @@ q.process(async(job, next) => {
 					                match_all: { }
 					            },
 					        }
-					    }).then(res => {
-					    	// console.log('_res.................', res)
-					    	return res
-					    }).catch(err => {
-					    	// console.log('Error...................', err)
-					    	return err
 					    }))
 						_res.hits.hits.forEach(function(hit){
 					        var item =  hit._source;
@@ -508,15 +421,9 @@ q.process(async(job, next) => {
 									// console.log(checkDup)
 									// var a = _.cloneDeep(sObj)
 									// delete a._id
-									var isExist = _.findIndex(checkDup, sObj)
-									if(isExist != -1) {
-										var isCopy = _.isEqual(checkDup[isExist], sObj)
-										if(!isCopy) {
-											var s = await (tConn.conn.collection(obj.target).insert(sObj))
-											_res.push(s)	
-										} else {
-											having.push(sObj)
-										}
+									var isExist = _.find(checkDup, sObj)
+									if(isExist != undefined) {
+										having.push(sObj)
 									} else {
 										var s = await (tConn.conn.collection(obj.target).insert(sObj))
 										_res.push(s)
@@ -526,15 +433,9 @@ q.process(async(job, next) => {
 									// console.log(checkDup)
 									var a = _.cloneDeep(sObj)
 									delete a._id
-									var isExist = _.findIndex(checkDup, a)
-									if(isExist != -1) {
-										var isCopy = _.isEqual(checkDup[isExist], a)
-										if(!isCopy) {
-											var s = await (tConn.conn.collection(obj.target).insert(sObj))
-											_res.push(s)	
-										} else {
-											having.push(sObj)
-										}
+									var isExist = _.find(checkDup, a)
+									if(isExist != undefined) {
+										having.push(sObj)
 									} else {
 										var s = await (tConn.conn.collection(obj.target).insert(sObj))
 										_res.push(s)
@@ -571,32 +472,20 @@ q.process(async(job, next) => {
 							if (isDup) {
 								if (sObj.hasOwnProperty('id')) {
 									var a = await (tConn.conn.table(obj.target).run())
-									var isExist = _.findIndex(a, sObj)
-									if(isExist == -1) {
+									var isExist = _.find(a, sObj)
+									if(isExist == undefined) {
 										var s = await (tConn.conn.table(obj.target).insert(sObj).run())
 										_res.push(s)		
-									} else {
-										var isCopy = _.isEqual(a[isExist], sObj)
-										if(!isCopy) {
-											var s = await (tConn.conn.table(obj.target).insert(sObj).run())
-											_res.push(s)
-										}
 									}
 								} else {
 									console.log('without..........id')
 									var a = await (tConn.conn.table(obj.target).without('id').run())
 									var n = _.cloneDeep(sObj)
 									delete n.id
-									var isExist = _.findIndex(a, n)
-									if(isExist == -1) {
+									var isExist = _.find(a, n)
+									if(isExist == undefined) {
 										var s = await (tConn.conn.table(obj.target).insert(sObj).run())
 										_res.push(s)		
-									} else {
-										var isCopy = _.isEqual(a[isExist], n)
-										if(!isCopy) {
-											var s = await (tConn.conn.table(obj.target).insert(sObj).run())
-											_res.push(s)
-										}
 									}
 								}
 							} else {
@@ -618,10 +507,9 @@ q.process(async(job, next) => {
 
 					} else if(job.data.target.selectedDb == 'elastic') {
 						var _res = []
-						var arrOfErr = []
 						// var sId = await (getSchemaidByName(aurl, obj.target))
 						for (let [i, sObj] of sData.entries()) {
-							// sObj._id = (sObj._id).toString()
+							sObj._id = (sObj._id).toString()
 							// delete sObj.id
 							// if(sObj.hasOwnProperty('Schemaid')) {
 							// 	sObj.Schemaid = sId
@@ -629,118 +517,13 @@ q.process(async(job, next) => {
 							if (obj.colsData.length !== 0) {
 								sObj = await (filterObj(sObj, obj.colsData))
 							}
-							// var s = await (tConn.conn.index({
-						 //        index: job.data.target.dbname,
-						 //        type: obj.target,
-						 //        body: sObj
-						 //    }))
-							// _res.push(s)
-							if (isDup) {
-								// console.log('isDup', isDup)
-								if (sObj.hasOwnProperty('_id')) {
-									// console.log('11111111111111111111')
-									sObj._id = (sObj._id).toString()
-									var a = await (tConn.conn.search({
-								        index: job.data.source.dbname,
-								        type: obj.source,
-								        body: {
-								            query: {
-								                match_all: { }
-								            },
-								        }
-								    }).then(res => {
-								    	// console.log(res)
-								    	var a = _.map(res.hits.hits, (d) => {
-								    		var s = d._source
-								    		s._id = d._id
-								    		return s 
-								    	})
-										// console.log('22222222222222222222', a)
-								    	return a
-								    }).catch(err => {
-								    	// console.log('>>>>>>>>>>>>>>>>>>>>>>>.', err)
-								    	return []
-								    }))
-								    // console.log('aaaaaaaaaaaaaaa', a, '>>>>>>>>>>>>>>>', sObj)
-									var isExist = _.findIndex(a, sObj)
-									// console.log('isExist', isExist)
-									if(isExist == -1) {
-										var s = await (tConn.conn.index({
-									        index: job.data.target.dbname,
-									        type: obj.target,
-									        body: sObj
-									    }))
-										_res.push(s)	
-									} else {
-										var isCopy = _.isEqual(a[isExist], sObj)
-										if(!isCopy) {
-											var s = await (tConn.conn.index({
-										        index: job.data.target.dbname,
-										        type: obj.target,
-										        body: sObj
-										    }))
-											_res.push(s)
-										}
-									}
-								} else {
-									console.log('without.........._id')
-									var a = await (tConn.conn.search({
-								        index: job.data.source.dbname,
-								        type: obj.source,
-								        body: {
-								            query: {
-								                match_all: { }
-								            },
-								        }
-								    }).then(res => {
-								    	return _.map(res.hits.hits, (d) => {
-								    		return d._source
-								    	})
-								    }).catch(err => {
-								    	return []
-								    }))
-									var n = _.cloneDeep(sObj)
-									delete n._id
-									// console.log('...................', a, '>>>>>>>>>>>>>>>', n)
-									var isExist = _.findIndex(a, n)
-									// console.log('isExist.........', isExist)
-									if(isExist == -1) {
-										// console.log('created..............')
-										var s = await (tConn.conn.index({
-									        index: job.data.target.dbname,
-									        type: obj.target,
-									        body: sObj
-									    }))
-										_res.push(s)		
-									} else {
-										var isCopy = _.isEqual(a[isExist], n)
-										if (!isCopy) {
-											var s = await (tConn.conn.index({
-										        index: job.data.target.dbname,
-										        type: obj.target,
-										        body: sObj
-										    }))
-											_res.push(s)		
-										}
-									}
-								}
-							} else {
-								// console.log('>>>>> ', sObj)
-								var s = await (tConn.conn.index({
-							        index: job.data.target.dbname,
-							        type: obj.target,
-							        body: sObj
-							    }).then(res => {
-							    	return res
-							    }).catch(err => {
-							    	arrOfErr.push(sObj)
-							    	return err
-							    }))
-								_res.push(s)		
-							}
+							var s = await (tConn.conn.index({
+						        index: job.data.target.dbname,
+						        type: obj.target,
+						        body: sObj
+						    }))
+							_res.push(s)
 						}
-						// console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>', _res)
-						// console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>> error ', arrOfErr)
 					} else if(job.data.target.selectedDb == 'mysql') {
 						var _res = []
 						
@@ -750,102 +533,17 @@ q.process(async(job, next) => {
 						// }
 						
 						// var sId = await (getSchemaidByName(aurl, obj.target))
-						var ispri = false;
-						var priObj;
-						var tableStructure = await (getThisTablewithColumns(obj.target, job.data.target.dbname, tConn))
-						if (tableStructure != undefined || tableStructure.length > 0) {
-							var s = _.find(tableStructure, {isprimary: true})
-							console.log(s)
-							if (s != undefined || s.length > 0) {
-								ispri = true;
-								priObj = s;
-							}
-						}
-						// console.log('priObj................', priObj)
-						// console.log('....................', TableStructure)
+						
 						for (let [i, sObj] of sData.entries()) {
 							if (obj.colsData.length !== 0) {
 								sObj = await (filterObj(sObj, obj.colsData))
 							}
-							if(isDup) {
-								console.log('isDup --> || on ||..............')
-								// var checkpri = await (getThisTablewithColumns(obj.target, job.data.target.dbname, tConn))
-								// console.log('....................', checkpri)
-								var oldData = await (getSchemaRecord(tConn, obj.target))
-								if (ispri) {
-									// console.log('ispri--> || true || ..............')
-									var myarr = [];
-									for (let [i, rs] of oldData.entries()){
-										delete rs[priObj.name]
-										myarr.push(rs)
-									}
-									var dummysObj = _.cloneDeep(sObj)
-									delete dummysObj[priObj.name]
-									// console.log('myarr.....', myarr)
-									// console.log('dummysObj previous.....', dummysObj)
-									for (let key in dummysObj) {
-										if (typeof dummysObj[key] == 'object') {
-											dummysObj[key] = JSON.stringify(dummysObj[key])
-										} else {
-											dummysObj[key] = dummysObj[key]
-										}
-									}
-									// console.log('dummysObj.....', dummysObj)
-									var isExist = _.findIndex(myarr, dummysObj)
-									// console.log('isExist--> || '+ isExist +' || ..............')
-
-									if (isExist != -1) {
-										// var tri1 = _.cloneDeep(myarr[isExist])
-										var newObj = {}
-										for (let ky in myarr[isExist]) {
-											newObj[ky] = myarr[isExist][ky]
-										}
-										// console.log('isMatch >>>>>>> \n', newObj, '\n ...........\n', dummysObj)
-										var isMatch = _.isEqual(newObj, dummysObj)
-										// console.log('isMatch--> || '+ isMatch +' || ..............')
-
-										if (!isMatch) {
-											// insert
-											var response = await (updateSchema(sObj, obj.target,job.data.target.dbname,tConn))
-											_res.push(response)
-										} 
-									} else {
-										// insert
-										var response = await (updateSchema(sObj, obj.target,job.data.target.dbname,tConn))
-										_res.push(response)
-									}
-								} else {
-									console.log('without primary..')
-									var oldData = await (getSchemaRecord(tConn, obj.target))
-									var isExist = _.findIndex(oldData, sObj)
-									if (isExist != -1) {
-										var newObj = {}
-										for (let ky in oldData[isExist]) {
-											newObj[ky] = myarr[isExist][ky]
-										}
-										var isMatch = _.isEqual(newObj, sObj)
-										if (!isMatch) {
-											// insert
-											var response = await (updateSchema(sObj, obj.target,job.data.target.dbname,tConn))
-											_res.push(response)
-										} 
-									} else {
-										// insert
-										var response = await (updateSchema(sObj, obj.target,job.data.target.dbname,tConn))
-										_res.push(response)
-									}
-								}
-								// console.log('oldData.......................\n', oldData)s
-							} else {
-								var response = await (updateSchema(sObj, obj.target,job.data.target.dbname,tConn))
-								// console.log('response.........mysql', response)
-								_res.push(response)
-							}
+							
 							// console.log('sObj',sObj,obj.target,job.data.target.dbname)
 							// return false;
 							// sObj.Schemaid = sId
+							var response = await (updateSchema(sObj, obj.target,job.data.target.dbname,tConn))
 						}
-						console.log('..............._res.............\n ', _res)
 					}
 			}
 
