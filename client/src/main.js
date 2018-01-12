@@ -49,12 +49,6 @@ Vue.use(iView, { locale })
   /* Animated css */
 import 'animate.css/animate.css'
 
-// require styles
-import 'codemirror/theme/base16-dark.css'
-
-import VueCodemirror from 'vue-codemirror'
-Vue.use(VueCodemirror)
-
 import VueParticles from 'vue-particles'
 Vue.use(VueParticles)
   /* IView */

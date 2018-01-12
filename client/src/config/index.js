@@ -4,34 +4,35 @@ var temp = {
   socketURI: 'http://localhost:3034',
   fixedLayout: false,
   hideLogoOnMobile: false,
-  microURI: 'http://auth.' + process.env.domainkey + '/api',
+  microURI: 'http://auth.flowzcluster.tk/api',
   facebookSuccessCallbackUrl: 'http://localhost:8000',
-  loginWithFacebookUrl: 'http://auth.' + process.env.domainkey + '/auth/facebook',
+  loginWithFacebookUrl: 'http://auth.flowz.com/auth/facebook',
   googleSuccessCallbackUrl: 'http://localhost:8000',
-  loginWithGoogleUrl: 'http://auth.' + process.env.domainkey + '/auth/Gplus',
+  loginWithGoogleUrl: 'http://auth.flowz.com/auth/Gplus',
   twitterSuccessCallbackUrl: 'http://localhost:8000',
-  loginWithTwitterUrl: 'http://auth.' + process.env.domainkey + '/auth/twitter',
+  loginWithTwitterUrl: 'http://auth.flowz.com/auth/twitter',
   linkedinSuccessCallbackUrl: 'http://localhost:8000',
-  loginWithLinkedinUrl: 'http://auth.' + process.env.domainkey + '/auth/linkedin',
+  loginWithLinkedinUrl: 'http://auth.flowz.com/auth/linkedin',
   githubSuccessCallbackUrl: 'http://localhost:8000',
-  jobQueueUrl: 'http://api.flowzcluster.tk/rjobqueue1/job/create',
-  loginWithGithubUrl: 'http://auth.' + process.env.domainkey + '/auth/github'
+  loginWithGithubUrl: 'http://auth.flowz.com/auth/github',
+  jobQueueUrl: 'http://api.flowzcluster.tk/rjobqueue1/job/create'
 }
 if (process.env.NODE_ENV !== 'development') {
   temp = {
-    serverURI: 'http://api.' + process.env.domainkey + '/dbetl', // 'http://api.' + process.env.domainkey + '/dbetl', // ws.' + process.env.domainkey + ':4034
-    socketURI: 'ws://ws.' + process.env.domainkey,
+    serverURI: 'http://api.flowz.com/dbetl', // 'http://api.flowz.com/dbetl', // ws.flowz.com:4034
+    socketURI: 'http://ws.flowz.com:3034',
     fixedLayout: false,
     hideLogoOnMobile: false,
-    microURI: 'http://auth.' + process.env.domainkey + '/api',
-    facebookSuccessCallbackUrl: 'http://dbetl.' + process.env.domainkey + '/',
-    loginWithFacebookUrl: 'http://auth.' + process.env.domainkey + '/auth/facebook',
-    googleSuccessCallbackUrl: 'http://dbetl.' + process.env.domainkey + '/',
-    loginWithGoogleUrl: 'http://auth.' + process.env.domainkey + '/auth/Gplus',
-    linkedinSuccessCallbackUrl: 'http://dbetl.' + process.env.domainkey + '/',
-    loginWithLinkedinUrl: 'http://auth.' + process.env.domainkey + '/auth/linkedin',
-    githubSuccessCallbackUrl: 'http://dbetl.' + process.env.domainkey + '/',
-    loginWithGithubUrl: 'http://auth.' + process.env.domainkey + '/auth/github'
+    microURI: 'http://auth.flowz.com/api',
+    facebookSuccessCallbackUrl: 'http://dbetl.flowz.com/',
+    loginWithFacebookUrl: 'http://auth.flowz.com/auth/facebook',
+    googleSuccessCallbackUrl: 'http://dbetl.flowz.com/',
+    loginWithGoogleUrl: 'http://auth.flowz.com/auth/Gplus',
+    linkedinSuccessCallbackUrl: 'http://dbetl.flowz.com/',
+    loginWithLinkedinUrl: 'http://auth.flowz.com/auth/linkedin',
+    githubSuccessCallbackUrl: 'http://dbetl.flowz.com/',
+    loginWithGithubUrl: 'http://auth.flowz.com/auth/github',
+    jobQueueUrl: 'http://api.flowzcluster.tk/rjobqueue1/job/create'
   }
 }
 export default temp

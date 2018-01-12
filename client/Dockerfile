@@ -2,7 +2,6 @@ FROM whiledo/letsencrypt-apache-ubuntu
 
 ARG accesskey
 ARG secretkey
-ARG domainkey
 
 #FROM ubuntu:16.04
 

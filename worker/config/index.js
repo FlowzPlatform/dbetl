@@ -11,7 +11,6 @@ module.exports = {
     "concurrency": 1,
     "removeFinishedJobs": false
   },
-  "importCsvtoDb": "csvtodb",
   "flowz_table": "flowzinstance",
   "scheduler_table": "scheduler",
   "syetem_logs_table": "flowz_system_logs",

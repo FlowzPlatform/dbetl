@@ -16,16 +16,6 @@ const services = require('./services');
 const appHooks = require('./app.hooks');
 const rethinkdb = require('./rethinkdb');
 // const mongodb = require('./mongodb');
-
-// // feathers-blob service
-// const blobService = require('feathers-blob');
-// // Here we initialize a FileSystem storage,
-// // but you can use feathers-blob with any other
-// // storage service like AWS or Google Drive.
-// const fs = require('fs-blob-store');
-// const blobStorage = fs(__dirname + '/uploads');
-
-
 const app = feathers();
 // Load app configuration
 app.configure(configuration());
@@ -33,17 +23,11 @@ app.configure(configuration());
 app.use(cors());
 app.use(helmet());
 app.use(compress());
-app.use(bodyParser.json({limit: '100mb'}));
-app.use(bodyParser.urlencoded({limit: '100mb', extended: true }));
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(favicon(path.join(app.get('public'), 'favicon.ico')));
 // Host the public folder
 app.use('/', feathers.static(app.get('public')));
-
-
-// // Upload Service
-// app.use('/uploads', blobService({Model: blobStorage}));
-
-
 // Set up Plugins and providers
 app.configure(hooks());
 // app.configure(mongodb);
@@ -52,7 +36,7 @@ app.configure(rest());
 // app.configure(socketio());
 app.configure(socketio(3034, {
   wsEngine: 'uws',
-  origin: '*.' + (process.env.domainkey ? 'localhost' : process.env.domainkey) + ':*'
+  origin: '*.flowz.com:*'
 }));
 // Configure other middleware (see `middleware/index.js`)
 app.configure(middleware);
@@ -63,4 +47,3 @@ app.use(notFound());
 app.use(handler());
 app.hooks(appHooks);
 module.exports = app;
-
