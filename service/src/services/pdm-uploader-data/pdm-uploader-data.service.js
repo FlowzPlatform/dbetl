@@ -71,11 +71,12 @@ var connectToMongo = async function(url,data){
     console.log("colection_name...",data.activetab.split(" "))
     collection_name = data.activetab.split(" ")
     let prod_name = collection_name[0]
+    let name = ''
     collection_name.splice(0,1)
     console.log("collection_name",  collection_name)
     for(let i=0 ;i<collection_name.length;i++){
       console.log("+++++++++",collection_name[i])
-      name = collection_name[i].toLowerCase()
+      name = name + collection_name[i].toLowerCase()
     }
     collection_name = "uploader" + prod_name + name
 
