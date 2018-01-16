@@ -24,6 +24,7 @@
   "mongodb_host": "mongodb_host",
   "mongodb_port": "mongodb_host",
   "jobqueueUrl": "http://api.flowzcluster.tk/rjobqueue1/job/create",
+  "importToConfirmUrl": "",
   "rethinkdb": {
     "db": "FlowzDBETL",
     "servers": [
