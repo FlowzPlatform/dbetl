@@ -7,53 +7,43 @@
   <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.4/lodash.min.js"></script>
   <!-- <meta charset="utf-8"> -->
   <meta content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0' name='viewport' />
-  <link rel="shortcut icon" href="./static/img/favicon.ico" type="image/ico" sizes="16x16">
   <title>Flowz Builder | The next generation Dynamic website builder.</title>
-
-  <!-- <link href="/static/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous"> -->
 
   <!-- Fonts -->
   <link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
   <link href="https://unpkg.com/vue-multiselect@2.0.3/dist/vue-multiselect.min.css" rel="stylesheet">
-  <link href="/static/css/font-awesome.min.css" rel="stylesheet" crossorigin="anonymous">
 
-  <!-- jQuery -->
-  <script src="/static/js/jquery-3.2.1.min.js" crossorigin="anonymous"></script>
-  <script src="/static/js/jquery-ui.min.js" crossorigin="anonymous"></script>
-
-  <!-- Grapes JS COmponent -->
-  <link rel="stylesheet" type="text/css" href="/static/css/grapes.min.css">
-  <script src="/static/grapes.min.js"></script>
-  <script src="/static/js/grapesjs-plugin-forms.min.js"></script>
-  <script src="/static/js/product-plugin.js"></script>
-  <script src="/static/js/grapesjs-plugin-export.min.js"></script>
-  <script type="text/javascript" src="/static/js/aviary-editor.js"></script>
-  <script src="/static/js/grapesjs-aviary.min.js"></script>
-  <script type="text/javascript" src="/static/js/grapesjs-preset-webpage.js"></script>
-  <script src="/static/js/grapesjs-component-countdown.min.js"></script>
-  <script src="/static/js/grapesjs-navbar.min.js"></script>
-  <link rel="stylesheet" href="/static/grapes.min.css">
-  <script src="/static/grapesjs-mjml.min.js"></script>
-
-  <!-- Domenu Select2  -->
-  <link href="/static/css/select2.min.css" rel="stylesheet" />
-  <script src="/static/js/select2.min.js"></script>
-
+  <link rel='stylesheet' href='/static/dropzone/dropzone.css'>
+  <script src='/static/dropzone/dropzone.js'></script>
   <script src="https://docs.handsontable.com/pro/1.14.3/bower_components/handsontable-pro/dist/handsontable.full.min.js"></script>
   <link href="https://docs.handsontable.com/pro/1.14.3/bower_components/handsontable-pro/dist/handsontable.full.min.css" rel="stylesheet" />
-
-  <!-- for amazon s3 -->
-  <!-- <script src="https://sdk.amazonaws.com/js/aws-sdk-2.1.24.min.js"></script>
-  <script src="https://unpkg.com/axios/dist/axios.min.js"></script> -->
-
 </head>
 
 <body>
   <div id="app"></div>
   <!-- built files will be auto injected -->
-  <!-- <script type="text/javascript">
-
-  </script> -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.20.1/moment.min.js"></script>
+  <script type="text/javascript">
+    String.prototype.capitalize = function() { // eslint-disable-line
+      return this.charAt(0).toUpperCase() + this.slice(1).toLowerCase()
+    }
+    String.prototype.stripHTMLTags = function() { // eslint-disable-line
+      return this.replace(/<[^>]*>/g, '')
+    }
+    String.prototype.stripSpecialCharacter = function() { // eslint-disable-line
+      return this.replace(/[\/\\#,+()$~%'":*<>{}]/g, '') // eslint-disable-line
+    }
+    String.prototype.toDecimal = function(precision) { // eslint-disable-line
+      return parseFloat(this).toFixed(precision)
+    }
+    String.prototype.toInteger = function() { // eslint-disable-line
+      return parseInt(this)
+    }
+    String.prototype.formatDate = function(format) { // eslint-disable-line
+      return moment(this).format(format)
+    }
+  </script>
 </body>
 
 </html>

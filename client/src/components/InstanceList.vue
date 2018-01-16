@@ -156,13 +156,6 @@ export default {
   .f-layout-content{
     min-height: 140px !important
   }
-	.ivu-table th {
-    height: 44px;
-    white-space: nowrap;
-    overflow: hidden;
-    background-color: #394263;
-    color: #fff;
-}
 
 div.jsoneditor tr, div.jsoneditor th, div.jsoneditor td {
   height: -webkit-fill-available !important;
