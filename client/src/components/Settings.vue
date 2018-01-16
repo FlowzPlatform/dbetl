@@ -1316,7 +1316,7 @@ export default {
           self.loadingData = false
           self.$Notice.error({title: 'Error!', desc: 'Error in saving CSV...!  Kindly check your data'})
         }
-      }, 50000)
+      }, 3000)
     },
     undo (data) {
       var self = this
@@ -1344,7 +1344,7 @@ export default {
             } else {
               self.$Notice.error({title: 'Error!', desc: 'Error in deleting the records!'})
             }
-          }, 50000)
+          }, 1000)
         })
       } else {
         socket.emit('import', data, (error, data) => {
@@ -1384,14 +1384,14 @@ export default {
               }
             })
             setTimeout(function () {
-              if (err === '' || err === false || err === undefined) {
+              if (err === '' || err === false) {
                 self.disabled = true
                 self.disableImport = true
                 self.completed = true
               } else {
                 self.$Notice.error({title: 'Error!', desc: 'Error in importing data to realDb...!'})
               }
-            }, 50000)
+            }, 1000)
           })
         })
       } else {
@@ -1405,14 +1405,14 @@ export default {
         })
         setTimeout(function () {
           console.log('err', err)
-          if (err === '' || err === false || err === undefined) {
+          if (err === '' || err === false) {
             self.disabled = true
             self.disableImport = true
             self.completed = true
           } else {
             self.$Notice.error({title: 'Error!', desc: 'Error in importing data to realDb...!'})
           }
-        }, 50000)
+        }, 1000)
       }
     },
     getsettingsAll: function (value) {

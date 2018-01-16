@@ -12,7 +12,6 @@ export default {
   schema: [],
   settings: [],
   tabdata: [],
-  jobData: [],
   activetab: '',
   editTemplate: null,
   // viewTemplate: [],
