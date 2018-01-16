@@ -26,7 +26,9 @@ module.exports = {
     all: [],
     find: [],
     get: [],
-    create: [],
+    create: [
+      // hook => afterCreate(hook)
+    ],
     update: [],
     patch: [],
     remove: []
@@ -47,26 +49,26 @@ module.exports = {
 function beforeCreate(hook) {
   hook.data.userId = hook.params.user._id;
   hook.data.createdAt = new Date();
-  // const Queue = require('rethinkdb-job-queue')
-  // const cxnOptions = config.rethinkdb
-  // const qOptions = {
-  //   name: app.get('importCsvtoDb')
-  // }
-  // // console.log('qOptions', qOptions)
-  // const q = new Queue(cxnOptions, qOptions)
-  // var jobOptions = {}
-  // jobOptions.data = {}
-  //   // jobOptions.data.fId = id
-  // jobOptions.data = hook.data
-  //   // jobOptions.app = app
-  // jobOptions.userId = hook.data.userId
-  // jobOptions.configData = { host: app.get('host'), port: app.get('port') }
-  // // console.log('hook.data', hook.data)
-  // jobOptions.timeout = app.get('qJobTimeout')
-  // jobOptions.retryMax = app.get('qJobRetryMax')
-  // const job = q.createJob(jobOptions)
-  // q.addJob(job).then((savedJobs) => {}).catch(err => console.error(err))
-  // hook.result = { "data": hook.data, code: 200 }
+  const Queue = require('rethinkdb-job-queue')
+  const cxnOptions = config.rethinkdb
+  const qOptions = {
+    name: app.get('importCsvtoDb')
+  }
+  // console.log('qOptions', qOptions)
+  const q = new Queue(cxnOptions, qOptions)
+  var jobOptions = {}
+  jobOptions.data = {}
+    // jobOptions.data.fId = id
+  jobOptions.data = hook.data
+    // jobOptions.app = app
+  jobOptions.userId = hook.data.userId
+  jobOptions.configData = { host: app.get('host'), port: app.get('port') }
+  // console.log('hook.data', hook.data)
+  jobOptions.timeout = app.get('qJobTimeout')
+  jobOptions.retryMax = app.get('qJobRetryMax')
+  const job = q.createJob(jobOptions)
+  q.addJob(job).then((savedJobs) => {}).catch(err => console.error(err))
+  hook.result = { "data": hook.data, code: 200 }
 }
 
 let beforeFind = (hook) => {
@@ -75,3 +77,26 @@ let beforeFind = (hook) => {
     hook.params.query.userId = hook.params.user._id;
   }
 };
+
+// let afterCreate = (hook) => {
+//   const Queue = require('rethinkdb-job-queue')
+//   const cxnOptions = config.rethinkdb
+//   const qOptions = {
+//     name: app.get('importCsvtoDb')
+//   }
+//   // console.log('qOptions', qOptions)
+//   const q = new Queue(cxnOptions, qOptions)
+//   var jobOptions = {}
+//   jobOptions.data = {}
+//     // jobOptions.data.fId = id
+//   jobOptions.data = hook.data
+//     // jobOptions.app = app
+//   jobOptions.userId = hook.data.userId
+//   jobOptions.configData = { host: app.get('host'), port: app.get('port') }
+//   // console.log('hook.data', hook.data)
+//   jobOptions.timeout = app.get('qJobTimeout')
+//   jobOptions.retryMax = app.get('qJobRetryMax')
+//   const job = q.createJob(jobOptions)
+//   q.addJob(job).then((savedJobs) => {}).catch(err => console.error(err))
+//   hook.result = { "data": hook.data, code: 200 }
+// }
