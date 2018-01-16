@@ -1,6 +1,5 @@
 const axios = require('axios');
-console.log('process.env.domainkey', process.env.domainkey)
-console.log('process.env.domainkey', 'http://auth.' + process.env.domainkey + '/api/userdetails')
+
 var checkAuth = (authToken) => {
   return axios({
     method: 'get',
