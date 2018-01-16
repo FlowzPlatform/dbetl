@@ -15,7 +15,7 @@ const hooks = require('feathers-hooks')
 const socketio = require('feathers-socketio/client')
 const io = require('socket.io-client')
   // const socket = io(config.serverURI)
-let socket = io(config.socketURI)
+let socket = io(config.socketURI, { transports: ['websocket'] })
   // if (process.env.NODE_ENV !== 'development') {
   //   socket = io(config.serverURI, { path: '/dbetl/socket.io' })
   // } else {
