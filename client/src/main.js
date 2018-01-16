@@ -17,7 +17,7 @@ const io = require('socket.io-client')
   // const socket = io(config.serverURI)
 let socket = io(config.socketURI)
 if (process.env.NODE_ENV !== 'development') {
-  socket = io(config.serverURI, { transports: ['websocket'] })
+  socket = io(config.socketURI, { transports: ['websocket'] })
 }
 
 const feathers = Feathers()
