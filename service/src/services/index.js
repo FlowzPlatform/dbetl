@@ -16,8 +16,7 @@ const importToExternalDb = require('./import-to-external-db/import-to-external-d
 const connectiondata = require('./connectiondata/connectiondata.service.js');
 const databases = require('./databases/databases.service.js');
 const csvtodb = require('./csvtodb/csvtodb.service.js');
-const myuploads = require('./myuploads/myuploads.service.js');
-module.exports = function() {
+module.exports = function () {
   const app = this; // eslint-disable-line no-unused-vars
   app.configure(schema);
   app.configure(instance);
@@ -29,7 +28,7 @@ module.exports = function() {
   // app.configure(flowzinstance);
   // app.configure(instancetest);
   app.configure(generatejsondatafile);
-  app.configure(addInputToJobQue)
+  app.configure(addInputToJobQue);
   app.configure(importtodb);
   app.configure(importTracker);
   app.configure(customerUploadedData);
@@ -37,5 +36,4 @@ module.exports = function() {
   app.configure(connectiondata);
   app.configure(databases);
   app.configure(csvtodb);
-  app.configure(myuploads);
 };
