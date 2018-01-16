@@ -142,7 +142,7 @@ let socket
 if (process.env.NODE_ENV !== 'development') {
   socket = io(config.socketURI, { transports: ['websocket'] })
 } else {
-  socket = io(config.socketURI, { transports: ['websocket'] })
+  socket = io(config.socketURI)
 }
 // const socket = io(config.serverURI);
 const app = feathers()
