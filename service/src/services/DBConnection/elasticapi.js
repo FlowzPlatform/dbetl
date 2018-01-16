@@ -186,7 +186,7 @@ module.exports = {
     }
   }),
 
-  getSchemaRecord: async(function (data, tname) {
+  getSchemaRecord: async(function (data, tname, limit, skip) {
     var conn = await( getConnection(data).then(res => {
       return res
     }).catch(err => {
@@ -195,8 +195,25 @@ module.exports = {
     if (conn.hasOwnProperty('iserror') && conn.iserror) {
       return conn
     } else {
+      var obj = {}
+      var tcount = await(conn.count({
+          index: data.dbname,
+          type: tname,
+          body: {
+            query: {
+              match_all: { }
+            },
+          }
+      }).then(res => {
+        return res.count
+      }).catch(err => {
+        return 0
+      }))
+      obj.total = tcount
       // console.log('conn', conn)
       var result = await(conn.search({
+        from: skip,
+        size: limit,
         index: data.dbname,
         type: tname,
         body: {
@@ -215,7 +232,12 @@ module.exports = {
       }).catch(err => {
         return {iserror: true, msg: err}
       }))
-      return result
+      obj.data = result
+      if (result.iserror) {
+        return result
+      } else {
+        return obj
+      }
     }
   }),
 

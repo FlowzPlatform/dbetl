@@ -738,7 +738,7 @@ module.exports = {
     }
   }),
 
-  getSchemaRecord: async(function (data, tname) {
+  getSchemaRecord: async(function (data, tname, limit, skip) {
     var conn = await( getConnection(data).then(res => {
       return res
     }).catch(err => {
@@ -748,11 +748,33 @@ module.exports = {
       return conn
     } else {
       var commonSelect = await(getQuery('mysql','select','commonSelect'));
+      var countSelect = await(getQuery('mysql','select','commonSelect'));
 
+      countSelect = countSelect.replace('{{ table_name }}',tname );
+      countSelect = countSelect.replace('{{ fields }}','count(*)');
+      // console.log('countSelect', countSelect)
       commonSelect = commonSelect.replace('{{ table_name }}',tname );
       commonSelect = commonSelect.replace('{{ fields }}','*');
+      // console.log('commonSelect', commonSelect)
 
+      commonSelect += ' limit ' + limit + ' offset ' + skip
+      // console.log('commonSelect........', commonSelect)
       // console.log(getDatabaseTables)
+
+      var countRows = function () {
+        // var result = []
+        
+        return new Promise((resolve, reject) => {
+          conn.query(countSelect, function (error, result) {
+            error? reject(error) : resolve(result)
+          })
+        }).then(content => {
+          return content[0]['count(*)'];
+        }).catch(err=> {
+          return err;
+        })     
+      };
+
       var tableList = function () {
         var result = []
         
@@ -766,14 +788,18 @@ module.exports = {
           return err;
         })     
       };
+      var obj = {}
+      var tcount = await (countRows())
+      // console.log(tcount)
+      obj.total = tcount
       var resTableList = await (tableList())
-      conn.end()
-      // console.log('resTableList......', resTableList)
+      obj.data = []
       if (resTableList != null ) {
-        return resTableList
-      } else {
-        return []
+        obj.data = resTableList
       }
+      conn.end()
+      return obj
+      // console.log('resTableList......', resTableList)
     }
   }),
 

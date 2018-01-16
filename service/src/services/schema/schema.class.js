@@ -4,6 +4,9 @@ let async = require('asyncawait/async');
 let await = require('asyncawait/await');
 var _ = require('lodash');
 var cpath = '../DBConnection/'
+let app = require('config')
+let limit = app.paginate.default
+let skip = 0
 
 class Service {
   constructor(options) {
@@ -40,14 +43,27 @@ class Service {
 }
 
 var getFunction = async(function(id, params) {
+  // console.log(params)
   var api = require(cpath + params.data.selectedDb + 'api')
   if (params.query.schemaname != undefined) {
-    var data = await (api.getSchemaRecord(params.data, params.query.schemaname).then(res => {
+    let $limit = limit 
+    let $skip =  skip
+    if (params.query.$limit != undefined || params.query.$limit != '') {
+      $limit = parseInt(params.query.$limit)
+    }
+    if (params.query.$skip != undefined || params.query.$skip != '') {
+      $skip = parseInt(params.query.$skip)
+    }
+    var data = await (api.getSchemaRecord(params.data, params.query.schemaname, $limit, $skip).then(res => {
       // console.log('response', res)
-      return res
+      var obj = {limit: $limit, skip: $skip}
+      obj.data = res.data
+      obj.total = res.total 
+      return obj
     }).catch(err => {
-      console.log('error', err)
-      return {iserror: true, msg: err}
+      // console.log('error', err)
+      throw new errors.GeneralError('Error', {errors: err})
+      // return {iserror: true, msg: err}
     }))
     // console.log('getFunction', data)
     return data
@@ -56,8 +72,9 @@ var getFunction = async(function(id, params) {
       // console.log('response', res)
       return res
     }).catch(err => {
-      console.log('error', err)
-      return {iserror: true, msg: err}
+      // console.log('error', err)
+      throw new errors.GeneralError('Error', {errors: err})
+      // return {iserror: true, msg: err}
     }))
     // console.log('getFunction', data)
     return data

@@ -42,6 +42,7 @@ module.exports = {
 
 var beforeGet = (hook) => {
   // console.log(hook.params)
+  // hook.params.query.$limit = 10
   hook.params.query.userId = hook.params.user._id;
   const query = Object.assign({
     id: hook.id

@@ -199,7 +199,7 @@
       setData (obj) {
         var url = '/recordList/' + obj.id + '/' + obj.title
         var id = obj.selectedDb + obj.id + obj.title
-        var sobj = {name: obj.title, url: url, id: obj.title, type: 'list'}
+        var sobj = {name: obj.title, url: url, id: id, type: 'list'}
         var self = this
         var flag = 0
         // console.log('obj', obj)
