@@ -62,3 +62,12 @@ function beforeCreate(hook) {
   q.addJob(job).then((savedJobs) => {}).catch(err => console.error(err))
   hook.result = { "data": hook.data, code: 200 }
 }
+
+
+let beforeFind = (hook) => {
+  // console.log('hook', hook)
+  if (hook.params.user) {
+    hook.params.query.userId = hook.params.user._id;
+  }
+};
+
