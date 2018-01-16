@@ -26,6 +26,7 @@
 import vueJsonEditor from 'vue-json-editor'
 import schemaModel from '../api/schema'
 import databasesModel from '../api/databases'
+let _ = require('lodash')
 
 export default {
   name: 'createRecord',
@@ -41,7 +42,8 @@ export default {
         db: '',
         cname: '',
         tname: ''
-      }
+      },
+      mysqlcols: []
     }
   },
   methods: {
@@ -55,6 +57,10 @@ export default {
       console.log(this.jsoneditordata)
       if (typeof this.jsoneditordata === 'object') {
         if (!Array.isArray(this.jsoneditordata)) {
+          // var pri = _.findIndex(this.mysqlcols, {isprimary: true})
+          // if (pri !== -1) {
+          //   this.jsoneditordata[this.mysqlcols[pri].name] = null
+          // }
           var obj = {}
           obj.data = this.jsoneditordata
           obj.id = this.$route.params.id
@@ -86,6 +92,26 @@ export default {
         self.crumbData.db = sDb
         self.crumbData.tname = self.$route.params.tname
         // console.log(this.crumbData)
+        if (sDb === 'mysql') {
+          schemaModel.postData(res).then(_res => {
+            var cols = _.filter(_res, {name: self.$route.params.tname})
+            console.log('Response..', cols)
+            if (cols !== undefined && cols.length > 0) {
+              var mObj = {}
+              self.mysqlcols = cols[0].columns
+              _.forEach(cols[0].columns, (d) => {
+                // if (d.name !== 'id') {
+                if (!d.isprimary) {
+                  mObj[d.name] = ''
+                }
+                // }
+              })
+              self.jsoneditordata = mObj
+            }
+          }).catch(err => {
+            console.log('Error....', err)
+          })
+        }
       })
       .catch(err => {
         console.log('Error', err)

@@ -64,8 +64,3 @@ export default {
   }
 }
 </script>
-<style type="text/css">
-  .ivu-table table {
-    table-layout: inherit;
-  }
-</style>
