@@ -142,7 +142,7 @@ module.exports = {
     }
   }),
 
-  getSchemaRecord: async(function (data, tname) {
+  getSchemaRecord: async(function (data, tname, limit, skip) {
     var conn = await( getConnection(data).then(res => {
       return res
     }).catch(err => {
@@ -151,13 +151,27 @@ module.exports = {
     if (conn.hasOwnProperty('iserror') && conn.iserror) {
       return conn
     } else {
-      var result = await(conn.table(tname).run().then(res => {
+      var obj = {}
+      var tcount = await(conn.table(tname).count().run().then(res => {
+        // conn.getPoolMaster().drain()
+        return res
+      }).catch(err => {
+        return 0
+      }))
+      obj.total = tcount
+      var result = await(conn.table(tname).slice(skip, skip + limit).run().then(res => {
         conn.getPoolMaster().drain()
         return res
       }).catch(err => {
         return {iserror: true, msg: err}
       }))
-      return result
+      obj.data = result
+      if (result.iserror) {
+        return result
+      } else {
+        return obj
+      }
+      // return obj
     }
   }),
 

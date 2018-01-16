@@ -14,7 +14,7 @@
           </Breadcrumb>
         </Col>
         <Col span="3">
-          Total: &nbsp;<b>{{tableData.length}}</b>        
+          Total: &nbsp;<b>{{tcount}}</b>        
           <Button size="small" icon="plus" type="primary" style="float:right" @click="addRecord">Add</Button>
         </Col>
       </Row>
@@ -96,7 +96,7 @@
       </Row>
       <div style="margin: 10px;overflow: hidden">
         <div style="float: right;">
-            <Page :total="tcount" :current="cpage" @on-change="changePage"></Page>
+            <Page :total="tcount" :current="cpage" :page-size="limit" @on-change="changePage" show-sizer @on-page-size-change="changePageSize"></Page>
         </div>
       </div>
     </div>
@@ -120,6 +120,8 @@ export default {
   },
   data () {
     return {
+      limit: 10,
+      skip: 0,
       cpage: 1,
       sl: 0,
       el: 10,
@@ -140,11 +142,19 @@ export default {
     addRecord () {
       this.$router.push('/' + this.$route.params.id + '/' + this.$route.params.tname + '/new')
     },
+    changePageSize (size) {
+      this.limit = size
+      // this.cpage = 1
+      this.skip = 0
+      // console.log('size: ', size)
+      this.setTableData()
+    },
     changePage (pageno) {
       // console.log('pageno', pageno)
       this.cpage = pageno
-      this.el = (pageno * 10)
-      this.sl = (pageno * 10) - 10
+      // this.el = (pageno * this.limit)
+      this.skip = (pageno * this.limit) - this.limit
+      // console.log(this.skip, this.limit, this.cpage)
       this.setTableData()
     },
     ToggleFunction (index) {
@@ -184,9 +194,11 @@ export default {
     },
     setTableData () {
       var self = this
-      schemaModel.get(self.$route.params.id, self.$route.params.tname).then(response => {
+      self.setData = false
+      schemaModel.get(self.$route.params.id, self.$route.params.tname, this.limit, this.skip).then(response => {
         // console.log('self.tableData', response)
-        self.tableData = response
+        self.tableData = response.data
+        self.tcount = response.total
         // self.tcount = response.data.total
         for (var i = 0; i < self.tableData.length; i++) {
           var obj = _.cloneDeep(self.tableData[i])

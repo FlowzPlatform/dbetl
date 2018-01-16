@@ -2,7 +2,7 @@ import api from '../../api'
 let model = 'schema'
 
 export default {
-  get: (id, schemaname) => {
+  get: (id, schemaname, limit, skip) => {
     if (id === undefined) {
       return api.request('get', '/' + model).then(res => {
         return res.data.data
@@ -13,7 +13,7 @@ export default {
           return res.data
         })
       } else {
-        return api.request('get', '/' + model + '/' + id + '?schemaname=' + schemaname).then(res => {
+        return api.request('get', '/' + model + '/' + id + '?schemaname=' + schemaname + '&$limit=' + limit + '&$skip=' + skip).then(res => {
           return res.data
         })
       }
