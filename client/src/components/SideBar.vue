@@ -79,6 +79,10 @@
     },
     feathers: {
       'databases': {
+        patched (data) {
+          console.log('=======>', data)
+          this.init()
+        },
         updated (data) {
           // console.log('connectiondata updated..', data)
           this.init()
