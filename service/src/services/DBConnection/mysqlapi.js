@@ -738,7 +738,22 @@ module.exports = {
     }
   }),
 
-  getSchemaRecord: async(function (data, tname, limit, skip) {
+  getSchemaRecord: async(function (data, tname, limit, skip, sort) {
+    // console.log('sort', sort)
+    var sortString = ' ORDER BY '
+    if (sort == undefined || sort == '' || Object.keys(sort).length == 0) {
+      sortString = ''
+    } else {
+      for(let i in sort) {
+        if (sort[i] == 1) {
+          sortString += '`' + i + '` ' + 'ASC, ' 
+        } else if (sort[i] == -1) {
+          sortString += '`' + i + '` ' + 'DESC, '
+        }
+      }
+    }
+    sortString = sortString.slice(0, -2)
+    // console.log('sortString', sortString)
     var conn = await( getConnection(data).then(res => {
       return res
     }).catch(err => {
@@ -757,7 +772,7 @@ module.exports = {
       commonSelect = commonSelect.replace('{{ fields }}','*');
       // console.log('commonSelect', commonSelect)
 
-      commonSelect += ' limit ' + limit + ' offset ' + skip
+      commonSelect += sortString + ' limit ' + limit + ' offset ' + skip
       // console.log('commonSelect........', commonSelect)
       // console.log(getDatabaseTables)
 
