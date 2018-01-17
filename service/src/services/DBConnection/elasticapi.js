@@ -186,7 +186,7 @@ module.exports = {
     }
   }),
 
-  getSchemaRecord: async(function (data, tname, limit, skip, sort) {
+  getSchemaRecord: async(function (data, tname, limit, skip, sort, select) {
     var $sort = []
     for(let i in sort) {
       if(sort[i] == 1) {
@@ -219,8 +219,7 @@ module.exports = {
         return 0
       }))
       obj.total = tcount
-      // console.log('conn', tcount)
-      var result = await(conn.search({
+      var query = {
         from: skip,
         size: limit,
         index: data.dbname,
@@ -231,14 +230,38 @@ module.exports = {
                 match_all: { }
             },
         }
-      }).then(res => {
+      }
+      if (select == undefined || select == '' || select.length == 0) {} else {
+        query = {
+          from: skip,
+          size: limit,
+          index: data.dbname,
+          type: tname,
+          body: {
+            sort: $sort,
+            _source: select,
+            query: {
+                match_all: { }
+            },
+          }
+        } 
+      }
+      // console.log('conn', query)
+      var result = await(conn.search(query).then(res => {
         // console.log(res)
         conn.close()
+        if (select == undefined || select == '' || select.length == 0) {
+          return _.map(res.hits.hits, (d) => {
+            var obj = d._source
+            obj._id = d._id
+            return obj
+          })
+        } else {
         return _.map(res.hits.hits, (d) => {
-          var obj = d._source
-          obj._id = d._id
-          return obj
+          return d._source
         })
+          
+        }
         // return res
       }).catch(err => {
         return {iserror: true, msg: err}

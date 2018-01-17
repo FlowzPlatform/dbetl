@@ -138,8 +138,8 @@ module.exports = {
     }
   }),
 
-  getSchemaRecord: async(function (data, tname, limit, skip, sort) {
-    // console.log(sort)
+  getSchemaRecord: async(function (data, tname, limit, skip, sort, select) {
+    // console.log(select)
     var conn = await( getConnection(data).then(res => {
       return res
     }).catch(err => {
@@ -148,6 +148,15 @@ module.exports = {
     if (conn.hasOwnProperty('iserror') && conn.iserror) {
       return conn
     } else {
+      var selectObj = {}
+      if (select != undefined && select.length != 0) {
+        for (let [i, item] of select.entries()) {
+          // console.log(item)
+          selectObj[item] = 1
+        }
+        selectObj['_id'] = 0
+      }
+      // console.log('selectObj..', selectObj)
       var obj = {}
       var tcount = await(conn.collection(tname).find().count().then(res => {
         return res
@@ -156,7 +165,7 @@ module.exports = {
       }))
       obj.total = tcount
       // console.log(sort)
-      var result = await(conn.collection(tname).find().sort(sort).skip(skip).limit(limit).toArray().then(res => {
+      var result = await(conn.collection(tname).find({}, selectObj).sort(sort).skip(skip).limit(limit).toArray().then(res => {
         return res
       }).catch(err => {
         return {iserror: true, msg: err}

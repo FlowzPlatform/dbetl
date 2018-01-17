@@ -738,7 +738,7 @@ module.exports = {
     }
   }),
 
-  getSchemaRecord: async(function (data, tname, limit, skip, sort) {
+  getSchemaRecord: async(function (data, tname, limit, skip, sort, select) {
     // console.log('sort', sort)
     var sortString = ' ORDER BY '
     if (sort == undefined || sort == '' || Object.keys(sort).length == 0) {
@@ -753,6 +753,15 @@ module.exports = {
       }
     }
     sortString = sortString.slice(0, -2)
+    var selectString = ''
+    var selectflag = false 
+    if (select == undefined || select == '' || select.length == 0) {} else {
+      selectflag = true
+      for (let [i, item] of select.entries()) {
+        selectString += item + ","
+      }
+      selectString = selectString.slice(0, -1)
+    }
     // console.log('sortString', sortString)
     var conn = await( getConnection(data).then(res => {
       return res
@@ -769,7 +778,11 @@ module.exports = {
       countSelect = countSelect.replace('{{ fields }}','count(*)');
       // console.log('countSelect', countSelect)
       commonSelect = commonSelect.replace('{{ table_name }}',tname );
-      commonSelect = commonSelect.replace('{{ fields }}','*');
+      if (selectflag) {
+        commonSelect = commonSelect.replace('{{ fields }}', selectString);
+      } else {
+        commonSelect = commonSelect.replace('{{ fields }}','*');
+      }
       // console.log('commonSelect', commonSelect)
 
       commonSelect += sortString + ' limit ' + limit + ' offset ' + skip

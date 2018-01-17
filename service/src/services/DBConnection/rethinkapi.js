@@ -150,7 +150,7 @@ module.exports = {
     }
   }),
 
-  getSchemaRecord: async(function (data, tname, limit, skip, sort) {
+  getSchemaRecord: async(function (data, tname, limit, skip, sort, select) {
     // console.log('...................', query)
     var conn = await( getConnection(data).then(res => {
       return res
@@ -173,6 +173,13 @@ module.exports = {
             query = query.orderBy(conn.desc(i))
           }
         }
+      }
+      if(select == undefined || select == '' || select.length == 0) {} else {
+        var selectObj = {} 
+        for (let [i, item] of select.entries()) {
+          selectObj[item] = true
+        }
+        query = query.pluck(selectObj)
       }
       query = query.skip(skip).limit(limit)
       var tcount = await(conn.table(tname).count().run().then(res => {
