@@ -186,7 +186,16 @@ module.exports = {
     }
   }),
 
-  getSchemaRecord: async(function (data, tname, limit, skip) {
+  getSchemaRecord: async(function (data, tname, limit, skip, sort) {
+    var $sort = []
+    for(let i in sort) {
+      if(sort[i] == 1) {
+        sort[i] = 'asc'
+      } else if (sort[i] == -1) {
+        sort[i] = 'desc'
+      }
+    }
+    $sort.push(sort)
     var conn = await( getConnection(data).then(res => {
       return res
     }).catch(err => {
@@ -210,18 +219,20 @@ module.exports = {
         return 0
       }))
       obj.total = tcount
-      // console.log('conn', conn)
+      // console.log('conn', tcount)
       var result = await(conn.search({
         from: skip,
         size: limit,
         index: data.dbname,
         type: tname,
         body: {
+            sort: $sort,
             query: {
                 match_all: { }
             },
         }
       }).then(res => {
+        // console.log(res)
         conn.close()
         return _.map(res.hits.hits, (d) => {
           var obj = d._source

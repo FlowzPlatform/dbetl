@@ -89,6 +89,14 @@ var trygetConnection = async (function(data) {
   return connection
 })
 
+var reverseObj = function(object) {
+    var NewObj = {}, keysArr = Object.keys(object);
+    for (var i = keysArr.length-1; i >= 0; i--) {
+        NewObj[keysArr[i]] = object[keysArr[i]];
+    }
+    return NewObj;
+}
+
 module.exports = {
   choose: async(function () {
     console.log('===================RETHINKDB=================');
@@ -142,7 +150,8 @@ module.exports = {
     }
   }),
 
-  getSchemaRecord: async(function (data, tname, limit, skip) {
+  getSchemaRecord: async(function (data, tname, limit, skip, sort) {
+    // console.log('...................', query)
     var conn = await( getConnection(data).then(res => {
       return res
     }).catch(err => {
@@ -152,14 +161,27 @@ module.exports = {
       return conn
     } else {
       var obj = {}
+      var query = conn.table(tname);
+      if (sort == undefined || sort == '' || Object.keys(sort).length == 0) {
+      } else {
+        sort = await (reverseObj(sort))
+
+        for(let i in sort) {
+          if (sort[i] == 1) {
+            query = query.orderBy(conn.asc(i))
+          } else if (sort[i] == -1) {
+            query = query.orderBy(conn.desc(i))
+          }
+        }
+      }
+      query = query.skip(skip).limit(limit)
       var tcount = await(conn.table(tname).count().run().then(res => {
-        // conn.getPoolMaster().drain()
         return res
       }).catch(err => {
         return 0
       }))
       obj.total = tcount
-      var result = await(conn.table(tname).slice(skip, skip + limit).run().then(res => {
+      var result = await(query.run().then(res => {
         conn.getPoolMaster().drain()
         return res
       }).catch(err => {

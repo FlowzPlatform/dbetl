@@ -43,18 +43,34 @@ class Service {
 }
 
 var getFunction = async(function(id, params) {
-  // console.log(params)
+  //console.log(params.query)
+  // console.log('>>>>>>>>>>>>>>>>', s.createdAt)
   var api = require(cpath + params.data.selectedDb + 'api')
   if (params.query.schemaname != undefined) {
     let $limit = limit 
     let $skip =  skip
+    let $sort = {}
     if (params.query.$limit != undefined || params.query.$limit != '') {
       $limit = parseInt(params.query.$limit)
     }
     if (params.query.$skip != undefined || params.query.$skip != '') {
       $skip = parseInt(params.query.$skip)
     }
-    var data = await (api.getSchemaRecord(params.data, params.query.schemaname, $limit, $skip).then(res => {
+    if (params.query.$sort == undefined || params.query.$sort == '') {
+    } else {
+      console.log('$sort11', params.query.$sort)
+      for (let i in params.query.$sort) {
+        if(params.query.$sort[i] != '1' && params.query.$sort[i] != '-1') {
+          delete params.query.$sort[i]
+        } else {
+          params.query.$sort[i] = parseInt(params.query.$sort[i])
+        }
+      }
+      // console.log('$sort222', params.query.$sort)
+      $sort = params.query.$sort
+    }
+    // console.log('$sort333', params.query.$sort)
+    var data = await (api.getSchemaRecord(params.data, params.query.schemaname, $limit, $skip, $sort).then(res => {
       // console.log('response', res)
       var obj = {limit: $limit, skip: $skip}
       obj.data = res.data
