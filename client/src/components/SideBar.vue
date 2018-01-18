@@ -28,8 +28,8 @@
       <Row v-bar class="vuebar-element">
           <div>
             <div style="padding:0px 15px 0px 15px;">
-              <Spin v-if="isSet" size="large" style="align:center"></Spin> 
-              <Tree v-else :data="sidebarData" :load-data="loadData" @on-select-change="onSelect" style="overflow: hidden;"></Tree>
+              <Spin v-if="isSet" fix size="large" style="align:center"></Spin>
+              <Tree v-else  :data="sidebarData" :load-data="loadData" @on-select-change="onSelect" style="overflow: hidden;"></Tree>
             </div>
           </div>
       </Row>
@@ -49,12 +49,12 @@
     data () {
       return {
         isSet: true,
-        sidebarData: [],
         mongo,
         rethink,
         elastic,
         nedb,
         mysql,
+        databases: [],
         treeData: [],
         buttonProps: {
           type: 'ghost',
@@ -75,62 +75,18 @@
       },
       pinNvaigationContent () {
         return !this.$store.state.sidenavpin ? 'Pin nvaigation' : 'Unpin nvaigation'
-      }
-    },
-    feathers: {
-      'databases': {
-        patched (data) {
-          console.log('=======>', data)
-          this.init()
-        },
-        updated (data) {
-          // console.log('connectiondata updated..', data)
-          this.init()
-        },
-        created (data) {
-          // console.log('connectiondata created..', data)
-          this.init()
-        },
-        removed (data) {
-          // console.log('connectiondata removed..', data)
-          this.init()
-        }
-      }
-    },
-    methods: {
-      onSelect (node) {
-        // console.log(node)
-        this.setData(node[0])
       },
-      loadData (item, callback) {
-        schema.get(item.id).then(response => {
-          // console.log('response.iserror', response)
-          if (response.iserror) {
-            this.$Notice.error({
-              duration: 3,
-              title: 'Connection Error',
-              desc: 'This database not connect. Please check first database.'
-            })
-            callback([])
-          } else {
-            let treeData = _.map(response, m => {
-              return {
-                title: m.name,
-                id: item.id,
-                selectedDb: item.selectedDb
-              }
-            })
-            callback(treeData)
-          }
-        })
-      },
-      async init () {
-        var connections = await databasesModel.get().then(res => {
-          return res
-        }).catch(e => {
-          return []
-        })
-        this.sidebarData = _.chain(connections).filter({isenable: true}).groupBy('selectedDb').map((m, key) => {
+      sidebarData () {
+        let self = this
+        let _database = [
+          {title: 'mongo', text: 'Mongo DB'},
+          {title: 'rethink', text: 'Rethink DB'},
+          {title: 'elastic', text: 'Elasticsearch'},
+          {title: 'mysql', text: 'MySQL  DB'},
+          {title: 'nedb', text: 'NEDB'}
+        ]
+
+        return _.unionBy(_.chain(self.databases).filter({isenable: true}).groupBy('selectedDb').map((m, key) => {
           return {
             title: key,
             render: (h, { root, node, data }) => {
@@ -157,12 +113,12 @@
                     class: {
                       'ivu-tree-title': true
                     }
-                  }, data.title)
+                  }, _.chain(_database).find(f => { return f.title === data.title }).result('text').value())
                 ])
               ])
             },
             children: _.map(m, childM => {
-              return _.assign(childM, {
+              return _.assign(_.clone(childM), {
                 title: childM.connection_name,
                 loading: false,
                 render: (h, { root, node, data }) => {
@@ -197,7 +153,108 @@
               })
             })
           }
-        }).value()
+        }).value(), _.map(_database, m => {
+          return {
+            title: m.title,
+            render: (h, { root, node, data }) => {
+              return h('span', {
+                style: {
+                  width: '100%',
+                  color: '#eee',
+                  fontSize: '13px'
+                }
+              }, [
+                h('span', [
+                  h('img', {
+                    attrs: {
+                      src: this[m.title]
+                    },
+                    style: {
+                      marginRight: '4px',
+                      marginLeft: '4px',
+                      width: '16px',
+                      height: '16px'
+                    }
+                  }),
+                  h('span', {
+                    class: {
+                      'ivu-tree-title': true
+                    }
+                  }, m.text)
+                ])
+              ])
+            },
+            children: []
+          }
+        }), 'title')
+      }
+    },
+    feathers: {
+      'databases': {
+        patched (data) {
+          if (this.$store.state.user._id === data.userId) {
+            let inx = _.findIndex(this.databases, { id: data.id })
+            this.databases.splice(inx, 1)
+            this.databases.splice(inx, 0, data)
+          }
+          // this.init()
+        },
+        updated (data) {
+          if (this.$store.state.user._id === data.userId) {
+            // console.log('connectiondata updated..', data)
+            let inx = _.findIndex(this.databases, { id: data.id })
+            this.databases.splice(inx, 1)
+            this.databases.splice(inx, 0, data)
+          }
+        },
+        created (data) {
+          if (this.$store.state.user._id === data.userId) {
+            // console.log('connectiondata created..', data)
+            this.databases.push(data)
+          }
+        },
+        removed (data) {
+          if (this.$store.state.user._id === data.userId) {
+            // console.log('connectiondata removed..', data)
+            let inx = _.findIndex(this.databases, { id: data.id })
+            this.databases.splice(inx, 1)
+          }
+        }
+      }
+    },
+    methods: {
+      onSelect (node) {
+        // console.log(node)
+        this.setData(node[0])
+      },
+      loadData (item, callback) {
+        schema.get(item.id).then(response => {
+          // console.log('response.iserror', response)
+          if (response.iserror) {
+            this.$Notice.error({
+              duration: 3,
+              title: 'Connection Error',
+              desc: 'This database not connect. Please check first database.'
+            })
+            callback([])
+          } else {
+            let treeData = _.map(response, m => {
+              return {
+                title: m.name,
+                id: item.id,
+                selectedDb: item.selectedDb
+              }
+            })
+            callback(treeData)
+          }
+        })
+      },
+      async init () {
+        this.databases = await databasesModel.get().then(res => {
+          return res
+        }).catch(e => {
+          return []
+        })
         this.isSet = false
       },
       setData (obj) {
