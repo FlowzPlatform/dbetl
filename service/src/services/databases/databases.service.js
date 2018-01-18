@@ -19,6 +19,16 @@ module.exports = function () {
 
   // Get our initialized service so that we can register hooks and filters
   const service = app.service('databases');
+  // https://github.com/feathersjs/feathers/issues/177
+  service.patched = (datatbases, params, callback) => {
+    console.log('patch socket', params)
+      // if(params.ids.indexOf(todo.id) !== -1) {
+      //   return callback(null, todo);
+      // }
+    return callback(null, datatbases);
+    // callback(null, false);
+  };
+
   // service.find = (data, params, callback) => {
   //   console.log('abc')
   //   callback(new { 'abc': 123 });
