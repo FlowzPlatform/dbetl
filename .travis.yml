@@ -34,7 +34,7 @@ jobs:
             docker tag dbetl_backend_flowz:$TRAVIS_BRANCH-$TRAVIS_BUILD_NUMBER $DOCKER_USERNAME/dbetl_backend_flowz:$TRAVIS_BRANCH-$TRAVIS_BUILD_NUMBER;
             docker tag dbetl_backend_flowz:$TRAVIS_BRANCH-$TRAVIS_BUILD_NUMBER $DOCKER_USERNAME/dbetl_backend_flowz:staging;
             docker images;
-            docker push $DOCKER_USERNAME/dbetl_backend_flowz:s$TRAVIS_BRANCH-$TRAVIS_BUILD_NUMBER;
+            docker push $DOCKER_USERNAME/dbetl_backend_flowz:$TRAVIS_BRANCH-$TRAVIS_BUILD_NUMBER;
             docker push $DOCKER_USERNAME/dbetl_backend_flowz:staging;
         else
             docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD";
